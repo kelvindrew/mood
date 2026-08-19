@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useGame } from '../../context/GameContext';
-import { LudoBoardTV } from '../boards/LudoBoardTV';
+import { LudoBoardCanvas } from '../boards/LudoBoardCanvas';
 import { WordBoardTV } from '../boards/WordBoardTV';
 import { CardBoardTV } from '../boards/CardBoardTV';
 import { QuizBoardTV } from '../boards/QuizBoardTV';
@@ -27,7 +27,7 @@ export const TVGamePlayView: React.FC = () => {
   const renderActiveBoard = () => {
     switch (room.gameId) {
       case 'ludo':
-        return <LudoBoardTV />;
+        return <LudoBoardCanvas />; // POC canvas board
       case 'scrabble':
         return <WordBoardTV />;
       case 'card_party':
@@ -53,7 +53,7 @@ export const TVGamePlayView: React.FC = () => {
       case 'four_pics':
         return <FourPicsBoardTV />;
       default:
-        return <LudoBoardTV />;
+        return <LudoBoardCanvas />;
     }
   };
 
