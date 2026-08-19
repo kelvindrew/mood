@@ -150,15 +150,20 @@ export const TVLobbyView: React.FC = () => {
             />
           </div>
 
-          {/* Manual URL and IP fallback */}
+          {/* Clear join instructions */}
           <div className="w-full flex flex-col items-center space-y-2">
             <div className="flex items-center space-x-2 text-xs text-gray-200 bg-surface-light/90 px-4 py-2 rounded-xl border border-white/10 shadow-inner">
-              <Wifi className="w-4 h-4 text-emerald-400" />
-              <span className="font-mono text-emerald-400 font-bold">{mobileJoinUrl}</span>
+              <span className="text-gray-400 font-medium">Adresse :</span>
+              <span className="font-mono text-brand-cyan font-bold truncate max-w-[260px]">
+                {typeof window !== 'undefined' ? window.location.host : 'mood.kalvinec.workers.dev'}
+              </span>
             </div>
-            <span className="text-[11px] text-gray-400">
-              Ou entrez le code : <strong className="text-brand-gold font-mono text-sm">{room.code}</strong>
-            </span>
+            <div className="text-xs text-gray-300 flex items-center space-x-1.5 pt-1">
+              <span>Code du salon :</span>
+              <span className="text-brand-gold font-mono text-lg font-black px-3 py-0.5 rounded-xl bg-surface-dark border border-white/15 shadow-sm">
+                {room.code}
+              </span>
+            </div>
           </div>
         </div>
 

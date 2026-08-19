@@ -65,11 +65,11 @@ export const MobileJoinView: React.FC<MobileJoinViewProps> = ({ defaultRoomCode 
     e.preventDefault();
     setError('');
 
-    const cleanCode = code.trim();
+    const cleanCode = code.trim().toUpperCase();
     const cleanName = name.trim() || `Joueur ${Math.floor(10 + Math.random() * 89)}`;
 
     if (cleanCode.length !== 4) {
-      setError('Veuillez entrer un code de salon valide à 4 chiffres.');
+      setError('Veuillez entrer un code de salon valide à 4 caractères.');
       triggerHaptic(hapticPatterns.error);
       return;
     }
@@ -111,16 +111,17 @@ export const MobileJoinView: React.FC<MobileJoinViewProps> = ({ defaultRoomCode 
         {/* Room Code */}
         <div>
           <label className="text-[11px] font-black text-gray-300 uppercase tracking-wider block mb-1">
-            Code du Salon TV (4 chiffres)
+            Code du Salon TV (4 caractères)
           </label>
           <input
             type="text"
-            pattern="[0-9]*"
             maxLength={4}
+            autoCapitalize="characters"
+            autoCorrect="off"
             value={code}
-            onChange={(e) => setCode(e.target.value)}
+            onChange={(e) => setCode(e.target.value.toUpperCase())}
             placeholder="Ex: 4827"
-            className="w-full text-center py-3.5 px-4 rounded-2xl bg-surface-card border-2 border-brand-red/60 text-3xl font-black font-mono tracking-widest text-white placeholder-gray-600 focus:outline-none focus:border-brand-red focus:shadow-glow-red"
+            className="w-full text-center py-3.5 px-4 rounded-2xl bg-surface-card border-2 border-brand-red/60 text-3xl font-black font-mono tracking-widest text-white placeholder-gray-600 focus:outline-none focus:border-brand-red focus:shadow-glow-red uppercase"
             required
           />
         </div>
