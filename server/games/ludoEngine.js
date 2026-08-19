@@ -1,5 +1,5 @@
-// Ludo Game Engine for PLAYFLIX - Autonomous AI Bots & Enhanced Gameplay Edition
-// Standard 4-player Ludo with 52 common path cells + 6 home stretch cells per color
+// Official Ludo Game Engine for PLAYFLIX
+// Standard 4-player rules: 52 circuit cells, 5 home stretch cells, 6 to exit, exact roll to finish, captures & extra turns.
 
 const START_POSITIONS = {
   red: 0,
@@ -21,16 +21,14 @@ const BOT_NAMES = {
 
 export class LudoEngine {
   constructor(players, onStateChange, onGameOver) {
-    // players can be array of colors or array of Player objects with isBot
     this.playersList = players.map(p => (typeof p === 'string' ? { color: p, isBot: false, name: p } : { ...p }));
 
-    // In standard Ludo, ensure all 4 board colors (Red, Blue, Green, Yellow) are populated
-    // Auto-assign AI Bots to any unfilled board colors so the game is always a rich 4-player match
+    // Ensure all 4 colors are filled with humans or bots
     for (const col of ALL_4_COLORS) {
       if (!this.playersList.some(p => p.color === col)) {
         this.playersList.push({
           id: `bot_ludo_${col}`,
-          name: BOT_NAMES[col] || `🤖 Bot ${col.toUpperCase()}`,
+          name: BOT_NAMES[col] || `Bot ${col.toUpperCase()}`,
           avatar: '🤖',
           color: col,
           isBot: true,
@@ -39,16 +37,14 @@ export class LudoEngine {
       }
     }
 
-    // Keep strict 4-color order
     this.playerColors = ALL_4_COLORS;
-
     this.currentTurnIndex = 0;
     this.diceValue = null;
     this.canRollDice = true;
     this.movablePawns = [];
     this.movableOptions = [];
     this.winner = null;
-    this.turnTimeLeft = 25;
+    this.turnTimeLeft = 30;
     this.lastActionLog = 'La partie de Ludo commence ! À vos dés !';
     this.onStateChange = onStateChange;
     this.onGameOver = onGameOver;
@@ -68,7 +64,7 @@ export class LudoEngine {
     this.botTimer = null;
     this.startTurnTimer();
 
-    // Trigger initial bot turn if starting player is a bot
+    // Trigger bot if starting player is bot
     this.checkBotTurn();
   }
 
@@ -84,8 +80,10 @@ export class LudoEngine {
 
   startTurnTimer() {
     if (this.timer) clearInterval(this.timer);
-    this.turnTimeLeft = 25;
+    this.turnTimeLeft = 30;
     this.timer = setInterval(() => {
+      if (this.winner) return;
+
       this.turnTimeLeft--;
       if (this.turnTimeLeft <= 0) {
         this.handleTurnTimeout();
@@ -103,7 +101,7 @@ export class LudoEngine {
         if (this.canRollDice && this.isCurrentPlayerBot() && !this.winner) {
           this.rollDice(this.getCurrentColor(), false);
         }
-      }, 1000);
+      }, 1200);
     }
   }
 
@@ -124,23 +122,24 @@ export class LudoEngine {
 
     this.diceValue = Math.floor(Math.random() * 6) + 1;
     this.canRollDice = false;
-    this.lastActionLog = `${playerColor.toUpperCase()} a fait un ${this.diceValue} ${isAuto ? '(auto)' : ''}`;
+    this.lastActionLog = `${playerColor.toUpperCase()} a obtenu un ${this.diceValue} ${isAuto ? '(auto)' : ''}`;
 
-    // Calculate detailed movable options
+    // Calculate valid moves
     const { movableIds, options } = this.calculateMovableOptions(playerColor, this.diceValue);
     this.movablePawns = movableIds;
     this.movableOptions = options;
 
     if (this.movablePawns.length === 0) {
-      // No pawns can move, automatically pass to next player after a short pause
+      // No moves possible -> automatic pass after 1.5s
+      this.lastActionLog = `${playerColor.toUpperCase()} : Aucun coup possible avec un ${this.diceValue}.`;
       if (this.botTimer) clearTimeout(this.botTimer);
       this.botTimer = setTimeout(() => {
         if (!this.winner) {
           this.nextTurn();
         }
-      }, 1100);
+      }, 1500);
     } else if (this.isCurrentPlayerBot()) {
-      // AI Bot evaluates the best strategic pawn to move
+      // Bot chooses best move after 1s
       if (this.botTimer) clearTimeout(this.botTimer);
       this.botTimer = setTimeout(() => {
         if (!this.canRollDice && this.isCurrentPlayerBot() && !this.winner) {
@@ -151,16 +150,7 @@ export class LudoEngine {
             this.movePawn(playerColor, this.movablePawns[0]);
           }
         }
-      }, 900);
-    } else if (this.movablePawns.length === 1) {
-      // Auto move single option for human after 800ms
-      const singlePawnId = this.movablePawns[0];
-      if (this.botTimer) clearTimeout(this.botTimer);
-      this.botTimer = setTimeout(() => {
-        if (!this.canRollDice && this.movablePawns.includes(singlePawnId) && !this.isCurrentPlayerBot() && !this.winner) {
-          this.movePawn(playerColor, singlePawnId);
-        }
-      }, 800);
+      }, 1000);
     }
 
     this.notify();
@@ -181,7 +171,7 @@ export class LudoEngine {
     const safeOpt = options.find(o => SAFE_POSITIONS.includes(o.targetPosition));
     if (safeOpt) return safeOpt.pawnId;
 
-    // 4. Exit home with a 6
+    // 4. Exit base with a 6
     const exitHomeOpt = options.find(o => o.isExitingHome);
     if (exitHomeOpt) return exitHomeOpt.pawnId;
 
@@ -199,6 +189,7 @@ export class LudoEngine {
       if (pawn.isFinished) continue;
 
       if (pawn.isHome) {
+        // Must roll a 6 to exit home
         if (roll === 6) {
           movableIds.push(pawn.id);
           options.push({
@@ -212,40 +203,70 @@ export class LudoEngine {
           });
         }
       } else if (pawn.position >= 100) {
-        const currentStretchPos = pawn.position - 100;
-        const newStretch = currentStretchPos + roll;
-        if (newStretch <= 5) {
+        // Already on home stretch (100, 101, 102, 103, 104)
+        const currentStep = pawn.position - 100; // 0 to 4
+        const targetStep = currentStep + roll;
+
+        // Step 5 is the central finish!
+        if (targetStep === 5) {
           movableIds.push(pawn.id);
           options.push({
             pawnId: pawn.id,
             fromPosition: pawn.position,
-            targetPosition: newStretch === 5 ? 200 : 100 + newStretch,
+            targetPosition: 200,
             isExitingHome: false,
             isEnteringHomeStretch: false,
-            isWinning: newStretch === 5,
+            isWinning: true,
+            willCapture: false,
+          });
+        } else if (targetStep < 5) {
+          movableIds.push(pawn.id);
+          options.push({
+            pawnId: pawn.id,
+            fromPosition: pawn.position,
+            targetPosition: 100 + targetStep,
+            isExitingHome: false,
+            isEnteringHomeStretch: false,
+            isWinning: false,
             willCapture: false,
           });
         }
+        // If targetStep > 5, cannot move (requires exact roll)
       } else {
+        // On main 52 circuit
         const start = START_POSITIONS[color];
         const relativeCurrent = (pawn.position - start + 52) % 52;
         const relativeNew = relativeCurrent + roll;
 
         if (relativeNew > 50) {
-          const stretchSteps = relativeNew - 51;
-          if (stretchSteps <= 5) {
+          // Entering home stretch
+          const stretchSteps = relativeNew - 51; // 0 = first home cell, 5 = finish
+          if (stretchSteps === 5) {
             movableIds.push(pawn.id);
             options.push({
               pawnId: pawn.id,
               fromPosition: pawn.position,
-              targetPosition: stretchSteps === 5 ? 200 : 100 + stretchSteps,
+              targetPosition: 200,
               isExitingHome: false,
               isEnteringHomeStretch: true,
-              isWinning: stretchSteps === 5,
+              isWinning: true,
+              willCapture: false,
+            });
+          } else if (stretchSteps < 5) {
+            movableIds.push(pawn.id);
+            options.push({
+              pawnId: pawn.id,
+              fromPosition: pawn.position,
+              targetPosition: 100 + stretchSteps,
+              isExitingHome: false,
+              isEnteringHomeStretch: true,
+              isWinning: false,
               willCapture: false,
             });
           }
+          // If stretchSteps > 5, cannot move
         } else {
+          // Standard track move
           const newTrackPos = (pawn.position + roll) % 52;
           movableIds.push(pawn.id);
           options.push({
@@ -286,21 +307,23 @@ export class LudoEngine {
     if (!pawn) return;
 
     const roll = this.diceValue;
-    let extraTurn = roll === 6;
+    let extraTurn = roll === 6; // 6 gives a re-roll
 
     if (pawn.isHome) {
       pawn.isHome = false;
       pawn.position = START_POSITIONS[playerColor];
-      this.lastActionLog = `${playerColor.toUpperCase()} sort un pion de sa base !`;
+      this.lastActionLog = `${playerColor.toUpperCase()} sort son pion #${pawn.id + 1} de la base !`;
     } else if (pawn.position >= 100) {
-      const newStretch = (pawn.position - 100) + roll;
-      if (newStretch === 5) {
+      const currentStep = pawn.position - 100;
+      const targetStep = currentStep + roll;
+      if (targetStep === 5) {
         pawn.position = 200;
         pawn.isFinished = true;
-        this.lastActionLog = `🎉 Un pion de ${playerColor.toUpperCase()} atteint la maison !`;
+        this.lastActionLog = `🎉 Le pion #${pawn.id + 1} de ${playerColor.toUpperCase()} atteint la maison centrale !`;
         extraTurn = true;
-      } else if (newStretch < 5) {
-        pawn.position = 100 + newStretch;
+      } else if (targetStep < 5) {
+        pawn.position = 100 + targetStep;
+        this.lastActionLog = `${playerColor.toUpperCase()} avance dans l'allée centrale.`;
       }
     } else {
       const start = START_POSITIONS[playerColor];
@@ -312,17 +335,18 @@ export class LudoEngine {
         if (stretchSteps === 5) {
           pawn.position = 200;
           pawn.isFinished = true;
-          this.lastActionLog = `🎉 Un pion de ${playerColor.toUpperCase()} atteint la maison !`;
+          this.lastActionLog = `🎉 Le pion #${pawn.id + 1} de ${playerColor.toUpperCase()} atteint la maison centrale !`;
           extraTurn = true;
         } else if (stretchSteps < 5) {
           pawn.position = 100 + stretchSteps;
-        } else {
-          return;
+          this.lastActionLog = `${playerColor.toUpperCase()} entre dans l'allée centrale.`;
         }
       } else {
         const newTrackPos = (pawn.position + roll) % 52;
         pawn.position = newTrackPos;
+        this.lastActionLog = `${playerColor.toUpperCase()} avance son pion #${pawn.id + 1} en case ${newTrackPos}.`;
 
+        // Check capture on non-safe cells
         if (!SAFE_POSITIONS.includes(newTrackPos)) {
           for (const otherColor of this.playerColors) {
             if (otherColor === playerColor) continue;
@@ -330,7 +354,7 @@ export class LudoEngine {
               if (!otherPawn.isHome && !otherPawn.isFinished && otherPawn.position === newTrackPos) {
                 otherPawn.isHome = true;
                 otherPawn.position = -1;
-                this.lastActionLog = `💥 ${playerColor.toUpperCase()} a capturé un pion ${otherColor.toUpperCase()} !`;
+                this.lastActionLog = `💥 ${playerColor.toUpperCase()} a capturé le pion ${otherColor.toUpperCase()} ! Rejouez !`;
                 extraTurn = true;
               }
             }
@@ -339,11 +363,11 @@ export class LudoEngine {
       }
     }
 
-    // Check win condition
+    // Check victory: all 4 pawns finished
     const allFinished = this.pawns[playerColor].every(p => p.isFinished);
     if (allFinished) {
       this.winner = playerColor;
-      this.lastActionLog = `🏆 Victoire éclatante de ${playerColor.toUpperCase()} !`;
+      this.lastActionLog = `🏆 Victoire éclatante de ${playerColor.toUpperCase()} qui a rentré ses 4 pions !`;
       if (this.timer) clearInterval(this.timer);
       if (this.botTimer) clearTimeout(this.botTimer);
       this.notify();
@@ -353,8 +377,10 @@ export class LudoEngine {
 
     this.movablePawns = [];
     this.movableOptions = [];
+
     if (extraTurn) {
       this.canRollDice = true;
+      this.diceValue = null;
       this.startTurnTimer();
       this.checkBotTurn();
     } else {
