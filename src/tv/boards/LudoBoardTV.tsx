@@ -91,12 +91,32 @@ const HOME_STRETCH_COORDS: Record<string, { x: number; y: number }[]> = {
   blue: [cellToPx(7, 13), cellToPx(7, 12), cellToPx(7, 11), cellToPx(7, 10), cellToPx(7, 9)],
 };
 
-// Base Nest Coordinates for the 4 starting bases
+// Base Nest Coordinates for the 4 starting bases (Pixel-perfect centered in each 160x160 white base square)
 const BASE_NESTS: Record<string, { x: number; y: number }[]> = {
-  red: [cellToPx(1.8, 1.8), cellToPx(3.8, 1.8), cellToPx(1.8, 3.8), cellToPx(3.8, 3.8)],
-  green: [cellToPx(10.8, 1.8), cellToPx(12.8, 1.8), cellToPx(10.8, 3.8), cellToPx(12.8, 3.8)],
-  yellow: [cellToPx(10.8, 10.8), cellToPx(12.8, 10.8), cellToPx(10.8, 12.8), cellToPx(12.8, 12.8)],
-  blue: [cellToPx(1.8, 10.8), cellToPx(3.8, 10.8), cellToPx(1.8, 12.8), cellToPx(3.8, 12.8)],
+  red: [
+    { x: 80, y: 80 },
+    { x: 160, y: 80 },
+    { x: 80, y: 160 },
+    { x: 160, y: 160 },
+  ],
+  green: [
+    { x: 440, y: 80 },
+    { x: 520, y: 80 },
+    { x: 440, y: 160 },
+    { x: 520, y: 160 },
+  ],
+  yellow: [
+    { x: 440, y: 440 },
+    { x: 520, y: 440 },
+    { x: 440, y: 520 },
+    { x: 520, y: 520 },
+  ],
+  blue: [
+    { x: 80, y: 440 },
+    { x: 160, y: 440 },
+    { x: 80, y: 520 },
+    { x: 160, y: 520 },
+  ],
 };
 
 // Safe star indices
