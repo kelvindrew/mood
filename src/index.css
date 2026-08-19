@@ -1,0 +1,98 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    margin: 0;
+    padding: 0;
+    background-color: #07090E;
+    color: #FFFFFF;
+    font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
+    user-select: none;
+    -webkit-user-select: none;
+    overflow-x: hidden;
+    letter-spacing: -0.01em;
+  }
+
+  /* 10-foot UI TV Focus Ring standard */
+  :focus-visible {
+    outline: none;
+  }
+
+  /* Disable default scrollbars for 10ft TV UI */
+  ::-webkit-scrollbar {
+    display: none;
+    width: 0px;
+    height: 0px;
+  }
+}
+
+/* Console Glow Glassmorphism */
+.glass-panel {
+  background: rgba(18, 23, 38, 0.75);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.glass-panel-highlight {
+  background: rgba(25, 32, 52, 0.85);
+  backdrop-filter: blur(28px);
+  -webkit-backdrop-filter: blur(28px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.tv-focus-glow {
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.tv-focus-glow:focus {
+  transform: scale(1.08);
+  z-index: 30;
+  box-shadow: 0 0 0 3px #FFFFFF, 0 0 35px 8px rgba(229, 9, 20, 0.7);
+}
+
+@keyframes floatUp {
+  0% {
+    transform: translateY(0px) scale(0.6);
+    opacity: 0;
+  }
+  15% {
+    transform: translateY(-40px) scale(1.15);
+    opacity: 1;
+  }
+  80% {
+    transform: translateY(-380px) scale(1);
+    opacity: 0.9;
+  }
+  100% {
+    transform: translateY(-500px) scale(0.8);
+    opacity: 0;
+  }
+}
+
+@keyframes scaleIn {
+  0% {
+    transform: scale(0.94);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.animate-scale-in {
+  animation: scaleIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.scrollbar-none {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
