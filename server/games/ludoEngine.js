@@ -3,20 +3,20 @@
 
 const START_POSITIONS = {
   red: 0,
-  blue: 13,
-  green: 26,
-  yellow: 39,
+  green: 13,
+  yellow: 26,
+  blue: 39,
 };
 
 const SAFE_POSITIONS = [0, 8, 13, 21, 26, 34, 39, 47]; // Star cells
 
-const ALL_4_COLORS = ['red', 'blue', 'green', 'yellow'];
+const ALL_4_COLORS = ['red', 'green', 'yellow', 'blue'];
 
 const BOT_NAMES = {
-  blue: 'Jarvis (Bleu)',
+  red: 'Sophia (Rouge)',
   green: 'Cyber Bot (Vert)',
   yellow: 'Alpha Neo (Jaune)',
-  red: 'Sophia (Rouge)',
+  blue: 'Jarvis (Bleu)',
 };
 
 export class LudoEngine {
