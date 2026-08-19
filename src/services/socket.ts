@@ -17,8 +17,14 @@ class SocketService {
     }
 
     if (typeof window !== 'undefined') {
-      // Connect to origin (Vite dev proxy forwards /socket.io to backend 3001)
-      this.serverUrl = window.location.origin;
+      const hostname = window.location.hostname;
+      if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname.startsWith('192.168.') || hostname.startsWith('10.')) {
+        // Local development: connect to origin (Vite proxy forwards /socket.io to backend)
+        this.serverUrl = window.location.origin;
+      } else {
+        // Production deployment (Cloudflare / Web): connect to live Render backend
+        this.serverUrl = 'https://mood-3nvd.onrender.com';
+      }
     } else {
       this.serverUrl = 'http://localhost:3001';
     }
