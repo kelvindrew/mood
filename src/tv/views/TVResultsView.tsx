@@ -15,9 +15,6 @@ export const TVResultsView: React.FC = () => {
     // Play celebratory victory fanfare
     audio.playVictory();
 
-    // Voice commentator announcement
-    audio.speak(`Victoire éclatante de ${winner.name} ! Quel match formidable !`);
-
     // Fire fireworks confetti
     const duration = 4 * 1000;
     const end = Date.now() + duration;
