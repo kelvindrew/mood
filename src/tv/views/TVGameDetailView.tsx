@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useGame } from '../../context/GameContext';
 import { GAMES_CATALOG } from '../../data/gamesCatalog';
-import { Play, Heart, BookOpen, ArrowLeft, Users, Clock, Flame, CheckCircle, Sliders, Shield } from 'lucide-react';
+import { Play, Heart, BookOpen, ArrowLeft, Users, Clock, Flame, CheckCircle, Sliders, Shield, Loader2, AlertCircle } from 'lucide-react';
 import { audio } from '../../services/audio';
 import { tvNav } from '../../services/tvNavigation';
 
@@ -10,6 +10,8 @@ export const TVGameDetailView: React.FC = () => {
   const [isFavorite, setIsFavorite] = useState(false);
   const [showRulesModal, setShowRulesModal] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [isCreating, setIsCreating] = useState(false);
+  const [createError, setCreateError] = useState('');
 
   // Room custom settings
   const [maxPlayers, setMaxPlayers] = useState(selectedGame.maxPlayers);
@@ -21,12 +23,25 @@ export const TVGameDetailView: React.FC = () => {
   }, [showRulesModal, showCreateModal]);
 
   const handleCreateRoom = async () => {
+    if (isCreating) return;
+    setIsCreating(true);
+    setCreateError('');
     audio.playSelect();
-    await createRoom(selectedGame.id, {
-      maxPlayers,
-      turnDuration,
-      gameMode,
-    });
+
+    try {
+      const res = await createRoom(selectedGame.id, {
+        maxPlayers,
+        turnDuration,
+        gameMode,
+      });
+      if (!res.success) {
+        setCreateError(res.error || 'Erreur lors de la création du salon');
+      }
+    } catch (err: any) {
+      setCreateError(err?.message || 'Connexion au serveur impossible');
+    } finally {
+      setIsCreating(false);
+    }
   };
 
   const similarGames = GAMES_CATALOG.filter((g) => g.id !== selectedGame.id);
@@ -315,16 +330,24 @@ export const TVGameDetailView: React.FC = () => {
               </div>
             </div>
 
+            {createError && (
+              <div className="p-3 rounded-xl bg-rose-950/80 border border-rose-500/50 text-rose-300 text-xs flex items-center space-x-2">
+                <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
+                <span>{createError}</span>
+              </div>
+            )}
+
             {/* Modal Actions */}
             <div className="flex items-center justify-between pt-4 border-t border-white/10">
               <button
                 data-tv-focus
                 tabIndex={0}
+                disabled={isCreating}
                 onClick={() => {
                   audio.playBack();
                   setShowCreateModal(false);
                 }}
-                className="px-5 py-3 rounded-xl bg-surface-light text-gray-300 hover:text-white font-bold text-sm outline-none focus:ring-2 focus:ring-white"
+                className="px-5 py-3 rounded-xl bg-surface-light text-gray-300 hover:text-white font-bold text-sm outline-none focus:ring-2 focus:ring-white disabled:opacity-50"
               >
                 Annuler
               </button>
@@ -332,11 +355,21 @@ export const TVGameDetailView: React.FC = () => {
               <button
                 data-tv-focus
                 tabIndex={0}
+                disabled={isCreating}
                 onClick={handleCreateRoom}
-                className="flex items-center space-x-2 px-8 py-3.5 rounded-2xl bg-brand-red hover:bg-red-600 text-white font-black text-base shadow-glow-red hover:scale-105 focus:scale-105 focus:bg-white focus:text-brand-red focus:ring-4 focus:ring-brand-red transition-all outline-none"
+                className="flex items-center space-x-2 px-8 py-3.5 rounded-2xl bg-brand-red hover:bg-red-600 text-white font-black text-base shadow-glow-red hover:scale-105 focus:scale-105 focus:bg-white focus:text-brand-red focus:ring-4 focus:ring-brand-red transition-all outline-none disabled:opacity-75"
               >
-                <Play className="w-5 h-5 fill-current" />
-                <span>GÉNÉRER LE SALON</span>
+                {isCreating ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    <span>CRÉATION DU SALON...</span>
+                  </>
+                ) : (
+                  <>
+                    <Play className="w-5 h-5 fill-current" />
+                    <span>GÉNÉRER LE SALON</span>
+                  </>
+                )}
               </button>
             </div>
           </div>

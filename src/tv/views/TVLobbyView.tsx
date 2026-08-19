@@ -29,11 +29,22 @@ export const TVLobbyView: React.FC = () => {
     );
   }
 
-  const port = window.location.port ? `:${window.location.port}` : '';
-  const detectedLanIp = room.serverLanIp || serverLanIp;
-  const hostname = detectedLanIp && detectedLanIp !== 'localhost' ? detectedLanIp : window.location.hostname;
-  const protocol = window.location.protocol;
-  const mobileJoinUrl = `${protocol}//${hostname}${port}/?room=${room.code}`;
+  const isLocalHost = typeof window !== 'undefined' && (
+    window.location.hostname === 'localhost' ||
+    window.location.hostname === '127.0.0.1'
+  );
+
+  let mobileJoinUrl = '';
+  if (typeof window !== 'undefined') {
+    if (isLocalHost) {
+      const lanIp = (room.serverLanIp && room.serverLanIp !== 'localhost') ? room.serverLanIp : serverLanIp;
+      const port = window.location.port ? `:${window.location.port}` : '';
+      mobileJoinUrl = `${window.location.protocol}//${lanIp !== 'localhost' ? lanIp : window.location.hostname}${port}/?room=${room.code}`;
+    } else {
+      // In web production (Cloudflare): always use the live public origin URL
+      mobileJoinUrl = `${window.location.origin}/?room=${room.code}`;
+    }
+  }
 
   const handleStartGame = async () => {
     audio.playSelect();

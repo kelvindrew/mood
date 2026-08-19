@@ -79,26 +79,72 @@ class SocketService {
   }
 
   // Room Actions
-  public createRoom(gameId: string, settings: unknown): Promise<{ success: boolean; room: RoomState; localIp?: string; error?: string }> {
+  public createRoom(gameId: string, settings: unknown): Promise<{ success: boolean; room?: RoomState; localIp?: string; error?: string }> {
     return new Promise((resolve) => {
       const socket = this.connect();
-      socket.emit('create_room', { gameId, settings }, (res: { success: boolean; room: RoomState; localIp?: string; error?: string }) => {
-        resolve(res);
-      });
+      let resolved = false;
+
+      const timer = setTimeout(() => {
+        if (!resolved) {
+          resolved = true;
+          resolve({ success: false, error: 'Délai d\'attente dépassé (le serveur démarre, veuillez réessayer dans quelques secondes).' });
+        }
+      }, 10000);
+
+      const doEmit = () => {
+        socket.emit('create_room', { gameId, settings }, (res: { success: boolean; room?: RoomState; localIp?: string; error?: string }) => {
+          if (!resolved) {
+            resolved = true;
+            clearTimeout(timer);
+            resolve(res || { success: false, error: 'Réponse vide du serveur' });
+          }
+        });
+      };
+
+      if (socket.connected) {
+        doEmit();
+      } else {
+        socket.once('connect', () => {
+          doEmit();
+        });
+      }
     });
   }
 
   public joinRoom(code: string, playerData: Partial<Player>, isSpectator = false): Promise<{ success: boolean; room?: RoomState; player?: Player; error?: string }> {
     return new Promise((resolve) => {
       const socket = this.connect();
-      socket.emit('join_room', { code, playerData, isSpectator }, (res: { success: boolean; room?: RoomState; player?: Player; error?: string }) => {
-        if (res.success && res.player) {
-          try {
-            localStorage.setItem('playflix_session', JSON.stringify({ code, player: res.player }));
-          } catch {}
+      let resolved = false;
+
+      const timer = setTimeout(() => {
+        if (!resolved) {
+          resolved = true;
+          resolve({ success: false, error: 'Délai d\'attente dépassé pour rejoindre le salon.' });
         }
-        resolve(res);
-      });
+      }, 10000);
+
+      const doEmit = () => {
+        socket.emit('join_room', { code, playerData, isSpectator }, (res: { success: boolean; room?: RoomState; player?: Player; error?: string }) => {
+          if (!resolved) {
+            resolved = true;
+            clearTimeout(timer);
+            if (res?.success && res?.player) {
+              try {
+                localStorage.setItem('playflix_session', JSON.stringify({ code, player: res.player }));
+              } catch {}
+            }
+            resolve(res || { success: false, error: 'Réponse vide du serveur' });
+          }
+        });
+      };
+
+      if (socket.connected) {
+        doEmit();
+      } else {
+        socket.once('connect', () => {
+          doEmit();
+        });
+      }
     });
   }
 
