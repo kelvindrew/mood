@@ -75,11 +75,15 @@ export const FourPicsBoardTV: React.FC = () => {
               <img
                 src={imgUrl}
                 alt={`Indice ${idx + 1}`}
+                onError={(e) => {
+                  // Fallback to high reliability backup image if original fails
+                  (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?auto=format&fit=crop&w=600&q=80';
+                }}
                 className="w-full h-full object-cover object-center group-hover:scale-110 transition-transform duration-700"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent pointer-events-none" />
-              <div className="absolute top-2 left-2 px-2 py-0.5 rounded-lg bg-black/60 border border-white/15 text-[10px] font-black text-white font-mono">
-                #{idx + 1}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
+              <div className="absolute top-2 left-2 px-2.5 py-1 rounded-xl bg-black/70 backdrop-blur-md border border-white/20 text-xs font-black text-brand-gold font-mono shadow-md">
+                INDICE #{idx + 1}
               </div>
             </div>
           ))}
