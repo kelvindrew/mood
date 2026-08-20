@@ -158,7 +158,102 @@ class PlaySoundFX {
     } catch {}
   }
 
-  // 6. Quick Game: Flash Reflex Beep (Countdown / Ready / Go!)
+  // 7. Card Game: Deal & Swish
+  public playCardSwoosh() {
+    try {
+      const ctx = this.getContext();
+      if (!ctx) return;
+
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(440, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(160, ctx.currentTime + 0.08);
+
+      gain.gain.setValueAtTime(0.3, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.08);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start();
+      osc.stop(ctx.currentTime + 0.08);
+    } catch {}
+  }
+
+  // 8. Card Game: Table Slap / Impact
+  public playCardSlap() {
+    try {
+      const ctx = this.getContext();
+      if (!ctx) return;
+
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc.type = 'square';
+      osc.frequency.setValueAtTime(180, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(60, ctx.currentTime + 0.06);
+
+      gain.gain.setValueAtTime(0.4, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.07);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start();
+      osc.stop(ctx.currentTime + 0.07);
+    } catch {}
+  }
+
+  // 9. Card Game: Special Action Blast (+2, +4, Skip, Reverse)
+  public playSpecialCardBlast() {
+    try {
+      const ctx = this.getContext();
+      if (!ctx) return;
+
+      const chords = [392.0, 587.33, 783.99, 987.77]; // G4, D5, G5, B5
+      chords.forEach((freq, idx) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(freq, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(freq * 1.5, ctx.currentTime + 0.25);
+
+        gain.gain.setValueAtTime(0.2, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        osc.start(ctx.currentTime + idx * 0.04);
+        osc.stop(ctx.currentTime + idx * 0.04 + 0.3);
+      });
+    } catch {}
+  }
+
+  // 10. Card Game: UNO Horn Call
+  public playUnoHorn() {
+    try {
+      const ctx = this.getContext();
+      if (!ctx) return;
+
+      const notes = [587.33, 880.0];
+      notes.forEach((freq, i) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(freq, ctx.currentTime);
+
+        osc.start(ctx.currentTime + i * 0.12);
+        osc.stop(ctx.currentTime + i * 0.12 + 0.22);
+      });
+    } catch {}
+  }
+
+  // 6. Quick Game: Countdown Beep
   public playCountdownBeep(isFinal = false) {
     try {
       const ctx = this.getContext();
