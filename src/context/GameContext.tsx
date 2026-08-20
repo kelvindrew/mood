@@ -5,7 +5,7 @@ import { socketService } from '../services/socket';
 import { audio } from '../services/audio';
 
 export type AppMode = 'tv' | 'mobile';
-export type TVView = 'home' | 'game_detail' | 'detail' | 'categories' | 'lobby' | 'gameplay' | 'playing' | 'results' | 'profile' | 'profiles' | 'settings';
+export type TVView = 'home' | 'game_detail' | 'detail' | 'categories' | 'lobby' | 'gameplay' | 'playing' | 'results' | 'profile' | 'profiles' | 'settings' | 'admin';
 export type MobileView = 'join' | 'lobby' | 'controller' | 'spectator';
 
 interface GameContextType {
@@ -53,6 +53,10 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       const params = new URLSearchParams(window.location.search);
       const isMobile = params.has('room') || window.innerWidth <= 768;
       setAppMode(isMobile ? 'mobile' : 'tv');
+
+      if (params.get('admin') === 'true' || params.get('view') === 'admin') {
+        setTvView('admin');
+      }
 
       try {
         const saved = localStorage.getItem('playflix_session');

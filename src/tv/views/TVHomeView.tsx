@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useGame } from '../../context/GameContext';
-import { GAMES_CATALOG } from '../../data/gamesCatalog';
+import { adminCms } from '../../services/adminCmsService';
 import { TVHeroBanner } from '../components/TVHeroBanner';
 import { TVGameRow } from '../components/TVGameRow';
 import { GameCatalogItem } from '../../types/game';
@@ -9,10 +9,15 @@ import { Flame, Sparkles, Trophy, Dice6, BookOpen, Zap } from 'lucide-react';
 
 export const TVHomeView: React.FC = () => {
   const { setSelectedGame, setTvView, createRoom } = useGame();
+  const [games, setGames] = useState<GameCatalogItem[]>(adminCms.getGamesCatalog());
   const [featuredGameIndex, setFeaturedGameIndex] = useState<number>(0);
 
   useEffect(() => {
     tvNav.setInitialFocus('button');
+    const unsub = adminCms.subscribe(() => {
+      setGames(adminCms.getGamesCatalog());
+    });
+    return () => unsub();
   }, []);
 
   const handlePlayGame = async (game: GameCatalogItem) => {
@@ -25,21 +30,21 @@ export const TVHomeView: React.FC = () => {
     setTvView('detail');
   };
 
-  const featuredGame = GAMES_CATALOG[featuredGameIndex] || GAMES_CATALOG[0];
+  const featuredGame = games[featuredGameIndex] || games[0];
 
-  const arcadeAndActionGames = GAMES_CATALOG.filter((g) =>
+  const arcadeAndActionGames = games.filter((g) =>
     ['mini_racing', 'quick_games', 'four_pics'].includes(g.id)
   );
 
-  const classicAndBoardGames = GAMES_CATALOG.filter((g) =>
+  const classicAndBoardGames = games.filter((g) =>
     ['ludo', 'scrabble'].includes(g.id)
   );
 
-  const partyAndShowGames = GAMES_CATALOG.filter((g) =>
+  const partyAndShowGames = games.filter((g) =>
     ['quiz', 'draw_and_guess', 'blind_test', 'werewolf'].includes(g.id)
   );
 
-  const cardGames = GAMES_CATALOG.filter((g) =>
+  const cardGames = games.filter((g) =>
     ['menteur', 'inter', 'card_party', 'president', 'poker', 'blackjack'].includes(g.id)
   );
 
@@ -56,7 +61,7 @@ export const TVHomeView: React.FC = () => {
       <div className="flex flex-col space-y-8 -mt-8 relative z-20">
         <TVGameRow
           title="⚡ Quick Games & Nouveautés 3D"
-          games={arcadeAndActionGames.length > 0 ? arcadeAndActionGames : GAMES_CATALOG}
+          games={arcadeAndActionGames.length > 0 ? arcadeAndActionGames : games}
           icon={<Zap className="w-5 h-5 text-amber-400 fill-current" />}
           onSelectGame={handleMoreInfo}
           onPlayGame={handlePlayGame}
@@ -64,7 +69,7 @@ export const TVHomeView: React.FC = () => {
 
         <TVGameRow
           title="Tendances & Hits du Salon"
-          games={GAMES_CATALOG}
+          games={games}
           icon={<Flame className="w-5 h-5 text-brand-red fill-current" />}
           onSelectGame={handleMoreInfo}
           onPlayGame={handlePlayGame}
@@ -72,7 +77,7 @@ export const TVHomeView: React.FC = () => {
 
         <TVGameRow
           title="Jeux de Société & Classiques"
-          games={classicAndBoardGames.length > 0 ? classicAndBoardGames : GAMES_CATALOG}
+          games={classicAndBoardGames.length > 0 ? classicAndBoardGames : games}
           icon={<Dice6 className="w-5 h-5 text-brand-cyan" />}
           onSelectGame={handleMoreInfo}
           onPlayGame={handlePlayGame}
@@ -80,7 +85,7 @@ export const TVHomeView: React.FC = () => {
 
         <TVGameRow
           title="Ambiance, Soirée & Fous Rires"
-          games={partyAndShowGames.length > 0 ? partyAndShowGames : GAMES_CATALOG}
+          games={partyAndShowGames.length > 0 ? partyAndShowGames : games}
           icon={<Trophy className="w-5 h-5 text-brand-purple" />}
           onSelectGame={handleMoreInfo}
           onPlayGame={handlePlayGame}
@@ -88,7 +93,7 @@ export const TVHomeView: React.FC = () => {
 
         <TVGameRow
           title="Jeux de Cartes & Stratégie"
-          games={cardGames.length > 0 ? cardGames : GAMES_CATALOG}
+          games={cardGames.length > 0 ? cardGames : games}
           icon={<Sparkles className="w-5 h-5 text-brand-gold" />}
           onSelectGame={handleMoreInfo}
           onPlayGame={handlePlayGame}

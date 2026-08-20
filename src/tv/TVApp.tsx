@@ -9,6 +9,7 @@ import { TVResultsView } from './views/TVResultsView';
 import { TVCategoriesView } from './views/TVCategoriesView';
 import { TVProfilesView } from './views/TVProfilesView';
 import { TVSettingsView } from './views/TVSettingsView';
+import { TVAdminView } from './views/TVAdminView';
 import { TVRemoteHint } from './components/TVRemoteHint';
 import { TVToast } from './components/TVToast';
 import { SimulatorDrawer } from './components/SimulatorDrawer';
@@ -37,6 +38,8 @@ export const TVApp: React.FC = () => {
         return <TVProfilesView />;
       case 'settings':
         return <TVSettingsView />;
+      case 'admin':
+        return <TVAdminView />;
       default:
         return <TVHomeView />;
     }

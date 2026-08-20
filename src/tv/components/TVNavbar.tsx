@@ -95,6 +95,25 @@ export const TVNavbar: React.FC = () => {
           </div>
         )}
 
+        {/* Admin Back-Office CMS Button */}
+        <button
+          data-tv-focus
+          tabIndex={0}
+          onClick={() => {
+            audio.playSelect();
+            setTvView('admin');
+          }}
+          className={`flex items-center space-x-1.5 px-3.5 py-2 rounded-2xl text-xs font-black transition-all outline-none border ${
+            tvView === 'admin'
+              ? 'bg-brand-gold text-gray-950 font-black shadow-glow-gold scale-105 border-white'
+              : 'bg-surface-card text-gray-300 border-white/10 hover:border-amber-400 hover:text-white'
+          }`}
+          title="Accéder au panneau d'administration"
+        >
+          <span className="text-amber-400">⚙️</span>
+          <span>ADMIN</span>
+        </button>
+
         {/* Simulator Toggle Button (For PC Testing) */}
         <button
           data-tv-focus

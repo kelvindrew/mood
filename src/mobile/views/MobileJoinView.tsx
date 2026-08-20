@@ -249,8 +249,14 @@ export const MobileJoinView: React.FC<MobileJoinViewProps> = ({ defaultRoomCode 
         </button>
       </form>
 
-      <div className="text-center text-[11px] text-gray-400 pb-1 font-medium">
-        Secouez votre smartphone pendant le jeu pour lancer les dés
+      <div className="flex flex-col items-center space-y-2 pb-2 text-center text-[11px] text-gray-400 font-medium">
+        <span>Secouez votre smartphone pendant le jeu pour lancer les dés</span>
+        <a
+          href="/?admin=true"
+          className="text-[10px] text-gray-500 hover:text-brand-gold font-bold flex items-center space-x-1 underline transition-colors"
+        >
+          <span>⚙️ Panneau d'Administration Back-Office</span>
+        </a>
       </div>
     </div>
   );
