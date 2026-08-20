@@ -21,23 +21,17 @@ const BOT_NAMES = {
 
 export class LudoEngine {
   constructor(players, onStateChange, onGameOver) {
-    this.playersList = players.map(p => (typeof p === 'string' ? { color: p, isBot: false, name: p } : { ...p }));
+    const defaultColors = ['red', 'green', 'yellow', 'blue'];
 
-    // Ensure all 4 colors are filled with humans or bots
-    for (const col of ALL_4_COLORS) {
-      if (!this.playersList.some(p => p.color === col)) {
-        this.playersList.push({
-          id: `bot_ludo_${col}`,
-          name: BOT_NAMES[col] || `Bot ${col.toUpperCase()}`,
-          avatar: '🤖',
-          color: col,
-          isBot: true,
-          botDifficulty: 'medium',
-        });
-      }
-    }
+    this.playersList = players.map((p, idx) => {
+      const col = (p && p.color && defaultColors.includes(p.color)) ? p.color : defaultColors[idx % defaultColors.length];
+      return typeof p === 'string'
+        ? { id: `p_${idx}`, color: col, isBot: false, name: p }
+        : { ...p, color: col };
+    });
 
-    this.playerColors = ALL_4_COLORS;
+    // Use only the actual players in the room!
+    this.playerColors = this.playersList.map(p => p.color);
     this.currentTurnIndex = 0;
     this.diceValue = null;
     this.canRollDice = true;

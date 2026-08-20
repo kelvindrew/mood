@@ -321,7 +321,7 @@ export const LudoBoardTV: React.FC = () => {
         </div>
       </div>
 
-      {/* Center 2.5D Isometric Tiltable Board & Overlay Canvas */}
+      {/* Center Stable High-Definition Board & Particle Layer */}
       <div className="relative w-[700px] h-[700px] max-w-[55vw] max-h-[88vh] aspect-square flex items-center justify-center">
         {/* Particle Canvas Overlay Layer */}
         <canvas
@@ -331,15 +331,8 @@ export const LudoBoardTV: React.FC = () => {
           className="absolute inset-0 w-full h-full pointer-events-none z-30"
         />
 
-        {/* 2.5D Camera Animated Stage */}
-        <div
-          style={{
-            transform: `perspective(1000px) rotateX(${cameraState.tilt}deg) translate3d(${cameraState.x + cameraState.shakeX}px, ${cameraState.y + cameraState.shakeY}px, 0) scale(${cameraState.zoom})`,
-            transformStyle: 'preserve-3d',
-            transition: 'transform 0.25s cubic-bezier(0.2, 0.8, 0.4, 1)',
-          }}
-          className="relative w-[600px] h-[600px] rounded-3xl shadow-[0_30px_70px_rgba(0,0,0,0.8)] border-[10px] border-[#181D2E]"
-        >
+        {/* Completely Stable Solid Board Stage */}
+        <div className="relative w-[600px] h-[600px] rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.8)] border-[10px] border-[#181D2E] bg-white">
           <svg viewBox="0 0 600 600" className="w-full h-full rounded-2xl overflow-visible bg-white">
             <defs>
               {/* Radial 3D Pawn Gradients for each Theme */}
