@@ -16,6 +16,8 @@ import { BlackjackController } from './views/controllers/BlackjackController';
 import { MenteurController } from './views/controllers/MenteurController';
 import { InterController } from './views/controllers/InterController';
 import { FourPicsController } from './views/controllers/FourPicsController';
+import { MiniRacingController } from './views/controllers/MiniRacingController';
+import { QuickGamesController } from './views/controllers/QuickGamesController';
 
 interface MobileAppProps {
   isSimulatorMode?: boolean;
@@ -65,6 +67,10 @@ export const MobileApp: React.FC<MobileAppProps> = ({ isSimulatorMode = false, d
       return <InterController />;
     case 'four_pics':
       return <FourPicsController />;
+    case 'mini_racing':
+      return <MiniRacingController />;
+    case 'quick_games':
+      return <QuickGamesController />;
     default:
       return <LudoController />;
   }

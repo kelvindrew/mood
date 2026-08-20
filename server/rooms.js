@@ -12,6 +12,8 @@ import { BlackjackEngine } from './games/blackjackEngine.js';
 import { MenteurEngine } from './games/menteurEngine.js';
 import { InterEngine } from './games/interEngine.js';
 import { FourPicsEngine } from './games/fourPicsEngine.js';
+import { MiniRacingEngine } from './games/miniRacingEngine.js';
+import { QuickGamesEngine } from './games/quickGamesEngine.js';
 
 const AVAILABLE_COLORS = ['red', 'blue', 'green', 'yellow', 'purple', 'cyan', 'orange', 'pink'];
 
@@ -347,6 +349,14 @@ export class RoomManager {
         room.gameEngine = new FourPicsEngine(room.players, onStateChange, onGameOver);
         break;
       }
+      case 'mini_racing': {
+        room.gameEngine = new MiniRacingEngine(room.players, onStateChange, onGameOver);
+        break;
+      }
+      case 'quick_games': {
+        room.gameEngine = new QuickGamesEngine(room.players, onStateChange, onGameOver);
+        break;
+      }
       default: {
         room.gameEngine = new LudoEngine(room.players, onStateChange, onGameOver);
         break;
@@ -463,6 +473,16 @@ export class RoomManager {
         break;
       case 'four_pics_rematch':
         if (room.gameId === 'four_pics') room.gameEngine.rematch();
+        break;
+      case 'racing_action':
+        if (room.gameId === 'mini_racing' && room.gameEngine) {
+          room.gameEngine.handlePlayerInput(player.id, payload.action, payload);
+        }
+        break;
+      case 'quick_game_action':
+        if (room.gameId === 'quick_games' && room.gameEngine) {
+          room.gameEngine.handlePlayerAction(player.id, payload.action, payload);
+        }
         break;
       default:
         break;

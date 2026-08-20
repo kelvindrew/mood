@@ -13,7 +13,9 @@ export type GameId =
   | 'blackjack'
   | 'menteur'
   | 'inter'
-  | 'four_pics';
+  | 'four_pics'
+  | 'mini_racing'
+  | 'quick_games';
 
 export type PlayerColor = 'red' | 'blue' | 'green' | 'yellow' | 'purple' | 'cyan' | 'orange' | 'pink';
 
@@ -414,6 +416,42 @@ export interface FourPicsGameState {
   lastActionLog: string;
 }
 
+// 14. MINI RACING (ARCADE RACER)
+export interface RacingPlayerStatus {
+  id: string;
+  name: string;
+  color: PlayerColor;
+  progress: number;
+  lap: number;
+  speed: number;
+  nitro: number;
+  isNitroActive: boolean;
+  finishedRank: number | null;
+  x: number;
+}
+
+export interface MiniRacingGameState {
+  status: 'countdown' | 'racing' | 'finished';
+  countdown: number;
+  totalLaps: number;
+  trackLength: number;
+  players: RacingPlayerStatus[];
+  winner: string | null;
+  finishOrder: string[];
+}
+
+// 15. QUICK GAMES (MICRO-PARTY PACK)
+export interface QuickGamesGameState {
+  roundNumber: number;
+  totalRounds: number;
+  currentMiniGame: string;
+  miniGameState: any;
+  roundStatus: 'intro' | 'active' | 'reveal' | 'finished';
+  timeRemaining: number;
+  scores: Record<string, number>;
+  winner: string | null;
+}
+
 // ----------------------------------------------------
 // ROOM STATE
 // ----------------------------------------------------
@@ -439,6 +477,8 @@ export interface RoomState {
     | MenteurGameState
     | InterGameState
     | FourPicsGameState
+    | MiniRacingGameState
+    | QuickGamesGameState
     | null;
   serverLanIp?: string;
   serverPort?: number;

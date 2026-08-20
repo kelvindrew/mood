@@ -13,6 +13,8 @@ import { BlackjackBoardTV } from '../boards/BlackjackBoardTV';
 import { MenteurBoardTV } from '../boards/MenteurBoardTV';
 import { InterBoardTV } from '../boards/InterBoardTV';
 import { FourPicsBoardTV } from '../boards/FourPicsBoardTV';
+import { MiniRacingBoardTV } from '../boards/MiniRacingBoardTV';
+import { QuickGamesBoardTV } from '../boards/QuickGamesBoardTV';
 import { tvNav } from '../../services/tvNavigation';
 
 export const TVGamePlayView: React.FC = () => {
@@ -52,6 +54,10 @@ export const TVGamePlayView: React.FC = () => {
         return <InterBoardTV />;
       case 'four_pics':
         return <FourPicsBoardTV />;
+      case 'mini_racing':
+        return <MiniRacingBoardTV />;
+      case 'quick_games':
+        return <QuickGamesBoardTV />;
       default:
         return <LudoBoardTV />;
     }

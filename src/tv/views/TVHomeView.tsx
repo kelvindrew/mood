@@ -5,7 +5,7 @@ import { TVHeroBanner } from '../components/TVHeroBanner';
 import { TVGameRow } from '../components/TVGameRow';
 import { GameCatalogItem } from '../../types/game';
 import { tvNav } from '../../services/tvNavigation';
-import { Flame, Sparkles, Trophy, Dice6, BookOpen } from 'lucide-react';
+import { Flame, Sparkles, Trophy, Dice6, BookOpen, Zap } from 'lucide-react';
 
 export const TVHomeView: React.FC = () => {
   const { setSelectedGame, setTvView, createRoom } = useGame();
@@ -27,6 +27,10 @@ export const TVHomeView: React.FC = () => {
 
   const featuredGame = GAMES_CATALOG[featuredGameIndex] || GAMES_CATALOG[0];
 
+  const arcadeAndActionGames = GAMES_CATALOG.filter((g) =>
+    ['mini_racing', 'quick_games', 'four_pics'].includes(g.id)
+  );
+
   const classicAndBoardGames = GAMES_CATALOG.filter((g) =>
     ['ludo', 'scrabble'].includes(g.id)
   );
@@ -36,7 +40,7 @@ export const TVHomeView: React.FC = () => {
   );
 
   const cardGames = GAMES_CATALOG.filter((g) =>
-    ['card_party', 'president', 'poker', 'blackjack'].includes(g.id)
+    ['menteur', 'inter', 'card_party', 'president', 'poker', 'blackjack'].includes(g.id)
   );
 
   return (
@@ -50,6 +54,14 @@ export const TVHomeView: React.FC = () => {
 
       {/* Clean Category Rails */}
       <div className="flex flex-col space-y-8 -mt-8 relative z-20">
+        <TVGameRow
+          title="⚡ Quick Games & Nouveautés 3D"
+          games={arcadeAndActionGames.length > 0 ? arcadeAndActionGames : GAMES_CATALOG}
+          icon={<Zap className="w-5 h-5 text-amber-400 fill-current" />}
+          onSelectGame={handleMoreInfo}
+          onPlayGame={handlePlayGame}
+        />
+
         <TVGameRow
           title="Tendances & Hits du Salon"
           games={GAMES_CATALOG}

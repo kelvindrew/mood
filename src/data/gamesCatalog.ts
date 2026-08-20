@@ -2,6 +2,57 @@ import { GameCatalogItem } from '../types/game';
 
 export const GAMES_CATALOG: GameCatalogItem[] = [
   {
+    id: 'mini_racing',
+    title: 'MINI RACING 3D',
+    tagline: 'Course arcade sur TV avec smartphone comme volant gyroscopique',
+    description: 'Transformez vos smartphones en véritables volants de course ! Inclinez votre téléphone pour négocier les virages, activez le Turbo Nitro et disputez des courses effrénées à 60 FPS sur l’écran de votre salon !',
+    category: 'popular',
+    minPlayers: 1,
+    maxPlayers: 8,
+    durationMinutes: '5–10 min',
+    difficulty: 'Facile',
+    badge: 'NOUVEAU',
+    coverImage: 'https://images.unsplash.com/photo-1511919884226-fd3cad34687c?auto=format&fit=crop&w=800&q=80',
+    heroImage: 'https://images.unsplash.com/photo-1511919884226-fd3cad34687c?auto=format&fit=crop&w=1920&q=85',
+    features: [
+      'Contrôle de direction ultra-précis par gyroscope du smartphone',
+      'Pédales tactiles [ACCÉLÉRER], [FREIN/DRIFT] et [BOOST NITRO 🚀]',
+      'Circuits 2.5D dynamiques avec traînées de fumée et effets de vitesse',
+      'Classement en direct et dépassements palpitants'
+    ],
+    rules: [
+      'Inclinez votre smartphone à gauche ou à droite pour orienter votre bolide.',
+      'Maintenez le bouton [ACCÉLÉRER] pour prendre de la vitesse.',
+      'Activez votre [BOOST NITRO] dans les lignes droites pour dépasser vos rivaux.',
+      'Le premier pilote qui boucle les 3 tours de circuit décroche le trophée d’or !'
+    ]
+  },
+  {
+    id: 'quick_games',
+    title: 'QUICK GAMES ARCADE',
+    tagline: 'Micro-jeux ultra-rapides de 30s à 2min pour tester vos réflexes',
+    description: 'Enchaînez des épreuves éclairs à toute vitesse : Réaction Flash, Couleur Piège (Stroop), Calcul Flash et Tap Rush ! Qui aura les meilleurs réflexes du salon ?',
+    category: 'popular',
+    minPlayers: 1,
+    maxPlayers: 12,
+    durationMinutes: '3–6 min',
+    difficulty: 'Facile',
+    badge: 'PARTY',
+    coverImage: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=800&q=80',
+    heroImage: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=1920&q=85',
+    features: [
+      'Épreuves instantanées de 30 secondes à enchaînement immédiat',
+      'Mesure du temps de réaction au millième de seconde',
+      'Pièges visuels et calculs mentaux sous haute pression',
+      'Podiums et scores cumulés'
+    ],
+    rules: [
+      'Suivez les instructions flash affichées sur la Smart TV.',
+      'Réagissez immédiatement sur votre smartphone.',
+      'Chaque milliseconde compte pour accumuler des points !'
+    ]
+  },
+  {
     id: 'four_pics',
     title: '4 IMAGES 1 MOT',
     tagline: 'Le grand défi visuel et lexical sur la Smart TV',
