@@ -16,12 +16,23 @@ import { FourPicsBoardTV } from '../boards/FourPicsBoardTV';
 import { MiniRacingBoardTV } from '../boards/MiniRacingBoardTV';
 import { QuickGamesBoardTV } from '../boards/QuickGamesBoardTV';
 import { tvNav } from '../../services/tvNavigation';
+import { ArrowLeft } from 'lucide-react';
 
 export const TVGamePlayView: React.FC = () => {
-  const { room } = useGame();
+  const { room, returnToLobby } = useGame();
 
   useEffect(() => {
-    tvNav.focusElement(null);
+    // Disable active spatial D-pad navigation during live game to prevent crashes/leaks
+    tvNav.setEnabled(false);
+
+    const unregisterBack = tvNav.registerBackHandler(() => {
+      returnToLobby();
+    });
+
+    return () => {
+      unregisterBack();
+      tvNav.setEnabled(true);
+    };
   }, []);
 
   if (!room) return null;
@@ -64,7 +75,17 @@ export const TVGamePlayView: React.FC = () => {
   };
 
   return (
-    <div className="relative w-screen h-screen pt-16 pb-12 overflow-hidden bg-[#07090F] flex flex-col">
+    <div className="relative w-screen h-screen overflow-hidden bg-[#07090F] flex flex-col justify-center items-center">
+      {/* Discreet Exit to Lobby Button for TV Remote */}
+      <button
+        onClick={returnToLobby}
+        className="absolute top-3 left-4 z-50 flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-black/50 hover:bg-black/80 border border-white/10 text-gray-400 hover:text-white text-xs font-bold transition-all"
+        title="Quitter vers le salon"
+      >
+        <ArrowLeft className="w-3.5 h-3.5" />
+        <span className="text-[11px]">Salon (Quitter)</span>
+      </button>
+
       {renderActiveBoard()}
     </div>
   );

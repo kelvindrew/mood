@@ -75,29 +75,19 @@ export const LudoBoardTV: React.FC = () => {
     return () => unsub();
   }, []);
 
-  // Attach particle canvas engine
+  // Attach particle canvas engine safely
   useEffect(() => {
     if (particleCanvasRef.current) {
-      playParticles.attach(particleCanvasRef.current);
+      try {
+        playParticles.attach(particleCanvasRef.current);
+      } catch {}
     }
     return () => {
-      playParticles.detach();
+      try {
+        playParticles.detach();
+      } catch {}
     };
   }, []);
-
-  // Ambient particle spawner loop based on selected theme
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (particleCanvasRef.current) {
-        playParticles.emitAmbientMote(
-          particleCanvasRef.current.width || 700,
-          particleCanvasRef.current.height || 700,
-          theme.ambientParticle
-        );
-      }
-    }, 180);
-    return () => clearInterval(interval);
-  }, [theme.ambientParticle]);
 
   // Dice roll & action sound/particle animations
   useEffect(() => {
@@ -356,11 +346,6 @@ export const LudoBoardTV: React.FC = () => {
                 <stop offset="45%" stopColor="#64D2FF" />
                 <stop offset="100%" stopColor="#0B4B6E" />
               </radialGradient>
-
-              {/* Pawn Drop Shadow Filter */}
-              <filter id="pawn-3d-shadow" x="-50%" y="-50%" width="200%" height="200%">
-                <feDropShadow dx="0" dy="8" stdDeviation="4.5" floodColor="#000000" floodOpacity="0.8" />
-              </filter>
             </defs>
 
             {/* Board Background */}

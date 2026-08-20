@@ -64,24 +64,35 @@ class TVNavigationService {
   }
 
   public focusElement(el: HTMLElement | null) {
-    if (!el) return;
-    this.currentFocusElement?.blur();
-    this.currentFocusElement = el;
-    el.focus();
-    el.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-    audio.playFocus();
+    if (!el || !document.body.contains(el)) return;
+    try {
+      this.currentFocusElement?.blur();
+      this.currentFocusElement = el;
+      el.focus();
+      el.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+      audio.playFocus();
+    } catch {
+      // Ignore focus errors on Smart TV
+    }
   }
 
   public getFocusedElement(): HTMLElement | null {
-    return this.currentFocusElement || (document.activeElement as HTMLElement);
+    if (this.currentFocusElement && document.body.contains(this.currentFocusElement)) {
+      return this.currentFocusElement;
+    }
+    return (document.activeElement as HTMLElement) || null;
   }
 
   public setInitialFocus(selector: string = '[data-tv-focus]') {
     setTimeout(() => {
-      const candidates = Array.from(document.querySelectorAll<HTMLElement>(selector))
-        .filter(el => !el.hasAttribute('disabled') && el.offsetParent !== null);
-      if (candidates.length > 0) {
-        this.focusElement(candidates[0]);
+      try {
+        const candidates = Array.from(document.querySelectorAll<HTMLElement>(selector))
+          .filter(el => !el.hasAttribute('disabled') && el.offsetParent !== null && document.body.contains(el));
+        if (candidates.length > 0) {
+          this.focusElement(candidates[0]);
+        }
+      } catch {
+        // Fallback safely
       }
     }, 150);
   }
@@ -89,52 +100,61 @@ class TVNavigationService {
   private handleKeyDown(e: KeyboardEvent) {
     if (!this.isEnabled) return;
 
-    const key = e.key || e.keyCode.toString();
-    const action = TV_KEYS[key] || TV_KEYS[e.keyCode?.toString()];
+    try {
+      const key = e.key || e.keyCode?.toString() || '';
+      const action = TV_KEYS[key] || TV_KEYS[e.keyCode?.toString()];
 
-    if (!action) return;
+      if (!action) return;
 
-    // Handle Back / Escape
-    if (action === 'back') {
-      e.preventDefault();
-      audio.playBack();
-      if (this.backListeners.length > 0) {
-        this.backListeners[this.backListeners.length - 1]();
+      // Handle Back / Escape
+      if (action === 'back') {
+        e.preventDefault();
+        audio.playBack();
+        if (this.backListeners.length > 0) {
+          const lastListener = this.backListeners[this.backListeners.length - 1];
+          if (typeof lastListener === 'function') {
+            lastListener();
+          }
+        }
+        return;
       }
-      return;
-    }
 
-    // Handle Enter / OK
-    if (action === 'select') {
-      const activeEl = document.activeElement as HTMLElement;
-      if (activeEl && (activeEl.tagName === 'BUTTON' || activeEl.hasAttribute('data-tv-focus'))) {
-        audio.playSelect();
-        // The browser default will click buttons, or we can dispatch click
+      // Handle Enter / OK
+      if (action === 'select') {
+        const activeEl = (document.activeElement as HTMLElement) || this.currentFocusElement;
+        if (activeEl && (activeEl.tagName === 'BUTTON' || activeEl.hasAttribute('data-tv-focus'))) {
+          audio.playSelect();
+        }
+        return;
       }
-      return;
-    }
 
-    // Handle Directional Spatial Navigation (D-Pad)
-    if (action === 'up' || action === 'down' || action === 'left' || action === 'right') {
-      e.preventDefault();
-      this.moveFocus(action);
-      this.listeners.forEach(fn => fn(action));
+      // Handle Directional Spatial Navigation (D-Pad)
+      if (action === 'up' || action === 'down' || action === 'left' || action === 'right') {
+        e.preventDefault();
+        this.moveFocus(action);
+        this.listeners.forEach(fn => {
+          try { fn(action); } catch {}
+        });
+      }
+    } catch {
+      // Safe fallback
     }
   }
 
   public moveFocus(direction: TVDirection) {
-    const currentEl = (document.activeElement as HTMLElement) || this.currentFocusElement;
-    const allFocusables = Array.from(document.querySelectorAll<HTMLElement>('[data-tv-focus], button, a, input, select, textarea'))
-      .filter(el => !el.hasAttribute('disabled') && el.offsetParent !== null && !el.classList.contains('hidden'));
+    try {
+      const currentEl = this.getFocusedElement();
+      const allFocusables = Array.from(document.querySelectorAll<HTMLElement>('[data-tv-focus], button, a, input, select, textarea'))
+        .filter(el => !el.hasAttribute('disabled') && el.offsetParent !== null && !el.classList.contains('hidden') && document.body.contains(el));
 
-    if (allFocusables.length === 0) return;
+      if (allFocusables.length === 0) return;
 
-    if (!currentEl || !allFocusables.includes(currentEl)) {
-      this.focusElement(allFocusables[0]);
-      return;
-    }
+      if (!currentEl || !allFocusables.includes(currentEl)) {
+        this.focusElement(allFocusables[0]);
+        return;
+      }
 
-    const currentRect = currentEl.getBoundingClientRect();
+      const currentRect = currentEl.getBoundingClientRect();
     const currentCenter = {
       x: currentRect.left + currentRect.width / 2,
       y: currentRect.top + currentRect.height / 2,
@@ -194,6 +214,9 @@ class TVNavigationService {
 
     if (bestCandidate) {
       this.focusElement(bestCandidate);
+    }
+    } catch {
+      // Safe fallback
     }
   }
 }
