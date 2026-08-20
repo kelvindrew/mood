@@ -21,8 +21,8 @@ import {
   Eye,
   LogOut,
   Sparkles,
-  ExternalLink,
 } from 'lucide-react';
+import { ImageUploader } from '../components/ImageUploader';
 import { audio } from '../../services/audio';
 
 export const TVAdminView: React.FC = () => {
@@ -415,23 +415,21 @@ export const TVAdminView: React.FC = () => {
                     />
                   </div>
 
-                  <div>
-                    <label className="text-[10px] font-black uppercase text-gray-400 block mb-1">URL Image Couverture (Vignette)</label>
-                    <input
-                      type="url"
+                  <div className="col-span-3 grid grid-cols-2 gap-4">
+                    <ImageUploader
+                      label="Image de Couverture (Vignette)"
                       value={editingGame.coverImage}
-                      onChange={(e) => setEditingGame({ ...editingGame, coverImage: e.target.value })}
-                      className="w-full px-3 py-2 rounded-xl bg-surface-dark border border-white/15 text-white text-xs font-mono"
+                      onChange={(val) => setEditingGame({ ...editingGame, coverImage: val })}
+                      aspectRatio="video"
+                      placeholder="https://..."
                     />
-                  </div>
 
-                  <div>
-                    <label className="text-[10px] font-black uppercase text-gray-400 block mb-1">URL Image Hero (Bannière)</label>
-                    <input
-                      type="url"
+                    <ImageUploader
+                      label="Image Hero (Bannière Fond)"
                       value={editingGame.heroImage}
-                      onChange={(e) => setEditingGame({ ...editingGame, heroImage: e.target.value })}
-                      className="w-full px-3 py-2 rounded-xl bg-surface-dark border border-white/15 text-white text-xs font-mono"
+                      onChange={(val) => setEditingGame({ ...editingGame, heroImage: val })}
+                      aspectRatio="banner"
+                      placeholder="https://..."
                     />
                   </div>
 
@@ -618,33 +616,24 @@ export const TVAdminView: React.FC = () => {
                     />
                   </div>
 
-                  {/* 4 Image URLs Inputs with Live Previews */}
-                  {[0, 1, 2, 3].map((imgIdx) => (
-                    <div key={`img_input_${imgIdx}`} className="p-3 rounded-2xl bg-surface-dark border border-white/10 space-y-2">
-                      <div className="flex items-center justify-between">
-                        <span className="text-[10px] font-black text-brand-gold">INDICE #{imgIdx + 1}</span>
-                        {editingPuzzle.images[imgIdx] && (
-                          <img
-                            src={editingPuzzle.images[imgIdx]}
-                            alt={`Preview ${imgIdx + 1}`}
-                            className="w-8 h-8 rounded-lg object-cover border border-white/20"
-                          />
-                        )}
-                      </div>
-                      <input
-                        type="url"
+                  {/* 4 Image Inputs with File Upload from PC and Live Previews */}
+                  <div className="col-span-3 grid grid-cols-2 gap-3">
+                    {[0, 1, 2, 3].map((imgIdx) => (
+                      <ImageUploader
+                        key={`puzzle_img_${imgIdx}`}
+                        label={`Indice Image #${imgIdx + 1}`}
                         value={editingPuzzle.images[imgIdx]}
-                        onChange={(e) => {
+                        onChange={(val) => {
                           const updatedImgs = [...editingPuzzle.images] as [string, string, string, string];
-                          updatedImgs[imgIdx] = e.target.value;
+                          updatedImgs[imgIdx] = val;
                           setEditingPuzzle({ ...editingPuzzle, images: updatedImgs });
                         }}
+                        aspectRatio="square"
                         placeholder="https://..."
-                        className="w-full px-2.5 py-1.5 rounded-lg bg-surface-card border border-white/15 text-[11px] font-mono text-gray-200"
                         required
                       />
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
 
                 <div className="flex justify-end space-x-3 pt-2">
