@@ -23,6 +23,7 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { ImageUploader } from '../components/ImageUploader';
+import { AIContentStudioPanel } from '../components/AIContentStudioPanel';
 import { audio } from '../../services/audio';
 
 export const TVAdminView: React.FC = () => {
@@ -31,7 +32,7 @@ export const TVAdminView: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(adminCms.isAuthenticated());
   const [passwordInput, setPasswordInput] = useState<string>('');
   const [authError, setAuthError] = useState<string>('');
-  const [activeTab, setActiveTab] = useState<'catalog' | 'four_pics' | 'branding' | 'security'>('catalog');
+  const [activeTab, setActiveTab] = useState<'ai_studio' | 'catalog' | 'four_pics' | 'branding' | 'security'>('ai_studio');
 
   // Live CMS State
   const [games, setGames] = useState<GameCatalogItem[]>(adminCms.getGamesCatalog());
@@ -273,10 +274,11 @@ export const TVAdminView: React.FC = () => {
         )}
 
         {/* Dashboard Tabs */}
-        <div className="flex items-center space-x-2 border-b border-white/10 pb-3">
+        <div className="flex items-center space-x-2 border-b border-white/10 pb-3 overflow-x-auto scrollbar-none">
           {[
-            { id: 'catalog', label: '🎮 Catalogue des Jeux', icon: Gamepad2 },
+            { id: 'ai_studio', label: '🤖 AI Content Studio (Gemini)', icon: Sparkles },
             { id: 'four_pics', label: '🖼️ Énigmes 4 Images 1 Mot', icon: Image },
+            { id: 'catalog', label: '🎮 Catalogue des Jeux', icon: Gamepad2 },
             { id: 'branding', label: '⚙️ Branding & Paramètres', icon: Settings },
             { id: 'security', label: '🔐 Sécurité & Sauvegardes', icon: Shield },
           ].map((tab) => {
@@ -289,13 +291,13 @@ export const TVAdminView: React.FC = () => {
                   audio.playSelect();
                   setActiveTab(tab.id as any);
                 }}
-                className={`flex items-center space-x-2 px-5 py-2.5 rounded-2xl text-xs font-black uppercase tracking-wider transition-all ${
+                className={`flex items-center space-x-2 px-5 py-2.5 rounded-2xl text-xs font-black uppercase tracking-wider transition-all whitespace-nowrap ${
                   isActive
-                    ? 'bg-gradient-to-r from-brand-red to-amber-500 text-white shadow-glow-red scale-105'
+                    ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-lg scale-105'
                     : 'bg-surface-card border border-white/10 text-gray-400 hover:text-white'
                 }`}
               >
-                <Icon className="w-4 h-4" />
+                <Icon className="w-4 h-4 text-[#FFB800]" />
                 <span>{tab.label}</span>
               </button>
             );
@@ -305,6 +307,10 @@ export const TVAdminView: React.FC = () => {
 
       {/* Main Tab Content */}
       <main className="my-6 flex-1">
+        {/* ========================================================= */}
+        {/* TAB 0: AI CONTENT STUDIO (GEMINI) */}
+        {/* ========================================================= */}
+        {activeTab === 'ai_studio' && <AIContentStudioPanel />}
         {/* ========================================================= */}
         {/* TAB 1: GAMES CATALOG CMS */}
         {/* ========================================================= */}

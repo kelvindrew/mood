@@ -46,6 +46,8 @@ function getLocalNetworkIp() {
 const localIp = getLocalNetworkIp();
 const roomManager = new RoomManager(io, localIp);
 
+import { geminiService } from './services/geminiService.js';
+
 // REST Endpoints
 app.get('/api/info', (req, res) => {
   res.json({
@@ -54,7 +56,77 @@ app.get('/api/info', (req, res) => {
     localIp,
     port: PORT,
     activeRooms: roomManager.rooms.size,
+    aiConfigured: geminiService.isConfigured(),
   });
+});
+
+// AI Studio REST Endpoints (Secured, Backend-Only)
+app.get('/api/ai/status', (req, res) => {
+  res.json({
+    configured: geminiService.isConfigured(),
+    stats: geminiService.stats,
+  });
+});
+
+app.post('/api/ai/config', (req, res) => {
+  const { apiKey } = req.body;
+  if (apiKey) {
+    geminiService.setApiKey(apiKey);
+    res.json({ success: true, configured: geminiService.isConfigured() });
+  } else {
+    res.status(400).json({ success: false, error: 'Clé API manquante' });
+  }
+});
+
+app.post('/api/ai/generate', async (req, res) => {
+  const { gameType, category, difficulty, count, mode, language } = req.body;
+
+  try {
+    let result;
+    switch (gameType) {
+      case 'four_pics':
+        result = await geminiService.generate4PicsBatch({ category, difficulty, count, language });
+        break;
+      case 'quiz':
+        result = await geminiService.generateQuizBatch({ category, difficulty, count });
+        break;
+      case 'menteur':
+        result = await geminiService.generateMenteurBluff({ mode, count });
+        break;
+      case 'draw_and_guess':
+        result = await geminiService.generateDrawPrompts({ category, count });
+        break;
+      case 'qui_suis_je':
+        result = await geminiService.generateQuiSuisJe({ category, count });
+        break;
+      case 'charades':
+        result = await geminiService.generateCharades({ count });
+        break;
+      default:
+        result = await geminiService.generate4PicsBatch({ category, difficulty, count });
+        break;
+    }
+    res.json(result);
+  } catch (err) {
+    console.error('[AI API] Generate error:', err);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+app.post('/api/ai/publish', (req, res) => {
+  const { gameType, items } = req.body;
+  if (!items || !Array.isArray(items)) {
+    return res.status(400).json({ success: false, error: 'Tableau d’items requis' });
+  }
+
+  // Append to in-memory persistent cache
+  if (!geminiService.cache[gameType]) {
+    geminiService.cache[gameType] = [];
+  }
+  geminiService.cache[gameType].push(...items);
+  geminiService.saveCache();
+
+  res.json({ success: true, publishedCount: items.length, totalInGame: geminiService.cache[gameType].length });
 });
 
 // WebSocket Event Handling
