@@ -17,25 +17,25 @@ export const TVGameRow: React.FC<TVGameRowProps> = ({ title, games, icon, onSele
   if (games.length === 0) return null;
 
   return (
-    <div className="flex flex-col space-y-3 py-3 px-12 select-none">
+    <div className="flex flex-col space-y-3 py-3 px-[5vw] select-none">
       {/* Category Row Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-2.5">
           {icon}
-          <h2 className="text-xl font-black font-display text-white tracking-wide flex items-center group cursor-pointer">
+          <h2 className="text-2xl font-black font-display text-white tracking-wide flex items-center group cursor-pointer">
             <span>{title}</span>
             <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-white group-hover:translate-x-1 transition-all ml-1" />
           </h2>
         </div>
-        <span className="text-xs font-semibold text-gray-400">
+        <span className="text-xs font-bold text-[#B8C2D8]">
           {games.length} {games.length > 1 ? 'Jeux' : 'Jeu'}
         </span>
       </div>
 
-      {/* Horizontal Carousel */}
+      {/* Horizontal Carousel with Smooth D-Pad scrolling */}
       <div
         ref={rowRef}
-        className="flex items-center space-x-5 overflow-x-auto py-4 -my-4 scrollbar-none scroll-smooth focus-within:scroll-auto"
+        className="flex items-center space-x-5 overflow-x-auto py-5 -my-5 scrollbar-none scroll-smooth focus-within:scroll-auto"
         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
       >
         {games.map((game) => (
