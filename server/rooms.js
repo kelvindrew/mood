@@ -469,10 +469,20 @@ export class RoomManager {
         if (room.gameId === 'inter') room.gameEngine.drawCard(player.id);
         break;
       case 'four_pics_submit_word':
-        if (room.gameId === 'four_pics') room.gameEngine.submitWord(player.id, payload.word);
+      case 'four_pics_guess':
+        if (room.gameId === 'four_pics' && room.gameEngine) room.gameEngine.submitGuess(player.id, payload.word || payload.guess);
+        break;
+      case 'four_pics_hint_reveal':
+        if (room.gameId === 'four_pics' && room.gameEngine) room.gameEngine.useHintRevealLetter(player.id);
+        break;
+      case 'four_pics_hint_remove':
+        if (room.gameId === 'four_pics' && room.gameEngine) room.gameEngine.useHintRemoveLetters(player.id);
+        break;
+      case 'four_pics_zoom':
+        if (room.gameId === 'four_pics' && room.gameEngine) room.gameEngine.zoomImage(payload.imageIndex);
         break;
       case 'four_pics_rematch':
-        if (room.gameId === 'four_pics') room.gameEngine.rematch();
+        if (room.gameId === 'four_pics' && room.gameEngine) room.gameEngine.startRound();
         break;
       case 'racing_action':
         if (room.gameId === 'mini_racing' && room.gameEngine) {

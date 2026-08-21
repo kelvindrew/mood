@@ -392,7 +392,9 @@ export interface FourPicsRoundResult {
   winnerId: string | null;
   winnerName: string | null;
   word: string;
-  pointsAwarded: number;
+  pointsEarned?: number;
+  combo?: number;
+  message?: string;
   timestamp: number;
 }
 
@@ -403,7 +405,9 @@ export interface FourPicsGameState {
     id: string;
     wordLength: number;
     category: string;
-    difficulty: string;
+    difficulty: number;
+    difficultyLabel: string;
+    hint: string;
     images: [string, string, string, string];
   };
   scrambledLetters: string[]; // Distractor letters + target word letters
@@ -411,7 +415,11 @@ export interface FourPicsGameState {
   roundStatus: 'guessing' | 'revealed' | 'game_over';
   roundResult: FourPicsRoundResult | null;
   scores: Record<string, number>;
+  combos?: Record<string, number>;
   solvedPlayersThisRound: string[];
+  revealedLettersPositions?: Record<string, number[]>;
+  removedLettersIndices?: Record<string, number[]>;
+  zoomedImageIndex?: number | null;
   winner: string | null;
   lastActionLog: string;
 }
