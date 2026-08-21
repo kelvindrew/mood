@@ -71,7 +71,6 @@ export class GeminiService {
       throw new Error('GEMINI_API_KEY non configurée dans l’environnement serveur.');
     }
 
-    const url = `${GEMINI_API_URL}?key=${this.apiKey}`;
     const payload = {
       contents: [{ role: 'user', parts: [{ text: prompt }] }],
       generationConfig: {
@@ -93,14 +92,19 @@ export class GeminiService {
       payload.generationConfig.responseSchema = responseSchema;
     }
 
+    const urlWithKey = `${GEMINI_API_URL}?key=${encodeURIComponent(this.apiKey)}`;
+
     for (let attempt = 0; attempt <= retries; attempt++) {
       try {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 14000); // 14s timeout
+        const timeoutId = setTimeout(() => controller.abort(), 12000); // 12s timeout
 
-        const response = await fetch(url, {
+        const response = await fetch(urlWithKey, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            'x-goog-api-key': this.apiKey,
+          },
           body: JSON.stringify(payload),
           signal: controller.signal,
         });
@@ -122,7 +126,7 @@ export class GeminiService {
       } catch (err) {
         console.warn(`[AI Service] Attempt ${attempt + 1} failed:`, err.message);
         if (attempt === retries) throw err;
-        await new Promise((res) => setTimeout(res, 1500 * (attempt + 1))); // Exponential backoff
+        await new Promise((res) => setTimeout(res, 1200 * (attempt + 1))); // Exponential backoff
       }
     }
   }
