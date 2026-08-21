@@ -62,39 +62,39 @@ export const TVHomeView: React.FC = () => {
         <TVGameRow
           title="⚡ Quick Games & Nouveautés 3D"
           games={arcadeAndActionGames.length > 0 ? arcadeAndActionGames : games}
-          icon={<Zap className="w-5 h-5 text-amber-400 fill-current" />}
+          icon={<Zap className="w-5 h-5 text-[#F59E0B] fill-current" />}
           onSelectGame={handleMoreInfo}
           onPlayGame={handlePlayGame}
         />
 
         <TVGameRow
-          title="Tendances & Hits du Salon"
+          title="🔥 Tendances & Hits du Salon"
           games={games}
-          icon={<Flame className="w-5 h-5 text-brand-red fill-current" />}
+          icon={<Flame className="w-5 h-5 text-[#F59E0B] fill-current" />}
           onSelectGame={handleMoreInfo}
           onPlayGame={handlePlayGame}
         />
 
         <TVGameRow
-          title="Jeux de Société & Classiques"
+          title="🎲 Jeux de Société & Classiques"
           games={classicAndBoardGames.length > 0 ? classicAndBoardGames : games}
-          icon={<Dice6 className="w-5 h-5 text-brand-cyan" />}
+          icon={<Dice6 className="w-5 h-5 text-[#34D399]" />}
           onSelectGame={handleMoreInfo}
           onPlayGame={handlePlayGame}
         />
 
         <TVGameRow
-          title="Ambiance, Soirée & Fous Rires"
+          title="🏆 Ambiance, Soirée & Fous Rires"
           games={partyAndShowGames.length > 0 ? partyAndShowGames : games}
-          icon={<Trophy className="w-5 h-5 text-brand-purple" />}
+          icon={<Trophy className="w-5 h-5 text-[#FBBF24]" />}
           onSelectGame={handleMoreInfo}
           onPlayGame={handlePlayGame}
         />
 
         <TVGameRow
-          title="Jeux de Cartes & Stratégie"
+          title="🃏 Jeux de Cartes & Stratégie"
           games={cardGames.length > 0 ? cardGames : games}
-          icon={<Sparkles className="w-5 h-5 text-brand-gold" />}
+          icon={<Sparkles className="w-5 h-5 text-[#FBBF24] fill-current" />}
           onSelectGame={handleMoreInfo}
           onPlayGame={handlePlayGame}
         />
