@@ -90,24 +90,24 @@ export const MobileJoinView: React.FC<MobileJoinViewProps> = ({ defaultRoomCode 
   };
 
   return (
-    <div className="min-h-screen p-5 flex flex-col justify-between bg-background text-white select-none">
+    <div className="min-h-screen p-5 flex flex-col justify-between forest-sunlight-bg text-white select-none">
       {/* Top Brand Banner */}
       <div className="text-center pt-2 space-y-1.5 animate-scale-in">
-        <div className="w-14 h-14 mx-auto rounded-3xl bg-gradient-to-tr from-brand-red via-brand-accent to-red-500 flex items-center justify-center shadow-glow-red border border-white/20">
+        <div className="w-14 h-14 mx-auto rounded-3xl bg-gradient-to-tr from-[#10B981] via-[#059669] to-[#F59E0B] flex items-center justify-center shadow-[0_0_25px_rgba(16,185,129,0.5)] border border-white/20">
           <Gamepad2 className="w-8 h-8 text-white" />
         </div>
         <div>
-          <h1 className="text-2xl font-black font-display tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-white via-red-100 to-brand-accent">
-            PLAYFLIX
+          <h1 className="text-2xl font-black font-display tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-white via-emerald-100 to-[#FBBF24]">
+            PLAYFLIX AI
           </h1>
-          <p className="text-[11px] text-gray-400 font-bold uppercase tracking-wider">
+          <p className="text-[11px] text-[#9CA3AF] font-bold uppercase tracking-wider">
             Manette Intelligente Sans Fil
           </p>
         </div>
       </div>
 
       {/* Main Join Form */}
-      <form onSubmit={handleJoin} className="my-auto space-y-4">
+      <form onSubmit={handleJoin} className="my-auto space-y-4 glass-forest-card p-6 rounded-3xl">
         {/* Room Code */}
         <div>
           <label className="text-[11px] font-black text-gray-300 uppercase tracking-wider block mb-1">
@@ -121,7 +121,7 @@ export const MobileJoinView: React.FC<MobileJoinViewProps> = ({ defaultRoomCode 
             value={code}
             onChange={(e) => setCode(e.target.value.toUpperCase())}
             placeholder="Ex: 4827"
-            className="w-full text-center py-3.5 px-4 rounded-2xl bg-surface-card border-2 border-brand-red/60 text-3xl font-black font-mono tracking-widest text-white placeholder-gray-600 focus:outline-none focus:border-brand-red focus:shadow-glow-red uppercase"
+            className="w-full text-center py-3.5 px-4 rounded-2xl bg-black/50 border-2 border-[#10B981]/60 text-3xl font-black font-mono tracking-widest text-white placeholder-gray-600 focus:outline-none focus:border-[#FBBF24] focus:shadow-[0_0_20px_rgba(251,191,36,0.5)] uppercase"
             required
           />
         </div>
@@ -242,7 +242,7 @@ export const MobileJoinView: React.FC<MobileJoinViewProps> = ({ defaultRoomCode 
         <button
           type="submit"
           disabled={isLoading}
-          className="w-full py-4 rounded-2xl bg-gradient-to-r from-brand-red to-brand-accent hover:from-red-600 hover:to-brand-red text-white font-black text-base shadow-glow-red active:scale-95 transition-all flex items-center justify-center space-x-2 border border-white/20"
+          className="w-full py-4 rounded-2xl bg-gradient-to-r from-[#10B981] via-[#059669] to-[#F59E0B] text-white font-black text-base shadow-[0_0_25px_rgba(16,185,129,0.5)] active:scale-95 transition-all flex items-center justify-center space-x-2 border border-white/20"
         >
           <span>{isLoading ? 'Connexion en cours...' : 'REJOINDRE LA PARTIE'}</span>
           <ArrowRight className="w-5 h-5" />
@@ -250,10 +250,15 @@ export const MobileJoinView: React.FC<MobileJoinViewProps> = ({ defaultRoomCode 
       </form>
 
       <div className="flex flex-col items-center space-y-2 pb-2 text-center text-[11px] text-gray-400 font-medium">
-        <span>Secouez votre smartphone pendant le jeu pour lancer les dés</span>
+        <a
+          href="/?mode=tv"
+          className="px-4 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-[#FBBF24] font-bold flex items-center space-x-1.5 border border-white/15 transition-colors"
+        >
+          <span>📺 Afficher la Page d'Accueil TV</span>
+        </a>
         <a
           href="/?admin=true"
-          className="text-[10px] text-gray-500 hover:text-brand-gold font-bold flex items-center space-x-1 underline transition-colors"
+          className="text-[10px] text-gray-400 hover:text-[#FBBF24] font-bold flex items-center space-x-1 underline transition-colors"
         >
           <span>⚙️ Panneau d'Administration Back-Office</span>
         </a>

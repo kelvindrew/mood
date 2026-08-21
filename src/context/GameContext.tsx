@@ -51,8 +51,15 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
-      const isMobile = params.has('room') || window.innerWidth <= 768;
-      setAppMode(isMobile ? 'mobile' : 'tv');
+      const modeParam = params.get('mode');
+      if (modeParam === 'tv') {
+        setAppMode('tv');
+      } else if (modeParam === 'mobile') {
+        setAppMode('mobile');
+      } else {
+        const isMobile = params.has('room') || window.innerWidth <= 768;
+        setAppMode(isMobile ? 'mobile' : 'tv');
+      }
 
       if (params.get('admin') === 'true' || params.get('view') === 'admin') {
         setTvView('admin');
