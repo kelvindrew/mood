@@ -49,8 +49,8 @@ export const TVHomeView: React.FC = () => {
   );
 
   return (
-    <div className="flex flex-col min-h-screen pb-28 select-none">
-      {/* Hero Banner with Featured Game */}
+    <div className="flex flex-col min-h-screen pb-28 select-none forest-sunlight-bg">
+      {/* Hero Banner with Featured Game (Forest Sunlight & Glassmorphism Theme) */}
       <TVHeroBanner
         game={featuredGame}
         onPlay={handlePlayGame}
