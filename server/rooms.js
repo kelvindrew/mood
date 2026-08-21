@@ -481,6 +481,16 @@ export class RoomManager {
       case 'four_pics_zoom':
         if (room.gameId === 'four_pics' && room.gameEngine) room.gameEngine.zoomImage(payload.imageIndex);
         break;
+      case 'four_pics_select_stage':
+        if (room.gameId === 'four_pics' && room.gameEngine) {
+          room.gameEngine.loadStage(payload.level || 1, payload.stageNumber || 1);
+        }
+        break;
+      case 'four_pics_next_stage':
+        if (room.gameId === 'four_pics' && room.gameEngine) {
+          room.gameEngine.nextAdventureStage();
+        }
+        break;
       case 'four_pics_rematch':
         if (room.gameId === 'four_pics' && room.gameEngine) room.gameEngine.startRound();
         break;

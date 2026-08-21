@@ -393,7 +393,12 @@ export interface FourPicsRoundResult {
   winnerName: string | null;
   word: string;
   pointsEarned?: number;
+  starsEarned?: number;
+  timeElapsedSeconds?: number;
+  hintsUsed?: number;
   combo?: number;
+  level?: number;
+  stageNumber?: number;
   message?: string;
   timestamp: number;
 }
@@ -403,6 +408,8 @@ export interface FourPicsGameState {
   totalRounds: number;
   currentPuzzle: {
     id: string;
+    level?: number;
+    stageNumber?: number;
     wordLength: number;
     category: string;
     difficulty: number;

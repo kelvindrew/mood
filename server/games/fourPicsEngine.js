@@ -1,5 +1,6 @@
 // 4 Images 1 Mot (Four Pics One Word) Next-Gen Multiplayer Engine for PLAYFLIX
-import { FOUR_PICS_PUZZLES } from './fourPicsData.js';
+// Supports 1 000 Stages Progression mode, Stage Select, and Random Party Mode.
+import { FOUR_PICS_1000_STAGES, getStage } from './fourPicsData.js';
 
 const DISTRACTOR_LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
@@ -19,7 +20,9 @@ function generateScrambledLetters(targetWord) {
 export class FourPicsEngine {
   constructor(players, onStateChange, onGameOver, options = {}) {
     this.players = players.map(p => (typeof p === 'string' ? { id: p, name: p, color: 'red', isBot: false } : { ...p }));
-    this.gameMode = options.gameMode || 'classic'; // 'classic' | 'random' | 'survival' | 'party'
+    this.gameMode = options.gameMode || 'adventure'; // 'adventure' (1 000 stages) | 'random' | 'party'
+    this.currentLevel = options.level || 1;
+    this.currentStageNumber = options.stageNumber || 1;
 
     this.scores = {};
     this.combos = {}; // Consecutive correct guesses
@@ -30,22 +33,23 @@ export class FourPicsEngine {
       this.hintsUsed[p.id] = { reveals: 0, removed: 0 };
     }
 
-    // Pick & Order Puzzles based on gameMode
-    if (this.gameMode === 'classic') {
-      // Sort progressively by difficulty level (1 -> 10)
-      this.puzzles = [...FOUR_PICS_PUZZLES].sort((a, b) => a.difficulty - b.difficulty);
+    if (this.gameMode === 'adventure') {
+      // Load selected stage from the 1 000 stages catalog
+      const current = getStage(this.currentLevel, this.currentStageNumber);
+      this.puzzles = [current];
+      this.totalRounds = 1;
     } else {
-      // Full randomized shuffle without repeating
-      this.puzzles = [...FOUR_PICS_PUZZLES].sort(() => Math.random() - 0.5);
+      // 10 Random distinct stages
+      this.puzzles = [...FOUR_PICS_1000_STAGES].sort(() => Math.random() - 0.5).slice(0, 10);
+      this.totalRounds = 10;
     }
 
     this.currentRoundIndex = 0;
-    this.totalRounds = Math.min(10, this.puzzles.length);
-
     this.currentPuzzle = null;
     this.scrambledLetters = [];
     this.timeLeft = 35;
     this.roundDuration = 35;
+    this.roundStartTime = Date.now();
     this.roundStatus = 'guessing'; // 'guessing' | 'revealed' | 'game_over'
     this.roundResult = null;
     this.solvedPlayersThisRound = [];
@@ -64,6 +68,16 @@ export class FourPicsEngine {
     this.startRound();
   }
 
+  loadStage(level, stageNumber) {
+    this.currentLevel = level;
+    this.currentStageNumber = stageNumber;
+    this.gameMode = 'adventure';
+    this.puzzles = [getStage(level, stageNumber)];
+    this.currentRoundIndex = 0;
+    this.totalRounds = 1;
+    this.startRound();
+  }
+
   startRound() {
     if (this.currentRoundIndex >= this.totalRounds) {
       this.endGame();
@@ -73,17 +87,24 @@ export class FourPicsEngine {
     this.currentPuzzle = this.puzzles[this.currentRoundIndex];
     this.scrambledLetters = generateScrambledLetters(this.currentPuzzle.word);
     this.timeLeft = 35;
+    this.roundStartTime = Date.now();
     this.roundStatus = 'guessing';
     this.roundResult = null;
     this.solvedPlayersThisRound = [];
     this.revealedLettersPositions = {};
     this.removedLettersIndices = {};
     this.zoomedImageIndex = null;
-    this.lastActionLog = `Manche ${this.currentRoundIndex + 1}/${this.totalRounds} (${this.currentPuzzle.difficultyLabel}) : Mot en ${this.currentPuzzle.word.length} lettres !`;
+
+    const stageLabel = this.currentPuzzle.stageNumber
+      ? `Niveau ${this.currentPuzzle.level} • Stage ${this.currentPuzzle.stageNumber}/100`
+      : `Manche ${this.currentRoundIndex + 1}/${this.totalRounds}`;
+
+    this.lastActionLog = `${stageLabel} : Mot en ${this.currentPuzzle.word.length} lettres !`;
 
     for (const p of this.players) {
       this.revealedLettersPositions[p.id] = [];
       this.removedLettersIndices[p.id] = [];
+      this.hintsUsed[p.id] = { reveals: 0, removed: 0 };
     }
 
     this.startTimer();
@@ -111,7 +132,7 @@ export class FourPicsEngine {
     if (bots.length === 0 || this.roundStatus !== 'guessing') return;
 
     // Bots answer with delay depending on difficulty
-    const delay = Math.max(8, 22 - (this.currentPuzzle.difficulty * 1.5)) * 1000 + Math.random() * 5000;
+    const delay = Math.max(10, 24 - (this.currentPuzzle.level * 1.5)) * 1000 + Math.random() * 6000;
 
     this.botTimer = setTimeout(() => {
       if (this.roundStatus !== 'guessing') return;
@@ -130,11 +151,13 @@ export class FourPicsEngine {
       word: this.currentPuzzle.word,
       winnerName: null,
       winnerId: null,
+      starsEarned: 0,
+      timeElapsedSeconds: this.roundDuration,
       message: `Temps écoulé ! Le mot recherché était : ${this.currentPuzzle.word}`,
       timestamp: Date.now(),
     };
 
-    // Reset combos for players who didn't solve
+    // Reset combos
     for (const p of this.players) {
       if (!this.solvedPlayersThisRound.includes(p.id)) {
         this.combos[p.id] = 0;
@@ -162,50 +185,48 @@ export class FourPicsEngine {
 
       this.solvedPlayersThisRound.push(playerId);
 
+      const timeElapsed = Math.max(1, Math.round((Date.now() - this.roundStartTime) / 1000));
+      const hintsCount = (this.hintsUsed[playerId]?.reveals || 0) + (this.hintsUsed[playerId]?.removed || 0);
+
+      // Star calculation (0 to 3 stars)
+      let stars = 1;
+      if (hintsCount === 0 && timeElapsed <= 15) stars = 3;
+      else if (hintsCount <= 1 && timeElapsed <= 30) stars = 2;
+
       // Multiplayer Speed & Rank Scoring
       const rank = this.solvedPlayersThisRound.length;
       let basePoints = rank === 1 ? 100 : rank === 2 ? 75 : 50;
-
-      // Speed bonus (up to +30 pts if fast)
       const speedBonus = Math.round((this.timeLeft / this.roundDuration) * 30);
 
-      // Combo bonus
       this.combos[playerId] = (this.combos[playerId] || 0) + 1;
       const comboMultiplier = this.combos[playerId] >= 3 ? 1.5 : 1;
 
       const totalEarned = Math.round((basePoints + speedBonus) * comboMultiplier);
       this.scores[playerId] = (this.scores[playerId] || 0) + totalEarned;
 
-      this.lastActionLog = `🎉 ${player.name} a trouvé "${targetWord}" (+${totalEarned} pts, Combo x${this.combos[playerId]}) !`;
+      this.lastActionLog = `🎉 ${player.name} a trouvé "${targetWord}" (+${totalEarned} pts, ⭐⭐⭐ x${stars}) !`;
 
-      // If first human solver or all solved, trigger round victory
-      const humanCount = this.players.filter(p => !p.isBot).length;
-      const humanSolvedCount = this.solvedPlayersThisRound.filter(id => {
-        const p = this.players.find(x => x.id === id);
-        return p && !p.isBot;
-      }).length;
+      this.roundStatus = 'revealed';
+      this.roundResult = {
+        word: targetWord,
+        winnerName: player.name,
+        winnerId: player.id,
+        pointsEarned: totalEarned,
+        starsEarned: stars,
+        timeElapsedSeconds: timeElapsed,
+        hintsUsed: hintsCount,
+        combo: this.combos[playerId],
+        level: this.currentPuzzle.level,
+        stageNumber: this.currentPuzzle.stageNumber,
+        message: `Bravo à ${player.name} qui trouve le mot "${targetWord}" !`,
+        timestamp: Date.now(),
+      };
 
-      if (rank === 1 || (humanCount > 0 && humanSolvedCount >= humanCount)) {
-        this.roundStatus = 'revealed';
-        this.roundResult = {
-          word: targetWord,
-          winnerName: player.name,
-          winnerId: player.id,
-          pointsEarned: totalEarned,
-          combo: this.combos[playerId],
-          message: `Bravo à ${player.name} qui trouve le mot "${targetWord}" !`,
-          timestamp: Date.now(),
-        };
+      this.notify();
+      this.scheduleNextRound();
 
-        this.notify();
-        this.scheduleNextRound();
-      } else {
-        this.notify();
-      }
-
-      return { success: true, correct: true, points: totalEarned };
+      return { success: true, correct: true, points: totalEarned, stars };
     } else {
-      // Wrong guess: reset combo
       this.combos[playerId] = 0;
       this.notify();
       return { success: false, correct: false, error: 'Mot incorrect' };
@@ -220,7 +241,6 @@ export class FourPicsEngine {
 
     if (alreadyRevealed.length >= targetWord.length - 1) return false;
 
-    // Pick unrevealed position
     const availableIndices = [];
     for (let i = 0; i < targetWord.length; i++) {
       if (!alreadyRevealed.includes(i)) availableIndices.push(i);
@@ -262,13 +282,17 @@ export class FourPicsEngine {
     return { success: true, removedIndices: toRemove };
   }
 
-  // Zoom on an image
   zoomImage(imageIndex) {
     this.zoomedImageIndex = imageIndex;
     this.notify();
   }
 
   scheduleNextRound() {
+    if (this.gameMode === 'adventure') {
+      // In adventure mode, wait for player to click Next Stage or auto-advance after 5s
+      return;
+    }
+
     if (this.transitionTimer) clearTimeout(this.transitionTimer);
     this.transitionTimer = setTimeout(() => {
       this.currentRoundIndex++;
@@ -276,12 +300,27 @@ export class FourPicsEngine {
     }, 4500);
   }
 
+  nextAdventureStage() {
+    let nextStg = this.currentStageNumber + 1;
+    let nextLvl = this.currentLevel;
+
+    if (nextStg > 100) {
+      if (nextLvl < 10) {
+        nextLvl++;
+        nextStg = 1;
+      } else {
+        nextStg = 100;
+      }
+    }
+
+    this.loadStage(nextLvl, nextStg);
+  }
+
   endGame() {
     this.roundStatus = 'game_over';
     if (this.timer) clearInterval(this.timer);
     if (this.botTimer) clearTimeout(this.botTimer);
 
-    // Find highest scorer
     let topScore = -1;
     let winnerId = null;
 
@@ -306,14 +345,19 @@ export class FourPicsEngine {
       currentPuzzle: this.currentPuzzle
         ? {
             id: this.currentPuzzle.id,
+            level: this.currentPuzzle.level,
+            stageNumber: this.currentPuzzle.stageNumber,
             category: this.currentPuzzle.category,
-            difficulty: this.currentPuzzle.difficulty,
+            difficulty: this.currentPuzzle.level,
             difficultyLabel: this.currentPuzzle.difficultyLabel,
             hint: this.currentPuzzle.hint,
             wordLength: this.currentPuzzle.word.length,
             images: this.currentPuzzle.images,
           }
         : null,
+      gameMode: this.gameMode,
+      currentLevel: this.currentLevel,
+      currentStageNumber: this.currentStageNumber,
       scrambledLetters: this.scrambledLetters,
       roundNumber: this.currentRoundIndex + 1,
       totalRounds: this.totalRounds,
