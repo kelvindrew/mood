@@ -60,8 +60,8 @@ export const TVApp: React.FC = () => {
       {/* Animated Floating Reactions and Toast Notifications */}
       <TVToast />
 
-      {/* Bottom Remote Control Hint (hidden in full gameplay) */}
-      {!isFullScreenGame && <TVRemoteHint />}
+      {/* Bottom Remote Control Hint (hidden on home and gameplay) */}
+      {!isFullScreenGame && tvView !== 'home' && <TVRemoteHint />}
 
       {/* Simulator Drawer for Dual-screen PC testing */}
       <SimulatorDrawer />
