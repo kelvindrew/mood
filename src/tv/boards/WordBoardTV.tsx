@@ -1,7 +1,25 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useGame } from '../../context/GameContext';
 import { ScrabbleGameState } from '../../types/game';
-import { Clock, Trophy, Award, Sparkles, BookOpen, CheckCircle2, AlertTriangle, Layers, Flame, Crown } from 'lucide-react';
+import {
+  Clock,
+  Trophy,
+  Award,
+  Sparkles,
+  BookOpen,
+  CheckCircle2,
+  AlertTriangle,
+  Layers,
+  Flame,
+  Crown,
+  RotateCcw,
+  Home,
+  Target,
+  Zap,
+  Timer,
+  Hash,
+  TrendingUp,
+} from 'lucide-react';
 
 function getMultiplier(r: number, c: number): string {
   if (r === 7 && c === 7) return 'CENTER';
@@ -28,20 +46,47 @@ const MULTIPLIERS_MAP: Record<string, { label: string; bg: string; text: string;
 };
 
 export const WordBoardTV: React.FC = () => {
-  const { room, setTvView } = useGame();
+  const { room, setTvView, sendGameAction } = useGame();
   const gameState = room?.gameState as ScrabbleGameState | undefined;
+
+  const [endStage, setEndStage] = useState<number>(1);
+
+  const isGameOver = !!(gameState?.isGameOver || gameState?.winner);
+
+  // Progressive animation sequence on Game Over
+  useEffect(() => {
+    if (isGameOver) {
+      setEndStage(1);
+      const t1 = setTimeout(() => setEndStage(2), 2200);
+      const t2 = setTimeout(() => setEndStage(3), 4200);
+      return () => {
+        clearTimeout(t1);
+        clearTimeout(t2);
+      };
+    } else {
+      setEndStage(1);
+    }
+  }, [isGameOver]);
 
   if (!gameState) {
     return <div className="p-10 text-white font-bold text-center">Chargement du plateau Scrabble...</div>;
   }
 
   const currentPlayer = room?.players.find((p) => p.id === gameState.currentPlayerId);
-  const isGameOver = !!gameState.winner;
+  const winnerPlayer = gameState.finalPodium?.[0];
+
+  const handleReplay = () => {
+    sendGameAction('word_restart');
+  };
 
   return (
-    <div className="w-full min-h-screen flex items-center justify-between px-10 py-6 select-none bg-[#070D0B] text-white">
+    <div className="w-full min-h-screen flex items-center justify-between px-10 py-6 select-none bg-[#070D0B] text-white relative overflow-hidden">
+      {/* Ambient background glow */}
+      <div className="absolute top-1/4 left-1/3 w-96 h-96 bg-emerald-900/20 rounded-full blur-[140px] pointer-events-none" />
+      <div className="absolute bottom-1/4 right-1/3 w-96 h-96 bg-amber-900/20 rounded-full blur-[140px] pointer-events-none" />
+
       {/* 1. Left Column: Turn info, Dictionary feedback, and Leaderboard */}
-      <div className="w-80 flex flex-col justify-between h-[88vh] space-y-4">
+      <div className="w-80 flex flex-col justify-between h-[88vh] space-y-4 z-10">
         {/* Active Player Card */}
         <div className="p-5 rounded-3xl bg-white/[0.06] border border-white/15 shadow-2xl backdrop-blur-xl">
           <div className="flex items-center justify-between">
@@ -175,7 +220,7 @@ export const WordBoardTV: React.FC = () => {
       </div>
 
       {/* 2. Center: 15x15 Official French Scrabble Board */}
-      <div className="flex-1 flex flex-col items-center justify-center px-4">
+      <div className="flex-1 flex flex-col items-center justify-center px-4 z-10">
         {/* Scrabble Board Container */}
         <div className="relative p-3.5 rounded-3xl bg-[#140F0A] border-4 border-[#3A2D23] shadow-[0_25px_60px_rgba(0,0,0,0.9)] max-w-[760px] w-full aspect-square">
           <div
@@ -186,10 +231,8 @@ export const WordBoardTV: React.FC = () => {
               row.map((tile, c) => {
                 const mult = getMultiplier(r, c);
                 const multConfig = MULTIPLIERS_MAP[mult];
-                const isCenter = r === 7 && c === 7;
 
                 if (tile) {
-                  // Placed Tile (Ivory/Wood Style with Letter Subscript)
                   return (
                     <div
                       key={`tile_${r}_${c}`}
@@ -203,7 +246,6 @@ export const WordBoardTV: React.FC = () => {
                   );
                 }
 
-                // Empty Multiplier Cell
                 if (multConfig) {
                   return (
                     <div
@@ -216,7 +258,6 @@ export const WordBoardTV: React.FC = () => {
                   );
                 }
 
-                // Standard Empty Grid Square
                 return (
                   <div
                     key={`cell_${r}_${c}`}
@@ -249,53 +290,177 @@ export const WordBoardTV: React.FC = () => {
         </div>
       </div>
 
-      {/* 3. Game Over Podium Modal */}
+      {/* 3. Game Over Stage 1 & 2 & 3: Full End-Game Experience Modal */}
       {isGameOver && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-md p-6">
-          <div className="w-full max-w-2xl p-8 rounded-3xl bg-[#140F0A] border-2 border-[#FBBF24] shadow-[0_0_80px_rgba(251,191,36,0.6)] flex flex-col items-center space-y-6 text-center animate-scale-in">
-            <div className="flex items-center space-x-2 text-[#FBBF24]">
-              <Crown className="w-8 h-8 fill-current" />
-              <span className="text-xl font-black uppercase tracking-widest">FIN DE PARTIE SCRABBLE</span>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/92 backdrop-blur-xl p-8 animate-fade-in">
+          {/* Stage 1: "🎉 PARTIE TERMINÉE !" Splash */}
+          {endStage === 1 && (
+            <div className="text-center space-y-6 animate-scale-in">
+              <div className="inline-flex p-6 rounded-full bg-amber-500/20 border-2 border-amber-400 text-amber-300 shadow-[0_0_60px_rgba(251,191,36,0.5)]">
+                <Sparkles className="w-20 h-20 animate-spin-slow" />
+              </div>
+              <h1 className="text-6xl font-black font-display text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-amber-100 to-amber-400 tracking-wider">
+                🎉 PARTIE TERMINÉE !
+              </h1>
+              <p className="text-xl text-gray-300 font-medium">
+                {gameState.finisherPlayerName
+                  ? `Sac vide — ${gameState.finisherPlayerName} a posé sa dernière lettre !`
+                  : 'Calcul final des scores et décompte des lettres...'}
+              </p>
             </div>
+          )}
 
-            <h1 className="text-4xl font-black font-display text-white">
-              Victoire de {gameState.finalPodium?.[0]?.name || 'Champion'} !
-            </h1>
+          {/* Stage 2: Finisher Announcement */}
+          {endStage === 2 && (
+            <div className="text-center space-y-6 animate-scale-in max-w-xl">
+              <div className="inline-flex p-6 rounded-full bg-emerald-500/20 border-2 border-emerald-400 text-emerald-300 shadow-[0_0_60px_rgba(16,185,129,0.5)]">
+                <Crown className="w-20 h-20 fill-current animate-bounce" />
+              </div>
+              {gameState.finisherPlayerName ? (
+                <>
+                  <h1 className="text-4xl font-black font-display text-white">
+                    🏆 {gameState.finisherPlayerName} a terminé toutes ses lettres !
+                  </h1>
+                  <p className="text-emerald-300 font-mono text-xl font-bold">
+                    + Bonus de clôture attribué avec les lettres des adversaires !
+                  </p>
+                </>
+              ) : (
+                <>
+                  <h1 className="text-4xl font-black font-display text-white">
+                    🏆 Fin de partie par absence de coups !
+                  </h1>
+                  <p className="text-amber-300 font-mono text-xl font-bold">
+                    Déduction des valeurs des lettres restantes dans les chevalets.
+                  </p>
+                </>
+              )}
+            </div>
+          )}
 
-            {/* Podium List */}
-            <div className="w-full space-y-3">
-              {gameState.finalPodium?.map((item, idx) => (
-                <div
-                  key={item.id}
-                  className={`flex items-center justify-between p-4 rounded-2xl border ${
-                    idx === 0
-                      ? 'bg-gradient-to-r from-amber-500/20 to-amber-600/10 border-[#FBBF24] shadow-lg'
-                      : 'bg-white/5 border-white/10'
-                  }`}
-                >
-                  <div className="flex items-center space-x-4">
-                    <span className="text-2xl font-black font-mono text-[#FBBF24]">
-                      {idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : `#${idx + 1}`}
+          {/* Stage 3: Full Official Results Podium & Comprehensive Statistics */}
+          {endStage === 3 && (
+            <div className="w-full max-w-5xl p-8 rounded-3xl bg-[#140F0A]/95 border-2 border-[#FBBF24]/80 shadow-[0_0_90px_rgba(251,191,36,0.5)] flex flex-col space-y-6 animate-scale-in">
+              {/* Header */}
+              <div className="flex items-center justify-between border-b border-white/10 pb-4">
+                <div className="flex items-center space-x-3 text-[#FBBF24]">
+                  <Trophy className="w-9 h-9 fill-current" />
+                  <div>
+                    <h2 className="text-2xl font-black font-display uppercase tracking-widest text-white">
+                      RÉSULTATS FINAUX & CLASSEMENT
+                    </h2>
+                    <span className="text-xs text-gray-400">
+                      Temps de jeu total : <strong className="text-white font-mono">{gameState.totalDuration || '00:00'}</strong> • Règle Scrabble ODS
                     </span>
-                    <div className="text-left">
-                      <span className="font-bold text-lg text-white">{item.name}</span>
-                      <div className="text-xs text-gray-400">
-                        {item.stats.scrabbleCount > 0 ? `✨ ${item.stats.scrabbleCount} Scrabble(s)` : ''} • Meilleur mot : {item.stats.bestWord || '—'}
+                  </div>
+                </div>
+
+                <div className="px-5 py-2 rounded-2xl bg-amber-400/20 border border-amber-400 text-amber-300 text-sm font-black flex items-center space-x-2">
+                  <Crown className="w-4 h-4 fill-current" />
+                  <span>VICTOIRE DE {winnerPlayer?.name || 'CHAMPION'}</span>
+                </div>
+              </div>
+
+              {/* Podium & Rankings List */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                {gameState.finalPodium?.map((item) => {
+                  const is1st = item.rank === 1;
+                  return (
+                    <div
+                      key={item.id}
+                      className={`p-4 rounded-2xl border transition-all ${
+                        is1st
+                          ? 'bg-gradient-to-r from-amber-500/25 to-amber-600/10 border-[#FBBF24] shadow-[0_0_30px_rgba(251,191,36,0.3)]'
+                          : 'bg-white/5 border-white/10'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-3.5">
+                          <span className="text-3xl font-black font-mono">
+                            {item.rank === 1 ? '🥇' : item.rank === 2 ? '🥈' : item.rank === 3 ? '🥉' : '4️⃣'}
+                          </span>
+                          <div>
+                            <div className="flex items-center space-x-2">
+                              <h3 className="font-black text-lg text-white">{item.name}</h3>
+                              {is1st && (
+                                <span className="px-2 py-0.5 rounded text-[10px] font-black bg-amber-400 text-gray-950">
+                                  GAGNANT
+                                </span>
+                              )}
+                            </div>
+                            <div className="text-xs text-gray-400 flex items-center space-x-2 mt-0.5">
+                              <span>Jeu : {item.rawScore} pts</span>
+                              {item.malusDeducted && item.malusDeducted > 0 ? (
+                                <span className="text-rose-400 font-bold">-{item.malusDeducted} malus</span>
+                              ) : null}
+                              {item.bonusReceived && item.bonusReceived > 0 ? (
+                                <span className="text-emerald-400 font-bold">+{item.bonusReceived} bonus</span>
+                              ) : null}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="text-right">
+                          <div className="font-mono font-black text-3xl text-[#FBBF24]">{item.score}</div>
+                          <span className="text-[10px] text-gray-400 uppercase font-bold">POINTS FINAUX</span>
+                        </div>
+                      </div>
+
+                      {/* Stats Pills */}
+                      <div className="grid grid-cols-4 gap-1.5 mt-3 pt-2.5 border-t border-white/10 text-center">
+                        <div className="p-1.5 rounded-lg bg-black/40">
+                          <div className="text-[9px] text-gray-400 uppercase">Meilleur Mot</div>
+                          <div className="font-mono font-bold text-xs text-emerald-300 truncate">
+                            {item.stats.bestWord || '—'}
+                          </div>
+                        </div>
+
+                        <div className="p-1.5 rounded-lg bg-black/40">
+                          <div className="text-[9px] text-gray-400 uppercase">Coup Max</div>
+                          <div className="font-mono font-bold text-xs text-[#38BDF8]">
+                            +{item.stats.maxTurnScore} pts
+                          </div>
+                        </div>
+
+                        <div className="p-1.5 rounded-lg bg-black/40">
+                          <div className="text-[9px] text-gray-400 uppercase">Mots Joués</div>
+                          <div className="font-mono font-bold text-xs text-white">
+                            {item.stats.wordsCount}
+                          </div>
+                        </div>
+
+                        <div className="p-1.5 rounded-lg bg-black/40">
+                          <div className="text-[9px] text-gray-400 uppercase">Scrabbles</div>
+                          <div className="font-mono font-bold text-xs text-amber-300">
+                            {item.stats.scrabbleCount > 0 ? `✨ ${item.stats.scrabbleCount}` : '0'}
+                          </div>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  <span className="font-mono font-black text-2xl text-[#FBBF24]">{item.score} PTS</span>
-                </div>
-              ))}
-            </div>
+                  );
+                })}
+              </div>
 
-            <button
-              onClick={() => setTvView('home')}
-              className="px-8 py-3.5 rounded-2xl bg-gradient-to-r from-[#10B981] to-[#059669] text-white font-black text-base uppercase tracking-wider shadow-lg hover:scale-105 transition-all"
-            >
-              Retour à l'Accueil
-            </button>
-          </div>
+              {/* Action Buttons */}
+              <div className="flex items-center justify-center space-x-4 pt-2 border-t border-white/10">
+                <button
+                  onClick={handleReplay}
+                  className="px-8 py-3.5 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-black text-base uppercase tracking-wider shadow-lg hover:scale-105 active:scale-95 transition-all flex items-center space-x-2"
+                >
+                  <RotateCcw className="w-5 h-5" />
+                  <span>REJOUER LA PARTIE</span>
+                </button>
+
+                <button
+                  onClick={() => setTvView('home')}
+                  className="px-8 py-3.5 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/20 text-gray-200 font-black text-base uppercase tracking-wider shadow-lg hover:scale-105 active:scale-95 transition-all flex items-center space-x-2"
+                >
+                  <Home className="w-5 h-5" />
+                  <span>RETOUR AUX JEUX</span>
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>

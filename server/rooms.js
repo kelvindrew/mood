@@ -397,6 +397,10 @@ export class RoomManager {
       case 'word_pass_turn':
         if (room.gameId === 'scrabble') room.gameEngine.passTurn(player.id);
         break;
+      case 'word_restart':
+      case 'word_replay':
+        if (room.gameId === 'scrabble') this.startGame(code);
+        break;
       case 'card_play_card':
         if (room.gameId === 'card_party') room.gameEngine.playCard(player.id, payload.cardId, payload.chosenColor);
         break;

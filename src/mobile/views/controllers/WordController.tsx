@@ -16,8 +16,9 @@ import {
   BookOpen,
   RefreshCw,
   X,
-  AlertTriangle,
-  Info,
+  Trophy,
+  Crown,
+  Home,
 } from 'lucide-react';
 
 function getMultiplier(r: number, c: number): string {
@@ -64,10 +65,14 @@ export const WordController: React.FC = () => {
 
   if (!gameState || !localPlayer) return null;
 
-  const isMyTurn = gameState.currentPlayerId === localPlayer.id;
+  const isGameOver = !!(gameState.isGameOver || gameState.winner);
+  const isMyTurn = !isGameOver && gameState.currentPlayerId === localPlayer.id;
   const myRack: TileItem[] = (gameState.playerRacks && gameState.playerRacks[localPlayer.id]) || [];
 
+  const myPodiumInfo = gameState.finalPodium?.find((p) => p.id === localPlayer.id);
+
   const handleAddTile = (tile: TileItem) => {
+    if (isGameOver) return;
     triggerHaptic(hapticPatterns.tap);
     audio.playFocus();
     setLocalError('');
@@ -75,18 +80,21 @@ export const WordController: React.FC = () => {
   };
 
   const handleRemoveTile = (tileId: string) => {
+    if (isGameOver) return;
     triggerHaptic(hapticPatterns.tap);
     setLocalError('');
     setComposedWord((prev) => prev.filter((t) => t.id !== tileId));
   };
 
   const handleClear = () => {
+    if (isGameOver) return;
     triggerHaptic(hapticPatterns.tap);
     setLocalError('');
     setComposedWord([]);
   };
 
   const handleSelectCell = (r: number, c: number) => {
+    if (isGameOver) return;
     triggerHaptic(hapticPatterns.tap);
     audio.playFocus();
     setLocalError('');
@@ -95,6 +103,7 @@ export const WordController: React.FC = () => {
   };
 
   const handleToggleDirection = () => {
+    if (isGameOver) return;
     triggerHaptic(hapticPatterns.tap);
     audio.playFocus();
     setLocalError('');
@@ -108,7 +117,6 @@ export const WordController: React.FC = () => {
     let curC = startCol;
 
     for (let i = 0; i < composedWord.length; i++) {
-      // Find next available empty cell along direction
       while (curR < 15 && curC < 15 && gameState.board[curR]?.[curC] !== null) {
         if (direction === 'horizontal') curC++;
         else curR++;
@@ -172,7 +180,7 @@ export const WordController: React.FC = () => {
   }, [placedTilePlacements, direction, gameState.board]);
 
   const handleValidateWord = () => {
-    if (!isMyTurn || placedTilePlacements.length === 0) return;
+    if (!isMyTurn || isGameOver || placedTilePlacements.length === 0) return;
     triggerHaptic(hapticPatterns.success);
     audio.playSelect();
     setLocalError('');
@@ -189,7 +197,7 @@ export const WordController: React.FC = () => {
   };
 
   const handlePass = () => {
-    if (!isMyTurn) return;
+    if (!isMyTurn || isGameOver) return;
     triggerHaptic(hapticPatterns.tap);
     sendGameAction('word_pass_turn');
     setComposedWord([]);
@@ -203,7 +211,7 @@ export const WordController: React.FC = () => {
   };
 
   const handleConfirmSwap = () => {
-    if (selectedSwapIds.length === 0) return;
+    if (selectedSwapIds.length === 0 || isGameOver) return;
     triggerHaptic(hapticPatterns.success);
     sendGameAction('word_swap_tiles', { tileIds: selectedSwapIds });
     setSelectedSwapIds([]);
@@ -211,11 +219,94 @@ export const WordController: React.FC = () => {
     setComposedWord([]);
   };
 
+  const handleReplay = () => {
+    triggerHaptic(hapticPatterns.success);
+    sendGameAction('word_restart');
+  };
+
   const potentialScore = composedWord.reduce((sum, t) => sum + t.points, 0);
 
   const getPreviewTileAt = (r: number, c: number) => {
     return placedTilePlacements.find((p) => p.row === r && p.col === c)?.tile || null;
   };
+
+  // Game Over Mobile Screen
+  if (isGameOver) {
+    const isWinner = myPodiumInfo?.rank === 1;
+    return (
+      <div className="min-h-screen flex flex-col justify-between bg-[#0B100E] text-white select-none">
+        <MobileHeader />
+
+        <main className="p-4 flex-1 flex flex-col justify-center items-center text-center space-y-5 max-w-sm mx-auto w-full animate-scale-in">
+          <div className="p-5 rounded-full bg-amber-500/20 border-2 border-amber-400 text-amber-300 shadow-[0_0_50px_rgba(251,191,36,0.4)]">
+            {isWinner ? <Crown className="w-16 h-16 fill-current animate-bounce" /> : <Trophy className="w-16 h-16" />}
+          </div>
+
+          <div className="space-y-1">
+            <span className="text-xs font-black uppercase tracking-widest text-[#FBBF24]">PARTIE TERMINÉE</span>
+            <h1 className="text-3xl font-black font-display text-white">
+              {isWinner ? '🎉 VICTOIRE !' : `${myPodiumInfo?.rank === 2 ? '🥈 2ème' : myPodiumInfo?.rank === 3 ? '🥉 3ème' : `${myPodiumInfo?.rank}ème`} Place`}
+            </h1>
+            <p className="text-xs text-gray-400">
+              {gameState.finisherPlayerName
+                ? `Terminé par ${gameState.finisherPlayerName}`
+                : 'Fin par absence de coups'}
+            </p>
+          </div>
+
+          {/* Player Final Score Card */}
+          <div className="w-full p-4 rounded-3xl bg-white/[0.07] border border-white/15 space-y-3 shadow-xl">
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-gray-300 font-bold uppercase">Score Final</span>
+              <span className="font-mono font-black text-3xl text-[#FBBF24]">{myPodiumInfo?.score || 0} pts</span>
+            </div>
+
+            <div className="flex items-center justify-between text-xs text-gray-400 border-t border-white/10 pt-2">
+              <span>Points de jeu : {myPodiumInfo?.rawScore || 0}</span>
+              {myPodiumInfo?.malusDeducted ? (
+                <span className="text-rose-400 font-bold">-{myPodiumInfo.malusDeducted} malus</span>
+              ) : null}
+              {myPodiumInfo?.bonusReceived ? (
+                <span className="text-emerald-400 font-bold">+{myPodiumInfo.bonusReceived} bonus</span>
+              ) : null}
+            </div>
+
+            <div className="grid grid-cols-3 gap-2 pt-2 border-t border-white/10 text-center">
+              <div className="p-2 rounded-xl bg-black/40">
+                <div className="text-[9px] text-gray-400 uppercase">Meilleur Mot</div>
+                <div className="font-mono font-bold text-xs text-emerald-300 truncate">
+                  {myPodiumInfo?.stats?.bestWord || '—'}
+                </div>
+              </div>
+              <div className="p-2 rounded-xl bg-black/40">
+                <div className="text-[9px] text-gray-400 uppercase">Coup Max</div>
+                <div className="font-mono font-bold text-xs text-[#38BDF8]">
+                  +{myPodiumInfo?.stats?.maxTurnScore || 0} pts
+                </div>
+              </div>
+              <div className="p-2 rounded-xl bg-black/40">
+                <div className="text-[9px] text-gray-400 uppercase">Scrabbles</div>
+                <div className="font-mono font-bold text-xs text-amber-300">
+                  {myPodiumInfo?.stats?.scrabbleCount || 0}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Action buttons */}
+          <div className="w-full space-y-2.5 pt-2">
+            <button
+              onClick={handleReplay}
+              className="w-full py-4 rounded-2xl bg-gradient-to-r from-[#10B981] to-[#059669] text-white font-black text-sm uppercase tracking-wider shadow-lg flex items-center justify-center space-x-2 active:scale-95 transition-all"
+            >
+              <RotateCcw className="w-4 h-4" />
+              <span>REJOUER UNE PARTIE</span>
+            </button>
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col justify-between bg-[#0B100E] text-white select-none">

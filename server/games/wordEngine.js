@@ -83,10 +83,17 @@ export class WordEngine {
     this.playerScores = {};
     this.playerStats = {};
     this.winner = null;
+    this.winnerName = null;
+    this.finisherPlayerName = null;
+    this.endGameReason = null;
     this.finalPodium = null;
+    this.isGameOver = false;
     this.turnTimeLeft = 45;
     this.lastWordPlayed = null;
     this.consecutivePasses = 0;
+    this.startTime = Date.now();
+    this.totalDuration = '00:00';
+    this.totalDurationSeconds = 0;
     this.lastActionLog = 'La partie de Scrabble commence ! Placez le premier mot sur la case centrale ★.';
     this.onStateChange = onStateChange;
     this.onGameOver = onGameOver;
@@ -104,6 +111,13 @@ export class WordEngine {
         bestWord: null,
         bestWordPoints: 0,
         maxTurnScore: 0,
+        rawScore: 0,
+        finalScore: 0,
+        malusDeducted: 0,
+        bonusReceived: 0,
+        remainingTilesCount: 0,
+        remainingTilesValue: 0,
+        averageTurnScore: 0,
       };
     }
 
@@ -146,9 +160,14 @@ export class WordEngine {
   }
 
   startTurnTimer() {
+    if (this.isGameOver) return;
     if (this.timer) clearInterval(this.timer);
     this.turnTimeLeft = 45;
     this.timer = setInterval(() => {
+      if (this.isGameOver) {
+        clearInterval(this.timer);
+        return;
+      }
       this.turnTimeLeft--;
       if (this.turnTimeLeft <= 0) {
         this.passTurn(this.getCurrentPlayer()?.id);
@@ -158,12 +177,12 @@ export class WordEngine {
   }
 
   checkBotTurn() {
-    if (this.winner) return;
+    if (this.isGameOver || this.winner) return;
     if (this.botTimer) clearTimeout(this.botTimer);
 
     if (this.isCurrentPlayerBot()) {
       this.botTimer = setTimeout(() => {
-        if (this.isCurrentPlayerBot() && !this.winner) {
+        if (this.isCurrentPlayerBot() && !this.isGameOver && !this.winner) {
           this.playBotMove();
         }
       }, 1500);
@@ -171,6 +190,7 @@ export class WordEngine {
   }
 
   playBotMove() {
+    if (this.isGameOver) return;
     const bot = this.getCurrentPlayer();
     if (!bot) return;
 
@@ -196,7 +216,6 @@ export class WordEngine {
                 const char = this.board[r][c].letter;
                 const charIdx = wordToPlay.indexOf(char);
                 if (charIdx !== -1) {
-                  // Try horizontal placement
                   const testCol = c - charIdx;
                   if (testCol >= 0 && testCol + wordToPlay.length <= 15) {
                     row = r;
@@ -262,7 +281,7 @@ export class WordEngine {
    * @param {Array<{ row: number, col: number, letter: string, tileId: string }>} tilesPlaced 
    */
   playWord(playerId, tilesPlaced) {
-    if (this.winner) return { success: false, error: 'Partie terminée' };
+    if (this.isGameOver || this.winner) return { success: false, error: 'Partie terminée' };
     const currentPlayer = this.getCurrentPlayer();
     if (!currentPlayer || currentPlayer.id !== playerId) {
       return { success: false, error: "Ce n'est pas votre tour" };
@@ -416,7 +435,6 @@ export class WordEngine {
     // 6B. Extract Cross Words (perpendicular to each newly placed tile)
     for (const t of tilesPlaced) {
       if (isHorizontal) {
-        // Vertical cross word at column t.col
         let minR = t.row;
         let maxR = t.row;
         while (minR > 0 && simBoard[minR - 1][t.col] !== null) minR--;
@@ -433,7 +451,6 @@ export class WordEngine {
           allFormedWords.push({ word: crossStr.toUpperCase(), tiles: crossTiles, isMain: false });
         }
       } else {
-        // Horizontal cross word at row t.row
         let minC = t.col;
         let maxC = t.col;
         while (minC > 0 && simBoard[t.row][minC - 1] !== null) minC--;
@@ -520,7 +537,7 @@ export class WordEngine {
       if (idx !== -1) rack.splice(idx, 1);
     }
 
-    // 12. Refill player's rack from letter bag
+    // 12. Refill player's rack from letter bag (if bag still has letters)
     const needed = 7 - rack.length;
     const newTiles = this.drawLetters(needed);
     this.playerRacks[playerId] = [...rack, ...newTiles];
@@ -551,9 +568,10 @@ export class WordEngine {
 
     this.lastActionLog = `🎉 ${currentPlayer.name} a posé "${mainWordStr}" (+${totalScore} pts)${isScrabble ? ' ✨ SCRABBLE +50 !' : ''}`;
 
-    // 14. Check Game Over conditions
+    // 14. Check IMMEDIATE Game Over condition:
+    // "Si le sac de lettres est vide ET qu'un joueur pose sa dernière lettre sur le plateau, la partie doit se terminer immédiatement."
     if (this.letterBag.length === 0 && this.playerRacks[playerId].length === 0) {
-      this.endGame(playerId);
+      this.endGame(playerId, 'rack_empty');
       return { success: true, isValid: true, word: mainWordStr, score: totalScore, isGameOver: true };
     }
 
@@ -562,7 +580,7 @@ export class WordEngine {
   }
 
   swapLetters(playerId, tileIdsToSwap) {
-    if (this.winner) return { success: false, error: 'Partie terminée' };
+    if (this.isGameOver || this.winner) return { success: false, error: 'Partie terminée' };
     const currentPlayer = this.getCurrentPlayer();
     if (!currentPlayer || currentPlayer.id !== playerId) {
       return { success: false, error: "Ce n'est pas votre tour" };
@@ -601,7 +619,7 @@ export class WordEngine {
   }
 
   passTurn(playerId) {
-    if (this.winner) return;
+    if (this.isGameOver || this.winner) return;
     const currentPlayer = this.getCurrentPlayer();
     if (!currentPlayer || (playerId && currentPlayer.id !== playerId)) return;
 
@@ -610,7 +628,7 @@ export class WordEngine {
 
     // If all players pass twice in a row, end game
     if (this.consecutivePasses >= this.players.length * 2) {
-      this.endGame(null);
+      this.endGame(null, 'consecutive_passes');
       return;
     }
 
@@ -618,6 +636,7 @@ export class WordEngine {
   }
 
   nextTurn() {
+    if (this.isGameOver) return;
     if (this.botTimer) clearTimeout(this.botTimer);
     this.currentTurnIndex = (this.currentTurnIndex + 1) % this.players.length;
     this.startTurnTimer();
@@ -625,43 +644,83 @@ export class WordEngine {
     this.notify();
   }
 
-  endGame(finisherPlayerId = null) {
+  endGame(finisherPlayerId = null, reason = 'rack_empty') {
+    if (this.isGameOver) return;
+    this.isGameOver = true;
+
     if (this.timer) clearInterval(this.timer);
     if (this.botTimer) clearTimeout(this.botTimer);
 
-    // Final score deductions and bonus
-    let finisherBonus = 0;
+    // Calculate game total duration
+    const totalSecs = Math.max(1, Math.floor((Date.now() - this.startTime) / 1000));
+    this.totalDurationSeconds = totalSecs;
+    const mins = Math.floor(totalSecs / 60);
+    const secs = totalSecs % 60;
+    this.totalDuration = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+
+    // 1. Calculate remaining tile values for every player
+    let totalOpponentsRemainingPoints = 0;
 
     for (const player of this.players) {
       const rack = this.playerRacks[player.id] || [];
       const remainingPoints = rack.reduce((sum, t) => sum + (LETTER_POINTS[t.letter] || 1), 0);
+      const rawScore = this.playerScores[player.id] || 0;
+      const stats = this.playerStats[player.id];
+
+      stats.rawScore = rawScore;
+      stats.remainingTilesCount = rack.length;
+      stats.remainingTilesValue = remainingPoints;
 
       if (player.id === finisherPlayerId) {
-        // Player who emptied rack doesn't lose points
+        stats.malusDeducted = 0;
+        // Finisher does not lose points
       } else {
-        // Subtract remaining tile points from player's score
-        this.playerScores[player.id] = Math.max(0, (this.playerScores[player.id] || 0) - remainingPoints);
-        finisherBonus += remainingPoints;
+        stats.malusDeducted = remainingPoints;
+        this.playerScores[player.id] = Math.max(0, rawScore - remainingPoints);
+        totalOpponentsRemainingPoints += remainingPoints;
       }
     }
 
-    // Finisher receives sum of all opponents' remaining tile points
-    if (finisherPlayerId && finisherBonus > 0) {
-      this.playerScores[finisherPlayerId] = (this.playerScores[finisherPlayerId] || 0) + finisherBonus;
+    // 2. Apply finisher bonus (sum of all opponents' remaining tiles)
+    if (finisherPlayerId && totalOpponentsRemainingPoints > 0) {
+      const finisherStats = this.playerStats[finisherPlayerId];
+      finisherStats.bonusReceived = totalOpponentsRemainingPoints;
+      this.playerScores[finisherPlayerId] = (this.playerScores[finisherPlayerId] || 0) + totalOpponentsRemainingPoints;
     }
 
-    // Build Final Rankings
+    // 3. Finalize stats and build official ranking podium
+    for (const player of this.players) {
+      const stats = this.playerStats[player.id];
+      stats.finalScore = this.playerScores[player.id] || 0;
+      stats.averageTurnScore = stats.wordsCount > 0 ? Math.round(stats.rawScore / stats.wordsCount) : 0;
+    }
+
     const rankedPlayers = [...this.players].map(p => ({
       id: p.id,
       name: p.name,
       score: this.playerScores[p.id] || 0,
+      rawScore: this.playerStats[p.id]?.rawScore || 0,
+      malusDeducted: this.playerStats[p.id]?.malusDeducted || 0,
+      bonusReceived: this.playerStats[p.id]?.bonusReceived || 0,
       stats: this.playerStats[p.id] || {},
     })).sort((a, b) => b.score - a.score);
 
     this.winner = rankedPlayers[0]?.id || null;
-    this.finalPodium = rankedPlayers;
+    this.winnerName = rankedPlayers[0]?.name || 'Champion';
+    this.finisherPlayerName = finisherPlayerId ? this.players.find(p => p.id === finisherPlayerId)?.name : null;
+    this.endGameReason = reason;
 
-    this.lastActionLog = `🏆 Fin de partie ! Victoire de ${rankedPlayers[0]?.name} avec ${rankedPlayers[0]?.score} points !`;
+    this.finalPodium = rankedPlayers.map((p, idx) => ({
+      ...p,
+      rank: idx + 1,
+    }));
+
+    if (finisherPlayerId) {
+      this.lastActionLog = `🎉 PARTIE TERMINÉE ! 🏆 ${this.finisherPlayerName} a terminé toutes ses lettres (+${totalOpponentsRemainingPoints} pts bonus) !`;
+    } else {
+      this.lastActionLog = `🎉 PARTIE TERMINÉE ! Passes successives. Victoire de ${this.winnerName} (${this.finalPodium[0]?.score} pts) !`;
+    }
+
     this.notify();
 
     if (this.onGameOver) {
@@ -681,7 +740,13 @@ export class WordEngine {
       lastWordPlayed: this.lastWordPlayed,
       lastActionLog: this.lastActionLog,
       winner: this.winner,
+      winnerName: this.winnerName,
+      finisherPlayerName: this.finisherPlayerName,
+      endGameReason: this.endGameReason,
       finalPodium: this.finalPodium,
+      isGameOver: this.isGameOver,
+      totalDuration: this.totalDuration,
+      totalDurationSeconds: this.totalDurationSeconds,
     };
   }
 

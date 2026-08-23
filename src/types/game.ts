@@ -193,12 +193,23 @@ export interface ScrabblePlayerStats {
   bestWord: string | null;
   bestWordPoints: number;
   maxTurnScore: number;
+  rawScore?: number;
+  finalScore?: number;
+  malusDeducted?: number;
+  bonusReceived?: number;
+  remainingTilesCount?: number;
+  remainingTilesValue?: number;
+  averageTurnScore?: number;
 }
 
 export interface ScrabblePodiumItem {
   id: string;
   name: string;
+  rank: number;
   score: number;
+  rawScore?: number;
+  malusDeducted?: number;
+  bonusReceived?: number;
   stats: ScrabblePlayerStats;
 }
 
@@ -221,7 +232,13 @@ export interface ScrabbleGameState {
   };
   lastActionLog?: string;
   winner: string | null;
+  winnerName?: string | null;
+  finisherPlayerName?: string | null;
+  endGameReason?: 'rack_empty' | 'consecutive_passes' | string | null;
   finalPodium?: ScrabblePodiumItem[] | null;
+  isGameOver?: boolean;
+  totalDuration?: string;
+  totalDurationSeconds?: number;
 }
 
 // 5. CARD PARTY (UNO-STYLE)
