@@ -1,7 +1,5 @@
-// Scrabble & Word Master Official Game Engine for PLAYFLIX
-// Full 15x15 standard French Scrabble rules (ODS), multi-word cross validation, 102-letter bag, single-use multipliers & end game scoring.
-
-import { isValidScrabbleWord, findPossibleWordsFromRack } from './scrabbleDictionary.js';
+import { findBestBotMove } from './botScrabbleAi.js';
+import { isValidScrabbleWord } from './scrabbleDictionary.js';
 
 export const LETTER_POINTS = {
   A: 1, E: 1, I: 1, L: 1, N: 1, O: 1, R: 1, S: 1, T: 1, U: 1,
@@ -195,83 +193,29 @@ export class WordEngine {
     if (!bot) return;
 
     const rack = this.playerRacks[bot.id] || [];
-    const rackLetters = rack.map(r => r.letter);
-    const possibleWords = findPossibleWordsFromRack(rackLetters, 3, 6);
+    if (rack.length === 0) return;
 
-    const empty = this.isBoardEmpty();
+    // Use smart Scrabble search
+    const candidates = findBestBotMove(this.board, rack, bot.botDifficulty || 'medium');
 
-    if (possibleWords.length > 0) {
-      for (const wordToPlay of possibleWords) {
-        let row, col;
-        if (empty) {
-          // First move must cover (7, 7)
-          row = 7;
-          col = 7 - Math.floor(wordToPlay.length / 2);
-        } else {
-          // Find an existing letter to hook on
-          let hooked = false;
-          for (let r = 0; r < 15 && !hooked; r++) {
-            for (let c = 0; c < 15 && !hooked; c++) {
-              if (this.board[r][c]) {
-                const char = this.board[r][c].letter;
-                const charIdx = wordToPlay.indexOf(char);
-                if (charIdx !== -1) {
-                  const testCol = c - charIdx;
-                  if (testCol >= 0 && testCol + wordToPlay.length <= 15) {
-                    row = r;
-                    col = testCol;
-                    hooked = true;
-                  }
-                }
-              }
-            }
-          }
-          if (!hooked) {
-            row = 7;
-            col = 7;
-          }
-        }
-
-        const tilesPlaced = [];
-        let canPlace = true;
-
-        for (let i = 0; i < wordToPlay.length; i++) {
-          const letter = wordToPlay[i];
-          const curR = row;
-          const curC = col + i;
-
-          if (curC < 0 || curC >= 15) { canPlace = false; break; }
-
-          const existing = this.board[curR][curC];
-          if (existing) {
-            if (existing.letter !== letter) {
-              canPlace = false;
-              break;
-            }
-          } else {
-            const rackTile = rack.find(r => r.letter === letter && !tilesPlaced.some(t => t.tileId === r.id));
-            if (rackTile) {
-              tilesPlaced.push({
-                row: curR,
-                col: curC,
-                letter,
-                tileId: rackTile.id,
-              });
-            } else {
-              canPlace = false;
-              break;
-            }
-          }
-        }
-
-        if (canPlace && tilesPlaced.length > 0) {
-          const res = this.playWord(bot.id, tilesPlaced);
-          if (res.success) return;
+    if (candidates && candidates.length > 0) {
+      for (const cand of candidates) {
+        const res = this.playWord(bot.id, cand.tilesPlaced);
+        if (res.success && res.isValid) {
+          return; // Successfully placed word!
         }
       }
     }
 
-    // Fallback: pass turn if no words
+    // If no word can be formed on board, attempt letter exchange if bag has >= 7 letters
+    if (this.letterBag.length >= 7 && rack.length > 0) {
+      const countToSwap = Math.min(3, rack.length);
+      const tilesToSwap = rack.slice(0, countToSwap).map(t => t.id);
+      const resSwap = this.swapLetters(bot.id, tilesToSwap);
+      if (resSwap.success) return;
+    }
+
+    // Fallback: pass turn if no moves possible and cannot exchange
     this.passTurn(bot.id);
   }
 

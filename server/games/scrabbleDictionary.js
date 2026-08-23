@@ -32,7 +32,7 @@ HAAR HABS HACK HADA HADE HADJ HADS HAEC HAEM HAFF HAFI HAFS HAFT HAGA HAGE HAGI 
 `;
 
 // Build an ultra-fast in-memory Set of uppercase French Scrabble words
-const SCRABBLE_SET = new Set();
+export const SCRABBLE_SET = new Set();
 
 // Populate standard words
 SCRABBLE_WORDS_RAW.split(/\s+/).forEach((w) => {
