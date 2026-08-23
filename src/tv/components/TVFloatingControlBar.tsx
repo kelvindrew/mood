@@ -1,10 +1,15 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { GameCatalogItem } from '../../types/game';
 import {
   Play,
   SkipBack,
   SkipForward,
+  Volume2,
+  VolumeX,
+  MessageSquareQuote,
+  ListFilter,
 } from 'lucide-react';
+import { audio } from '../../services/audio';
 import { useGame } from '../../context/GameContext';
 
 interface TVFloatingControlBarProps {
@@ -23,74 +28,127 @@ export const TVFloatingControlBar: React.FC<TVFloatingControlBarProps> = ({
   onMoreInfo,
 }) => {
   const { setTvView } = useGame();
+  const [isMuted, setIsMuted] = useState(false);
+
+  const toggleMute = () => {
+    setIsMuted(!isMuted);
+    audio.playSelect();
+  };
 
   return (
-    <div className="fixed bottom-5 left-0 right-0 z-40 flex items-center justify-center pointer-events-auto select-none">
-      {/* Pure Floating Controls (Instant Response, Zero Audio Overhead) */}
-      <div className="flex items-center justify-center space-x-6 sm:space-x-8 max-w-4xl px-4 py-1.5 rounded-2xl bg-black/60 border border-white/10 shadow-xl">
-        {/* 1. Left Navigation Controls */}
-        <div className="flex items-center space-x-3">
+    <div className="fixed bottom-6 left-0 right-0 z-40 flex items-center justify-center pointer-events-auto select-none animate-scale-in">
+      {/* Pure Naked Floating Controls (Strictly Centered, Without Any Surrounding Capsule or Circle Wrappers) */}
+      <div className="flex items-center justify-center space-x-10 max-w-4xl px-4">
+        {/* 1. Left Navigation Controls (Pure Icons) */}
+        <div className="flex items-center space-x-4">
           <button
             data-tv-focus
             tabIndex={0}
             onClick={onPrev}
-            className="text-white/70 hover:text-white p-1.5 transition-transform active:scale-90 outline-none focus:scale-115 focus:text-[#FBBF24]"
+            className="text-white/70 hover:text-white p-2 transition-transform active:scale-90 outline-none focus:scale-125 focus:text-[#FBBF24]"
             title="Précédent"
           >
-            <SkipBack className="w-5 h-5 fill-current" />
+            <SkipBack className="w-6 h-6 fill-current drop-shadow-md" />
           </button>
 
           <button
             data-tv-focus
             tabIndex={0}
-            onClick={() => onPlay(activeGame)}
-            className="w-11 h-11 rounded-full bg-emerald-400 text-black flex items-center justify-center shadow-[0_0_20px_rgba(16,185,129,0.7)] transition-all hover:scale-105 active:scale-95 outline-none focus:scale-115"
+            onClick={() => {
+              audio.playSelect();
+              onPlay(activeGame);
+            }}
+            className="w-13 h-13 rounded-full bg-white text-black flex items-center justify-center shadow-[0_0_35px_rgba(255,255,255,0.9)] transition-all hover:scale-110 active:scale-95 outline-none focus:scale-125 focus:ring-4 focus:ring-[#10B981]"
             title="Lancer le Salon"
           >
-            <Play className="w-5 h-5 fill-current ml-0.5" />
+            <Play className="w-6 h-6 fill-current ml-0.5" />
           </button>
 
           <button
             data-tv-focus
             tabIndex={0}
             onClick={onNext}
-            className="text-white/70 hover:text-white p-1.5 transition-transform active:scale-90 outline-none focus:scale-115 focus:text-[#FBBF24]"
+            className="text-white/70 hover:text-white p-2 transition-transform active:scale-90 outline-none focus:scale-125 focus:text-[#FBBF24]"
             title="Suivant"
           >
-            <SkipForward className="w-5 h-5 fill-current" />
+            <SkipForward className="w-6 h-6 fill-current drop-shadow-md" />
           </button>
         </div>
 
         {/* 2. Center Active Game Track Info */}
         <div
           onClick={() => onMoreInfo(activeGame)}
-          className="flex items-center space-x-3 cursor-pointer transition-transform hover:scale-102 max-w-xs sm:max-w-md truncate"
+          className="flex items-center space-x-4 cursor-pointer transition-transform hover:scale-105 max-w-md truncate"
         >
-          <div className="w-9 h-9 rounded-lg overflow-hidden shadow relative flex-shrink-0">
-            <img
-              src={activeGame.coverImage || activeGame.heroImage}
-              alt={activeGame.title}
-              className="w-full h-full object-cover"
-            />
+          {/* Square Thumbnail with subtle progress line underneath */}
+          <div className="flex flex-col items-center space-y-1 flex-shrink-0">
+            <div className="w-12 h-12 rounded-xl overflow-hidden shadow-lg relative">
+              <img
+                src={activeGame.coverImage || activeGame.heroImage}
+                alt={activeGame.title}
+                className="w-full h-full object-cover"
+              />
+            </div>
+            <div className="w-10 h-1 rounded-full bg-white/25 overflow-hidden">
+              <div className="w-2/3 h-full bg-white rounded-full" />
+            </div>
           </div>
 
           <div className="flex flex-col truncate">
-            <span className="font-display font-black text-sm text-white truncate">
+            <span className="font-display font-black text-base text-white truncate drop-shadow-lg">
               {activeGame.title}
             </span>
-            <span className="text-[11px] text-gray-400 truncate">
-              Appuyez sur Entrée / Play pour lancer
+            <span className="text-xs text-gray-400 font-medium truncate">
+              {activeGame.tagline || `${activeGame.category} • ${activeGame.minPlayers}-${activeGame.maxPlayers} Joueurs`}
             </span>
+          </div>
+
+          {/* Sound Wave Indicator Dots */}
+          <div className="hidden sm:flex items-center space-x-1 pl-2">
+            <span className="w-1 h-3.5 rounded-full bg-white animate-pulse" />
+            <span className="w-1 h-5 rounded-full bg-white/80 animate-pulse delay-75" />
+            <span className="w-1 h-2.5 rounded-full bg-white/60 animate-pulse delay-150" />
           </div>
         </div>
 
-        {/* 3. Direct Category catalogue button */}
-        <button
-          onClick={() => setTvView('categories')}
-          className="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs flex items-center space-x-1.5 transition-all outline-none focus:scale-110 focus:bg-white/25"
-        >
-          <span>TOUS LES JEUX</span>
-        </button>
+        {/* 3. Right Icons (Pure Naked Icons) */}
+        <div className="flex items-center space-x-3 text-white/70">
+          <button
+            data-tv-focus
+            tabIndex={0}
+            onClick={() => {
+              audio.playSelect();
+              onMoreInfo(activeGame);
+            }}
+            className="p-2 hover:text-white transition-transform outline-none focus:scale-125 focus:text-[#FBBF24]"
+            title="Détails & Règles"
+          >
+            <MessageSquareQuote className="w-5 h-5 drop-shadow-md" />
+          </button>
+
+          <button
+            data-tv-focus
+            tabIndex={0}
+            onClick={() => {
+              audio.playSelect();
+              setTvView('categories');
+            }}
+            className="p-2 hover:text-white transition-transform outline-none focus:scale-125 focus:text-[#FBBF24]"
+            title="Tous les Jeux"
+          >
+            <ListFilter className="w-5 h-5 drop-shadow-md" />
+          </button>
+
+          <button
+            data-tv-focus
+            tabIndex={0}
+            onClick={toggleMute}
+            className="p-2 hover:text-white transition-transform outline-none focus:scale-125 focus:text-[#FBBF24]"
+            title={isMuted ? 'Activer le son' : 'Couper le son'}
+          >
+            {isMuted ? <VolumeX className="w-5 h-5 text-rose-400" /> : <Volume2 className="w-5 h-5 drop-shadow-md" />}
+          </button>
+        </div>
       </div>
     </div>
   );

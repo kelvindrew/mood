@@ -48,28 +48,9 @@ class AudioManager {
     }
   }
 
-  // UI Focus Sound (Soft high-tech click)
+  // UI Focus Sound (Disabled for zero latency and silent navigation)
   public playFocus() {
-    if (this.isMuted) return;
-    this.init();
-    if (!this.ctx) return;
-
-    try {
-      const osc = this.ctx.createOscillator();
-      const gain = this.ctx.createGain();
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(420, this.ctx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(840, this.ctx.currentTime + 0.04);
-
-      gain.gain.setValueAtTime(0.04, this.ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.04);
-
-      osc.connect(gain);
-      gain.connect(this.ctx.destination);
-
-      osc.start();
-      osc.stop(this.ctx.currentTime + 0.05);
-    } catch {}
+    // Silent navigation on cursor movement
   }
 
   // UI Select / Confirm

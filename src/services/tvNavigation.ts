@@ -70,7 +70,6 @@ class TVNavigationService {
       this.currentFocusElement = el;
       el.focus();
       el.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-      audio.playFocus();
     } catch {
       // Ignore focus errors on Smart TV
     }
