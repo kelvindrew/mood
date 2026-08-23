@@ -8,7 +8,6 @@ import {
   VolumeX,
   MessageSquareQuote,
   ListFilter,
-  Radio,
 } from 'lucide-react';
 import { audio } from '../../services/audio';
 import { useGame } from '../../context/GameContext';
@@ -37,16 +36,16 @@ export const TVFloatingControlBar: React.FC<TVFloatingControlBarProps> = ({
   };
 
   return (
-    <div className="fixed bottom-7 left-1/2 transform -translate-x-1/2 z-40 w-full max-w-4xl px-4 pointer-events-auto select-none animate-scale-in">
-      {/* Floating VisionOS Glass Pill Bar (Exact 1:1 match of Reference Image) */}
-      <div className="px-8 py-3.5 rounded-full bg-white/[0.07] backdrop-blur-2xl border border-white/20 shadow-[0_20px_50px_rgba(0,0,0,0.7),inset_0_1px_1.5px_rgba(255,255,255,0.35)] flex items-center justify-between">
+    <div className="fixed bottom-7 left-0 right-0 z-40 flex items-center justify-center pointer-events-auto select-none animate-scale-in">
+      {/* Floating Free-Floating Control Elements (Strictly Centered, Without Surrounding Container) */}
+      <div className="flex items-center justify-center space-x-8 max-w-4xl w-full px-6">
         {/* 1. Left Navigation Playback Controls */}
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-3">
           <button
             data-tv-focus
             tabIndex={0}
             onClick={onPrev}
-            className="w-10 h-10 rounded-full bg-white/5 hover:bg-white/20 text-white/80 hover:text-white flex items-center justify-center transition-transform active:scale-90 outline-none focus:ring-2 focus:ring-white"
+            className="w-11 h-11 rounded-full text-white/80 hover:text-white hover:bg-white/10 flex items-center justify-center transition-transform active:scale-90 outline-none focus:scale-115 focus:ring-2 focus:ring-white"
             title="Précédent"
           >
             <SkipBack className="w-5 h-5 fill-current" />
@@ -59,46 +58,44 @@ export const TVFloatingControlBar: React.FC<TVFloatingControlBarProps> = ({
               audio.playSelect();
               onPlay(activeGame);
             }}
-            className="w-12 h-12 rounded-full bg-white text-black flex items-center justify-center shadow-[0_0_25px_rgba(255,255,255,0.7)] transition-all hover:scale-110 active:scale-95 outline-none focus:ring-4 focus:ring-[#10B981]"
+            className="w-14 h-14 rounded-full bg-white text-black flex items-center justify-center shadow-[0_0_30px_rgba(255,255,255,0.85)] transition-all hover:scale-110 active:scale-95 outline-none focus:scale-120 focus:ring-4 focus:ring-[#10B981]"
             title="Lancer le Salon"
           >
-            <Play className="w-5 h-5 fill-current ml-0.5" />
+            <Play className="w-6 h-6 fill-current ml-0.5" />
           </button>
 
           <button
             data-tv-focus
             tabIndex={0}
             onClick={onNext}
-            className="w-10 h-10 rounded-full bg-white/5 hover:bg-white/20 text-white/80 hover:text-white flex items-center justify-center transition-transform active:scale-90 outline-none focus:ring-2 focus:ring-white"
+            className="w-11 h-11 rounded-full text-white/80 hover:text-white hover:bg-white/10 flex items-center justify-center transition-transform active:scale-90 outline-none focus:scale-115 focus:ring-2 focus:ring-white"
             title="Suivant"
           >
             <SkipForward className="w-5 h-5 fill-current" />
           </button>
         </div>
 
-        {/* 2. Center Active Game Track Info with Progress Bar */}
+        {/* 2. Center Active Game Track Info with Progress Line */}
         <div
           onClick={() => onMoreInfo(activeGame)}
-          className="flex items-center space-x-4 px-4 py-1.5 rounded-2xl hover:bg-white/5 cursor-pointer transition-colors max-w-md truncate"
+          className="flex items-center space-x-4 px-3 py-1 cursor-pointer transition-colors max-w-md truncate"
         >
-          {/* Square Thumbnail with subtle progress line */}
+          {/* Square Thumbnail with subtle progress line underneath */}
           <div className="flex flex-col items-center space-y-1 flex-shrink-0">
-            <div className="w-11 h-11 rounded-xl overflow-hidden border border-white/25 shadow-md relative">
+            <div className="w-12 h-12 rounded-2xl overflow-hidden border border-white/30 shadow-lg relative">
               <img
                 src={activeGame.coverImage || activeGame.heroImage}
                 alt={activeGame.title}
                 className="w-full h-full object-cover"
               />
-              <div className="absolute inset-0 bg-black/20" />
             </div>
-            {/* White playback progress bar underneath thumbnail (like reference image) */}
-            <div className="w-9 h-1 rounded-full bg-white/20 overflow-hidden">
+            <div className="w-10 h-1 rounded-full bg-white/25 overflow-hidden">
               <div className="w-2/3 h-full bg-white rounded-full" />
             </div>
           </div>
 
           <div className="flex flex-col truncate">
-            <span className="font-display font-black text-sm text-white truncate drop-shadow">
+            <span className="font-display font-black text-base text-white truncate drop-shadow-md">
               {activeGame.title}
             </span>
             <span className="text-xs text-[#9CA3AF] font-medium truncate">
@@ -114,9 +111,8 @@ export const TVFloatingControlBar: React.FC<TVFloatingControlBarProps> = ({
           </div>
         </div>
 
-        {/* 3. Right Icons (Quote / List / Volume matching reference image) */}
-        <div className="flex items-center space-x-3 text-white/80">
-          {/* Rules / Info (Quote icon like reference) */}
+        {/* 3. Right Icons */}
+        <div className="flex items-center space-x-2 text-white/80">
           <button
             data-tv-focus
             tabIndex={0}
@@ -124,13 +120,12 @@ export const TVFloatingControlBar: React.FC<TVFloatingControlBarProps> = ({
               audio.playSelect();
               onMoreInfo(activeGame);
             }}
-            className="w-9 h-9 rounded-full bg-white/5 hover:bg-white/20 text-white/80 hover:text-white flex items-center justify-center transition-all outline-none focus:ring-2 focus:ring-white"
+            className="w-10 h-10 rounded-full text-white/80 hover:text-white hover:bg-white/10 flex items-center justify-center transition-all outline-none focus:scale-115 focus:ring-2 focus:ring-white"
             title="Détails & Règles"
           >
-            <MessageSquareQuote className="w-4 h-4" />
+            <MessageSquareQuote className="w-5 h-5" />
           </button>
 
-          {/* Categories List (Menu icon like reference) */}
           <button
             data-tv-focus
             tabIndex={0}
@@ -138,21 +133,20 @@ export const TVFloatingControlBar: React.FC<TVFloatingControlBarProps> = ({
               audio.playSelect();
               setTvView('categories');
             }}
-            className="w-9 h-9 rounded-full bg-white/5 hover:bg-white/20 text-white/80 hover:text-white flex items-center justify-center transition-all outline-none focus:ring-2 focus:ring-white"
+            className="w-10 h-10 rounded-full text-white/80 hover:text-white hover:bg-white/10 flex items-center justify-center transition-all outline-none focus:scale-115 focus:ring-2 focus:ring-white"
             title="Tous les Jeux"
           >
-            <ListFilter className="w-4 h-4" />
+            <ListFilter className="w-5 h-5" />
           </button>
 
-          {/* Volume Toggle */}
           <button
             data-tv-focus
             tabIndex={0}
             onClick={toggleMute}
-            className="w-9 h-9 rounded-full bg-white/5 hover:bg-white/20 text-white/80 hover:text-white flex items-center justify-center transition-all outline-none focus:ring-2 focus:ring-white"
+            className="w-10 h-10 rounded-full text-white/80 hover:text-white hover:bg-white/10 flex items-center justify-center transition-all outline-none focus:scale-115 focus:ring-2 focus:ring-white"
             title={isMuted ? 'Activer le son' : 'Couper le son'}
           >
-            {isMuted ? <VolumeX className="w-4 h-4 text-rose-400" /> : <Volume2 className="w-4 h-4" />}
+            {isMuted ? <VolumeX className="w-5 h-5 text-rose-400" /> : <Volume2 className="w-5 h-5" />}
           </button>
         </div>
       </div>
