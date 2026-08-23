@@ -135,9 +135,9 @@ export const TVCoverFlowLauncher: React.FC<TVCoverFlowLauncherProps> = ({
                 zIndex,
                 opacity,
               }}
-              className={`coverflow-item absolute w-[320px] sm:w-[360px] md:w-[400px] lg:w-[440px] h-[480px] sm:h-[530px] md:h-[580px] lg:h-[620px] rounded-[36px] overflow-hidden cursor-pointer transition-all duration-300 ${
+              className={`coverflow-item absolute w-[300px] sm:w-[330px] md:w-[360px] lg:w-[390px] h-[430px] sm:h-[470px] md:h-[510px] lg:h-[540px] rounded-[32px] overflow-hidden cursor-pointer transition-all duration-300 ${
                 isCenter
-                  ? 'border-2 border-white/40 shadow-[0_30px_70px_rgba(0,0,0,0.9),0_0_50px_rgba(251,191,36,0.35)] ring-1 ring-white/30'
+                  ? 'border-2 border-white/40 shadow-[0_25px_60px_rgba(0,0,0,0.85),0_0_35px_rgba(255,255,255,0.2)] ring-1 ring-white/30'
                   : 'border border-white/15 shadow-[0_20px_45px_rgba(0,0,0,0.75)] filter brightness-90 hover:brightness-100'
               }`}
             >
