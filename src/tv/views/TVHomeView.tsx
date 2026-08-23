@@ -32,21 +32,15 @@ export const TVHomeView: React.FC = () => {
   const activeGame = games[activeIndex] || games[0];
 
   return (
-    <div className="relative w-full min-h-screen flex flex-col justify-center items-center select-none bg-[#050A08] overflow-hidden">
-      {/* 1. Full-Bleed Dynamic Ambient Background (VisionOS / Apple Music Style) */}
-      <div className="fixed inset-0 z-0 pointer-events-none transition-all duration-700 overflow-hidden">
-        <img
-          src={activeGame.heroImage || activeGame.coverImage}
-          alt={activeGame.title}
-          className="w-full h-full object-cover object-center filter blur-3xl opacity-30 scale-125 transition-opacity duration-700"
-        />
-        {/* Soft radial vignette */}
-        <div className="absolute inset-0 bg-gradient-to-t from-[#050A08] via-[#050A08]/60 to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-b from-[#050A08]/80 via-transparent to-[#050A08]" />
+    <div className="relative w-full h-screen min-h-screen flex flex-col justify-between items-center select-none bg-[#050A08] overflow-hidden">
+      {/* 1. Ultra-Fast High Performance Dark Ambient Background (Zero Blur Filter for 60 FPS TV) */}
+      <div className="fixed inset-0 z-0 pointer-events-none bg-gradient-to-b from-[#08120E] via-[#050A08] to-[#020504]">
+        {/* Soft subtle ambient accent (pure CSS gradient, no CPU-heavy blur filter) */}
+        <div className="absolute top-0 left-1/3 w-1/3 h-1/2 bg-[#10B981]/5 rounded-full pointer-events-none" />
       </div>
 
-      {/* 2. Centerpiece 3D Perspective Cover Flow Launcher (VisionOS Style) */}
-      <div className="relative z-10 w-full h-screen flex items-center justify-center pt-16 pb-24 px-4 overflow-hidden">
+      {/* 2. Centerpiece High-Performance Widescreen Launcher */}
+      <div className="relative z-10 w-full flex-1 flex items-center justify-center pt-14 pb-20 px-4 overflow-hidden">
         <TVCoverFlowLauncher
           games={games}
           activeIndex={activeIndex}
@@ -56,7 +50,7 @@ export const TVHomeView: React.FC = () => {
         />
       </div>
 
-      {/* 3. Floating VisionOS Glassmorphic Control Bar (Minimal & Clean) */}
+      {/* 3. Floating Clean Control Bar */}
       <TVFloatingControlBar
         activeGame={activeGame}
         onPrev={() => setActiveIndex((prev) => (prev > 0 ? prev - 1 : games.length - 1))}
