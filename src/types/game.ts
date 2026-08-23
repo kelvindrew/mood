@@ -241,7 +241,10 @@ export interface ScrabbleGameState {
     isScrabble?: boolean;
     nature?: string;
     definition?: string;
+    coords?: { row: number; col: number }[];
+    timestamp?: number;
   };
+  lastPlacedTileCoords?: { row: number; col: number }[];
   playedWordsHistory?: ScrabbleWordHistoryItem[];
   lastActionLog?: string;
   winner: string | null;

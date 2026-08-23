@@ -22,8 +22,8 @@ import {
   ChevronRight,
   ChevronUp,
   ChevronDown,
-  ArrowUp,
-  ArrowDown,
+  Star,
+  Zap,
 } from 'lucide-react';
 
 function getMultiplier(r: number, c: number): string {
@@ -56,6 +56,7 @@ export const WordBoardTV: React.FC = () => {
 
   const [endStage, setEndStage] = useState<number>(1);
   const [selectedWordHistory, setSelectedWordHistory] = useState<ScrabbleWordHistoryItem | null>(null);
+  const [showCelebrationBanner, setShowCelebrationBanner] = useState<boolean>(true);
   const historyScrollRef = useRef<HTMLDivElement>(null);
 
   const isGameOver = !!(gameState?.isGameOver || gameState?.winner);
@@ -74,6 +75,13 @@ export const WordBoardTV: React.FC = () => {
       setEndStage(1);
     }
   }, [isGameOver]);
+
+  // Flash celebration banner on new word played
+  useEffect(() => {
+    if (gameState?.lastWordPlayed) {
+      setShowCelebrationBanner(true);
+    }
+  }, [gameState?.lastWordPlayed?.timestamp, gameState?.lastWordPlayed?.word]);
 
   if (!gameState) {
     return <div className="p-10 text-white font-bold text-center">Chargement du plateau Scrabble...</div>;
@@ -116,10 +124,14 @@ export const WordBoardTV: React.FC = () => {
     sendGameAction('word_restart');
   };
 
+  const lastPlacedSet = new Set(
+    (gameState.lastPlacedTileCoords || []).map((coord) => `${coord.row}_${coord.col}`)
+  );
+
   const totalWordsCount = gameState.playedWordsHistory?.length || (gameState.lastWordPlayed ? 1 : 0);
 
   return (
-    <div className="w-full min-h-screen flex items-center justify-between px-8 py-4 select-none bg-[#070D0B] text-white relative overflow-hidden">
+    <div className="w-full min-h-screen flex items-center justify-between px-8 py-3.5 select-none bg-[#070D0B] text-white relative overflow-hidden">
       {/* Ambient background glow */}
       <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-emerald-900/15 rounded-full blur-[140px] pointer-events-none" />
       <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-amber-900/15 rounded-full blur-[140px] pointer-events-none" />
@@ -202,8 +214,43 @@ export const WordBoardTV: React.FC = () => {
         </div>
       </div>
 
-      {/* 2. Center Column: 15x15 Official Scrabble Grid */}
-      <div className="flex-1 flex flex-col items-center justify-center px-4 z-10 max-w-[690px]">
+      {/* 2. Center Column: Newly Placed Word Celebration Banner + 15x15 Official Grid */}
+      <div className="flex-1 flex flex-col items-center justify-center px-4 z-10 max-w-[690px] space-y-2">
+        {/* Flash Newly Placed Word Celebration Banner */}
+        {gameState.lastWordPlayed && showCelebrationBanner && (
+          <div className="w-full px-4 py-2 rounded-2xl bg-gradient-to-r from-amber-500/20 via-emerald-500/20 to-teal-500/20 border-2 border-[#FBBF24]/80 shadow-[0_0_25px_rgba(251,191,36,0.3)] backdrop-blur-xl flex items-center justify-between animate-scale-in">
+            <div className="flex items-center space-x-3">
+              <div className="p-1.5 rounded-xl bg-amber-400/20 text-[#FBBF24] border border-[#FBBF24]/40">
+                <Sparkles className="w-5 h-5 animate-spin-slow" />
+              </div>
+              <div>
+                <div className="flex items-center space-x-2">
+                  <span className="text-[10px] font-black uppercase tracking-wider text-amber-300">
+                    DERNIER MOT VALIDÉ :
+                  </span>
+                  <span className="text-lg font-black font-mono tracking-widest text-[#FBBF24] drop-shadow-md">
+                    "{gameState.lastWordPlayed.word}"
+                  </span>
+                  {gameState.lastWordPlayed.isScrabble && (
+                    <span className="px-2 py-0.5 rounded-full bg-gradient-to-r from-amber-400 to-rose-400 text-gray-950 font-black text-[9px] shadow animate-bounce">
+                      ✨ SCRABBLE +50 !
+                    </span>
+                  )}
+                </div>
+                <span className="text-[11px] text-gray-300 font-medium">
+                  Posé par <strong className="text-white">{gameState.lastWordPlayed.player}</strong> •{' '}
+                  <span className="italic text-emerald-300">{gameState.lastWordPlayed.nature}</span>
+                </span>
+              </div>
+            </div>
+
+            <div className="text-right pl-3 border-l border-white/15">
+              <div className="font-mono font-black text-xl text-[#FBBF24]">+{gameState.lastWordPlayed.points}</div>
+              <span className="text-[8px] text-gray-400 uppercase font-bold">POINTS</span>
+            </div>
+          </div>
+        )}
+
         {/* Scrabble Board Container */}
         <div className="relative p-3 rounded-3xl bg-[#140F0A] border-4 border-[#3A2D23] shadow-[0_25px_60px_rgba(0,0,0,0.9)] w-full aspect-square">
           <div
@@ -214,13 +261,23 @@ export const WordBoardTV: React.FC = () => {
               row.map((tile, c) => {
                 const mult = getMultiplier(r, c);
                 const multConfig = MULTIPLIERS_MAP[mult];
+                const isNewlyPlaced = lastPlacedSet.has(`${r}_${c}`);
 
                 if (tile) {
                   return (
                     <div
                       key={`tile_${r}_${c}`}
-                      className="relative w-full h-full rounded-xs bg-[#FBF2DE] text-gray-950 border border-[#D5C29A] shadow-md flex items-center justify-center font-display font-black text-xs lg:text-sm select-none leading-none animate-scale-in"
+                      className={`relative w-full h-full rounded-xs shadow-md flex items-center justify-center font-display font-black text-xs lg:text-sm select-none leading-none transition-all ${
+                        isNewlyPlaced
+                          ? 'bg-gradient-to-br from-[#FFFBEB] to-[#FDE68A] text-gray-950 border-2 border-[#FBBF24] ring-2 ring-[#FBBF24]/80 shadow-[0_0_14px_rgba(251,191,36,0.9)] z-20 scale-105'
+                          : 'bg-[#FBF2DE] text-gray-950 border border-[#D5C29A]'
+                      }`}
                     >
+                      {isNewlyPlaced && (
+                        <span className="absolute top-0.5 left-0.5 text-[6px] text-amber-700 leading-none">
+                          ★
+                        </span>
+                      )}
                       <span>{tile.letter}</span>
                       <span className="absolute bottom-0.5 right-0.5 text-[7px] lg:text-[8px] font-sans font-bold text-gray-700 leading-none">
                         {tile.points}
@@ -253,7 +310,7 @@ export const WordBoardTV: React.FC = () => {
         </div>
 
         {/* Multipliers Legend */}
-        <div className="flex items-center space-x-5 mt-3 text-xs font-bold text-gray-300">
+        <div className="flex items-center space-x-5 mt-2 text-xs font-bold text-gray-300">
           <div className="flex items-center space-x-1.5">
             <span className="w-3.5 h-3.5 rounded bg-rose-600 flex items-center justify-center text-[8px] font-black text-white">MT</span>
             <span className="text-[11px]">Mot Triple (x3)</span>
@@ -269,6 +326,10 @@ export const WordBoardTV: React.FC = () => {
           <div className="flex items-center space-x-1.5">
             <span className="w-3.5 h-3.5 rounded bg-sky-500 flex items-center justify-center text-[8px] font-black text-white">LD</span>
             <span className="text-[11px]">Lettre Double (x2)</span>
+          </div>
+          <div className="flex items-center space-x-1.5">
+            <span className="w-3.5 h-3.5 rounded bg-amber-400 border border-white flex items-center justify-center text-[8px] font-black text-black">★</span>
+            <span className="text-[11px] text-amber-300">Nouveau mot</span>
           </div>
         </div>
       </div>

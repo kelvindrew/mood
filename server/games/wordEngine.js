@@ -89,6 +89,7 @@ export class WordEngine {
     this.isGameOver = false;
     this.turnTimeLeft = 45;
     this.lastWordPlayed = null;
+    this.lastPlacedTileCoords = [];
     this.playedWordsHistory = [];
     this.consecutivePasses = 0;
     this.startTime = Date.now();
@@ -504,6 +505,7 @@ export class WordEngine {
     this.consecutivePasses = 0; // Reset consecutive pass counter
 
     const defItem = getFrenchDefinition(mainWordStr);
+    this.lastPlacedTileCoords = tilesPlaced.map(t => ({ row: t.row, col: t.col }));
 
     this.lastWordPlayed = {
       word: mainWordStr,
@@ -514,6 +516,8 @@ export class WordEngine {
       isScrabble,
       nature: defItem.nature,
       definition: defItem.def,
+      coords: this.lastPlacedTileCoords,
+      timestamp: Date.now(),
     };
 
     this.playedWordsHistory = [
@@ -701,6 +705,7 @@ export class WordEngine {
       playerStats: this.playerStats,
       turnTimeLeft: this.turnTimeLeft,
       lastWordPlayed: this.lastWordPlayed,
+      lastPlacedTileCoords: this.lastPlacedTileCoords,
       playedWordsHistory: this.playedWordsHistory,
       lastActionLog: this.lastActionLog,
       winner: this.winner,
