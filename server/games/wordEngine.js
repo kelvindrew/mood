@@ -1,5 +1,6 @@
 import { findBestBotMove } from './botScrabbleAi.js';
 import { isValidScrabbleWord } from './scrabbleDictionary.js';
+import { getFrenchDefinition } from './frenchDefinitions.js';
 
 export const LETTER_POINTS = {
   A: 1, E: 1, I: 1, L: 1, N: 1, O: 1, R: 1, S: 1, T: 1, U: 1,
@@ -88,6 +89,7 @@ export class WordEngine {
     this.isGameOver = false;
     this.turnTimeLeft = 45;
     this.lastWordPlayed = null;
+    this.playedWordsHistory = [];
     this.consecutivePasses = 0;
     this.startTime = Date.now();
     this.totalDuration = '00:00';
@@ -501,6 +503,8 @@ export class WordEngine {
 
     this.consecutivePasses = 0; // Reset consecutive pass counter
 
+    const defItem = getFrenchDefinition(mainWordStr);
+
     this.lastWordPlayed = {
       word: mainWordStr,
       allWords: allFormedWords.map(f => f.word),
@@ -508,7 +512,22 @@ export class WordEngine {
       player: currentPlayer.name,
       isValid: true,
       isScrabble,
+      nature: defItem.nature,
+      definition: defItem.def,
     };
+
+    this.playedWordsHistory = [
+      {
+        word: mainWordStr,
+        points: totalScore,
+        player: currentPlayer.name,
+        nature: defItem.nature,
+        definition: defItem.def,
+        turn: this.currentTurnIndex + 1,
+        timestamp: Date.now(),
+      },
+      ...this.playedWordsHistory,
+    ].slice(0, 20);
 
     this.lastActionLog = `🎉 ${currentPlayer.name} a posé "${mainWordStr}" (+${totalScore} pts)${isScrabble ? ' ✨ SCRABBLE +50 !' : ''}`;
 
@@ -682,6 +701,7 @@ export class WordEngine {
       playerStats: this.playerStats,
       turnTimeLeft: this.turnTimeLeft,
       lastWordPlayed: this.lastWordPlayed,
+      playedWordsHistory: this.playedWordsHistory,
       lastActionLog: this.lastActionLog,
       winner: this.winner,
       winnerName: this.winnerName,

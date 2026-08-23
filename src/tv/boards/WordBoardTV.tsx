@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useGame } from '../../context/GameContext';
-import { ScrabbleGameState } from '../../types/game';
+import { ScrabbleGameState, ScrabbleWordHistoryItem } from '../../types/game';
+import { getFrenchDefinition, WordDefinitionItem } from '../../data/frenchDefinitions';
 import {
   Clock,
   Trophy,
@@ -14,11 +15,11 @@ import {
   Crown,
   RotateCcw,
   Home,
-  Target,
-  Zap,
-  Timer,
-  Hash,
-  TrendingUp,
+  Bookmark,
+  Search,
+  History,
+  GraduationCap,
+  ChevronRight,
 } from 'lucide-react';
 
 function getMultiplier(r: number, c: number): string {
@@ -50,6 +51,7 @@ export const WordBoardTV: React.FC = () => {
   const gameState = room?.gameState as ScrabbleGameState | undefined;
 
   const [endStage, setEndStage] = useState<number>(1);
+  const [selectedWordHistory, setSelectedWordHistory] = useState<ScrabbleWordHistoryItem | null>(null);
 
   const isGameOver = !!(gameState?.isGameOver || gameState?.winner);
 
@@ -75,35 +77,58 @@ export const WordBoardTV: React.FC = () => {
   const currentPlayer = room?.players.find((p) => p.id === gameState.currentPlayerId);
   const winnerPlayer = gameState.finalPodium?.[0];
 
+  // Active word definition to display in the dictionary panel
+  const currentWordToDefine: WordDefinitionItem = (() => {
+    if (selectedWordHistory) {
+      return {
+        word: selectedWordHistory.word,
+        nature: selectedWordHistory.nature || 'nom / mot ODS',
+        def: selectedWordHistory.definition || getFrenchDefinition(selectedWordHistory.word).def,
+      };
+    }
+    if (gameState.lastWordPlayed && gameState.lastWordPlayed.isValid !== false) {
+      return {
+        word: gameState.lastWordPlayed.word,
+        nature: gameState.lastWordPlayed.nature || getFrenchDefinition(gameState.lastWordPlayed.word).nature,
+        def: gameState.lastWordPlayed.definition || getFrenchDefinition(gameState.lastWordPlayed.word).def,
+      };
+    }
+    return {
+      word: 'SCRABBLE',
+      nature: 'jeu de lettres officiel',
+      def: 'Jeu de société de lettres et de stratégie combinatoire sur plateau 15×15 homologué ODS.',
+    };
+  })();
+
   const handleReplay = () => {
     sendGameAction('word_restart');
   };
 
   return (
-    <div className="w-full min-h-screen flex items-center justify-between px-10 py-6 select-none bg-[#070D0B] text-white relative overflow-hidden">
+    <div className="w-full min-h-screen flex items-center justify-between px-8 py-5 select-none bg-[#070D0B] text-white relative overflow-hidden">
       {/* Ambient background glow */}
-      <div className="absolute top-1/4 left-1/3 w-96 h-96 bg-emerald-900/20 rounded-full blur-[140px] pointer-events-none" />
-      <div className="absolute bottom-1/4 right-1/3 w-96 h-96 bg-amber-900/20 rounded-full blur-[140px] pointer-events-none" />
+      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-emerald-900/15 rounded-full blur-[140px] pointer-events-none" />
+      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-amber-900/15 rounded-full blur-[140px] pointer-events-none" />
 
-      {/* 1. Left Column: Turn info, Dictionary feedback, and Leaderboard */}
-      <div className="w-80 flex flex-col justify-between h-[88vh] space-y-4 z-10">
+      {/* 1. Left Column: Turn info & Live Leaderboard */}
+      <div className="w-72 flex flex-col justify-between h-[90vh] space-y-3.5 z-10 flex-shrink-0">
         {/* Active Player Card */}
-        <div className="p-5 rounded-3xl bg-white/[0.06] border border-white/15 shadow-2xl backdrop-blur-xl">
+        <div className="p-4 rounded-3xl bg-white/[0.06] border border-white/15 shadow-2xl backdrop-blur-xl">
           <div className="flex items-center justify-between">
             <span className="text-[10px] font-black uppercase tracking-widest text-[#FBBF24]">TOUR DU JOUEUR</span>
-            <div className="flex items-center space-x-1.5 px-3 py-1 rounded-full bg-black/40 border border-white/10">
+            <div className="flex items-center space-x-1 px-2.5 py-0.5 rounded-full bg-black/40 border border-white/10">
               <Clock className="w-3.5 h-3.5 text-[#FBBF24]" />
               <span className="font-mono font-bold text-xs text-[#FBBF24]">{gameState.turnTimeLeft}s</span>
             </div>
           </div>
 
-          <div className="flex items-center space-x-3.5 my-3">
-            <div className="w-13 h-13 rounded-2xl bg-gradient-to-tr from-[#10B981] to-[#059669] border border-white/20 flex items-center justify-center text-white font-black text-xl shadow-lg">
+          <div className="flex items-center space-x-3 my-2.5">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#10B981] to-[#059669] border border-white/20 flex items-center justify-center text-white font-black text-xl shadow-lg">
               {currentPlayer?.name.charAt(0).toUpperCase() || 'J'}
             </div>
             <div className="truncate">
-              <h2 className="text-xl font-black font-display text-white truncate">{currentPlayer?.name || 'Joueur'}</h2>
-              <span className="text-xs text-gray-400 font-semibold">Posez vos lettres sur smartphone</span>
+              <h2 className="text-lg font-black font-display text-white truncate">{currentPlayer?.name || 'Joueur'}</h2>
+              <span className="text-[11px] text-gray-400 font-semibold">Posez vos lettres</span>
             </div>
           </div>
 
@@ -118,64 +143,19 @@ export const WordBoardTV: React.FC = () => {
           </div>
 
           {/* Letter Bag Count */}
-          <div className="flex items-center justify-between pt-3 mt-3 border-t border-white/10 text-xs font-bold text-gray-300">
-            <div className="flex items-center space-x-2">
-              <Layers className="w-4 h-4 text-[#38BDF8]" />
-              <span>Sac de Lettres :</span>
+          <div className="flex items-center justify-between pt-2.5 mt-2.5 border-t border-white/10 text-xs font-bold text-gray-300">
+            <div className="flex items-center space-x-1.5">
+              <Layers className="w-3.5 h-3.5 text-[#38BDF8]" />
+              <span className="text-[11px]">Sac de Lettres :</span>
             </div>
-            <span className="px-2.5 py-0.5 rounded-lg bg-white/10 font-mono text-[#FBBF24] font-black">
+            <span className="px-2 py-0.5 rounded-lg bg-white/10 font-mono text-[#FBBF24] text-xs font-black">
               {gameState.letterBagCount} restantes
             </span>
           </div>
-
-          {/* Dictionary Validation Box */}
-          {gameState.lastWordPlayed && (
-            <div
-              className={`mt-4 p-3.5 rounded-2xl border text-xs transition-all animate-scale-in ${
-                gameState.lastWordPlayed.isValid !== false
-                  ? 'bg-emerald-950/70 border-emerald-500/50 text-emerald-300'
-                  : 'bg-rose-950/80 border-rose-500/60 text-rose-300'
-              }`}
-            >
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] font-black uppercase flex items-center space-x-1.5">
-                  {gameState.lastWordPlayed.isValid !== false ? (
-                    <>
-                      <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                      <span>VALIDE ODS {gameState.lastWordPlayed.isScrabble ? '✨ SCRABBLE !' : ''}</span>
-                    </>
-                  ) : (
-                    <>
-                      <AlertTriangle className="w-4 h-4 text-rose-400" />
-                      <span>MOT REFUSÉ (0 PT)</span>
-                    </>
-                  )}
-                </span>
-                <span className="font-bold text-[10px] opacity-80">
-                  {gameState.lastWordPlayed.player}
-                </span>
-              </div>
-
-              <div className="flex items-center justify-between mt-2">
-                <span className="text-xl font-black tracking-widest font-mono text-white">
-                  "{gameState.lastWordPlayed.word}"
-                </span>
-                <span
-                  className={`px-2.5 py-1 rounded-lg font-black text-xs ${
-                    gameState.lastWordPlayed.isValid !== false
-                      ? 'bg-emerald-500 text-gray-950 shadow-sm'
-                      : 'bg-rose-500 text-white'
-                  }`}
-                >
-                  +{gameState.lastWordPlayed.points} pts
-                </span>
-              </div>
-            </div>
-          )}
         </div>
 
         {/* Players Leaderboard */}
-        <div className="p-5 rounded-3xl bg-white/[0.06] border border-white/10 backdrop-blur-md space-y-3 flex-1 flex flex-col justify-between">
+        <div className="p-4 rounded-3xl bg-white/[0.06] border border-white/10 backdrop-blur-md space-y-3 flex-1 flex flex-col justify-between">
           <div className="flex items-center justify-between text-xs font-black uppercase tracking-wider text-gray-300">
             <span>CLASSEMENT EN DIRECT</span>
             <Trophy className="w-4 h-4 text-[#FBBF24]" />
@@ -188,24 +168,24 @@ export const WordBoardTV: React.FC = () => {
               return (
                 <div
                   key={p.id}
-                  className={`flex items-center justify-between p-3 rounded-2xl border transition-all ${
+                  className={`flex items-center justify-between p-2.5 rounded-2xl border transition-all ${
                     isCurrent
                       ? 'bg-[#10B981]/25 border-[#10B981] text-white shadow-[0_0_20px_rgba(16,185,129,0.4)] scale-102'
                       : 'bg-black/30 border-white/5 text-gray-300'
                   }`}
                 >
-                  <div className="flex items-center space-x-3">
-                    <div className="w-7 h-7 rounded-lg bg-white/10 border border-white/20 flex items-center justify-center text-xs font-bold text-white">
+                  <div className="flex items-center space-x-2.5">
+                    <div className="w-6 h-6 rounded-lg bg-white/10 border border-white/20 flex items-center justify-center text-xs font-bold text-white">
                       {idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : idx + 1}
                     </div>
                     <div className="truncate">
-                      <div className="text-sm font-bold text-white truncate max-w-[110px]">{p.name}</div>
-                      <div className="text-[10px] text-gray-400">Joueur {idx + 1}</div>
+                      <div className="text-xs font-bold text-white truncate max-w-[95px]">{p.name}</div>
+                      <div className="text-[9px] text-gray-400">Joueur {idx + 1}</div>
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="font-mono font-black text-lg text-[#FBBF24]">{score}</div>
-                    <div className="text-[9px] text-gray-400 uppercase">PTS</div>
+                    <div className="font-mono font-black text-base text-[#FBBF24]">{score}</div>
+                    <div className="text-[8px] text-gray-400 uppercase">PTS</div>
                   </div>
                 </div>
               );
@@ -213,18 +193,18 @@ export const WordBoardTV: React.FC = () => {
           </div>
 
           {/* Action Log pill */}
-          <div className="p-2.5 rounded-xl bg-black/40 border border-white/10 text-center text-xs text-gray-300 font-medium truncate">
+          <div className="p-2 rounded-xl bg-black/40 border border-white/10 text-center text-[11px] text-gray-300 font-medium truncate">
             {gameState.lastActionLog || 'La partie commence !'}
           </div>
         </div>
       </div>
 
-      {/* 2. Center: 15x15 Official French Scrabble Board */}
-      <div className="flex-1 flex flex-col items-center justify-center px-4 z-10">
+      {/* 2. Center Column: 15x15 Official Scrabble Grid */}
+      <div className="flex-1 flex flex-col items-center justify-center px-4 z-10 max-w-[690px]">
         {/* Scrabble Board Container */}
-        <div className="relative p-3.5 rounded-3xl bg-[#140F0A] border-4 border-[#3A2D23] shadow-[0_25px_60px_rgba(0,0,0,0.9)] max-w-[760px] w-full aspect-square">
+        <div className="relative p-3 rounded-3xl bg-[#140F0A] border-4 border-[#3A2D23] shadow-[0_25px_60px_rgba(0,0,0,0.9)] w-full aspect-square">
           <div
-            className="w-full h-full grid grid-cols-15 grid-rows-15 gap-1 bg-[#100C09] p-1 rounded-2xl border border-white/10"
+            className="w-full h-full grid grid-cols-15 grid-rows-15 gap-0.5 bg-[#100C09] p-1 rounded-2xl border border-white/10"
             style={{ gridTemplateColumns: 'repeat(15, minmax(0, 1fr))', gridTemplateRows: 'repeat(15, minmax(0, 1fr))' }}
           >
             {gameState.board.map((row, r) =>
@@ -236,10 +216,10 @@ export const WordBoardTV: React.FC = () => {
                   return (
                     <div
                       key={`tile_${r}_${c}`}
-                      className="relative w-full h-full rounded-md bg-[#FBF2DE] text-gray-950 border border-[#D5C29A] shadow-md flex items-center justify-center font-display font-black text-sm lg:text-base select-none leading-none animate-scale-in"
+                      className="relative w-full h-full rounded-xs bg-[#FBF2DE] text-gray-950 border border-[#D5C29A] shadow-md flex items-center justify-center font-display font-black text-xs lg:text-sm select-none leading-none animate-scale-in"
                     >
                       <span>{tile.letter}</span>
-                      <span className="absolute bottom-0.5 right-0.5 text-[8px] lg:text-[9px] font-sans font-bold text-gray-700 leading-none">
+                      <span className="absolute bottom-0.5 right-0.5 text-[7px] lg:text-[8px] font-sans font-bold text-gray-700 leading-none">
                         {tile.points}
                       </span>
                     </div>
@@ -250,7 +230,7 @@ export const WordBoardTV: React.FC = () => {
                   return (
                     <div
                       key={`cell_${r}_${c}`}
-                      className={`w-full h-full rounded-md flex flex-col items-center justify-center font-sans font-black text-[9px] lg:text-[10px] select-none leading-none ${multConfig.bg} ${multConfig.text} opacity-90 shadow-sm`}
+                      className={`w-full h-full rounded-xs flex flex-col items-center justify-center font-sans font-black text-[8px] lg:text-[9px] select-none leading-none ${multConfig.bg} ${multConfig.text} opacity-90 shadow-sm`}
                       title={multConfig.full}
                     >
                       <span>{multConfig.label}</span>
@@ -261,7 +241,7 @@ export const WordBoardTV: React.FC = () => {
                 return (
                   <div
                     key={`cell_${r}_${c}`}
-                    className="w-full h-full rounded-md bg-[#251D17]/90 border border-white/[0.03]"
+                    className="w-full h-full rounded-xs bg-[#251D17]/90 border border-white/[0.03]"
                   />
                 );
               })
@@ -270,27 +250,117 @@ export const WordBoardTV: React.FC = () => {
         </div>
 
         {/* Multipliers Legend */}
-        <div className="flex items-center space-x-6 mt-4 text-xs font-bold text-gray-300">
+        <div className="flex items-center space-x-5 mt-3 text-xs font-bold text-gray-300">
           <div className="flex items-center space-x-1.5">
             <span className="w-3.5 h-3.5 rounded bg-rose-600 flex items-center justify-center text-[8px] font-black text-white">MT</span>
-            <span>Mot Triple (x3)</span>
+            <span className="text-[11px]">Mot Triple (x3)</span>
           </div>
           <div className="flex items-center space-x-1.5">
             <span className="w-3.5 h-3.5 rounded bg-pink-500 flex items-center justify-center text-[8px] font-black text-white">MD</span>
-            <span>Mot Double (x2)</span>
+            <span className="text-[11px]">Mot Double (x2)</span>
           </div>
           <div className="flex items-center space-x-1.5">
             <span className="w-3.5 h-3.5 rounded bg-blue-600 flex items-center justify-center text-[8px] font-black text-white">LT</span>
-            <span>Lettre Triple (x3)</span>
+            <span className="text-[11px]">Lettre Triple (x3)</span>
           </div>
           <div className="flex items-center space-x-1.5">
             <span className="w-3.5 h-3.5 rounded bg-sky-500 flex items-center justify-center text-[8px] font-black text-white">LD</span>
-            <span>Lettre Double (x2)</span>
+            <span className="text-[11px]">Lettre Double (x2)</span>
           </div>
         </div>
       </div>
 
-      {/* 3. Game Over Stage 1 & 2 & 3: Full End-Game Experience Modal */}
+      {/* 3. Right Column: Dedicated "Petit Dictionnaire Scrabble" Definition Panel */}
+      <div className="w-80 flex flex-col justify-between h-[90vh] space-y-3.5 z-10 flex-shrink-0">
+        {/* Dictionary Card Header */}
+        <div className="p-4 rounded-3xl bg-gradient-to-b from-[#1C2826]/90 to-[#0F1715]/90 border-2 border-[#10B981]/50 shadow-2xl backdrop-blur-xl space-y-3 flex-1 flex flex-col justify-between">
+          <div className="space-y-3">
+            <div className="flex items-center justify-between border-b border-white/10 pb-2.5">
+              <div className="flex items-center space-x-2 text-[#10B981]">
+                <BookOpen className="w-5 h-5 text-emerald-400" />
+                <span className="text-xs font-black uppercase tracking-wider text-white">
+                  LE PETIT DICO SCRABBLE
+                </span>
+              </div>
+              <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] font-black font-mono">
+                ODS
+              </span>
+            </div>
+
+            {/* Featured Definition Box */}
+            <div className="p-4 rounded-2xl bg-black/50 border border-white/15 space-y-2 shadow-inner animate-scale-in">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <Bookmark className="w-4 h-4 text-[#FBBF24]" />
+                  <span className="text-xl font-black font-mono tracking-widest text-[#FBBF24]">
+                    "{currentWordToDefine.word}"
+                  </span>
+                </div>
+                {gameState.lastWordPlayed && gameState.lastWordPlayed.word === currentWordToDefine.word && (
+                  <span className="px-2 py-0.5 rounded bg-emerald-500/30 text-emerald-300 font-bold text-[10px]">
+                    +{gameState.lastWordPlayed.points} pts
+                  </span>
+                )}
+              </div>
+
+              {/* Nature / Grammatical Category */}
+              <div className="text-[11px] font-bold italic text-emerald-300/90 font-serif">
+                — {currentWordToDefine.nature}
+              </div>
+
+              {/* Definition Text */}
+              <p className="text-xs text-gray-200 leading-relaxed font-sans pt-1 border-t border-white/10">
+                {currentWordToDefine.def}
+              </p>
+            </div>
+          </div>
+
+          {/* Word History List with Quick Definition Click */}
+          <div className="space-y-2 pt-2 border-t border-white/10 flex-1 flex flex-col justify-end">
+            <div className="flex items-center justify-between text-[11px] font-bold text-gray-400 px-1">
+              <span className="flex items-center space-x-1">
+                <History className="w-3.5 h-3.5 text-[#38BDF8]" />
+                <span>Mots récemment joués :</span>
+              </span>
+              <span className="text-[9px] text-gray-400">Touchez pour définir</span>
+            </div>
+
+            <div className="space-y-1.5 max-h-48 overflow-y-auto pr-1">
+              {gameState.playedWordsHistory && gameState.playedWordsHistory.length > 0 ? (
+                gameState.playedWordsHistory.slice(0, 5).map((item, idx) => {
+                  const isSelected = selectedWordHistory?.word === item.word;
+                  return (
+                    <button
+                      key={`hist_${idx}_${item.word}`}
+                      onClick={() => setSelectedWordHistory(item)}
+                      className={`w-full p-2 rounded-xl text-left flex items-center justify-between text-xs border transition-all ${
+                        isSelected
+                          ? 'bg-[#10B981]/30 border-[#10B981] text-white shadow-md'
+                          : 'bg-black/30 border-white/5 text-gray-300 hover:bg-white/10'
+                      }`}
+                    >
+                      <div className="flex items-center space-x-2 truncate">
+                        <span className="font-black font-mono text-[#FBBF24]">{item.word}</span>
+                        <span className="text-[10px] text-gray-400 truncate">({item.player})</span>
+                      </div>
+                      <div className="flex items-center space-x-1.5 flex-shrink-0">
+                        <span className="font-mono font-bold text-[10px] text-emerald-400">+{item.points}</span>
+                        <ChevronRight className="w-3 h-3 text-gray-400" />
+                      </div>
+                    </button>
+                  );
+                })
+              ) : (
+                <div className="p-3 text-center text-xs text-gray-400 italic bg-black/20 rounded-xl">
+                  Les définitions des mots posés apparaîtront ici.
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* 4. Game Over Stage 1 & 2 & 3: Full End-Game Experience Modal */}
       {isGameOver && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/92 backdrop-blur-xl p-8 animate-fade-in">
           {/* Stage 1: "🎉 PARTIE TERMINÉE !" Splash */}

@@ -20,6 +20,7 @@ import {
   Crown,
   Home,
 } from 'lucide-react';
+import { getFrenchDefinition } from '../../../data/frenchDefinitions';
 
 function getMultiplier(r: number, c: number): string {
   if (r === 7 && c === 7) return 'CENTER';
@@ -331,20 +332,32 @@ export const WordController: React.FC = () => {
           </div>
         </div>
 
-        {/* Live Word Formation Display */}
+        {/* Live Word Formation Display with Definition */}
         {fullFormedWordString && (
-          <div className="p-2.5 rounded-2xl bg-white/[0.08] border-2 border-[#38BDF8] shadow-lg flex items-center justify-between animate-scale-in">
-            <div className="flex items-center space-x-2">
-              <BookOpen className="w-4 h-4 text-[#38BDF8]" />
-              <span className="text-[10px] font-black uppercase text-gray-300">Mot formé :</span>
+          <div className="p-2.5 rounded-2xl bg-white/[0.08] border-2 border-[#38BDF8] shadow-lg space-y-1.5 animate-scale-in">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <BookOpen className="w-4 h-4 text-[#38BDF8]" />
+                <span className="text-[10px] font-black uppercase text-gray-300">Mot formé :</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <span className="text-base font-black font-mono tracking-widest text-[#38BDF8]">
+                  "{fullFormedWordString}"
+                </span>
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-[#38BDF8]/20 text-[#38BDF8]">
+                  +{potentialScore} pts
+                </span>
+              </div>
             </div>
-            <div className="flex items-center space-x-2">
-              <span className="text-base font-black font-mono tracking-widest text-[#38BDF8]">
-                "{fullFormedWordString}"
-              </span>
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-[#38BDF8]/20 text-[#38BDF8]">
-                +{potentialScore} pts
-              </span>
+
+            {/* Live Definition Preview */}
+            <div className="p-2 rounded-xl bg-black/40 border border-white/10 text-[11px] text-gray-300 space-y-0.5">
+              <div className="text-[10px] font-bold italic text-emerald-300 font-serif">
+                — {getFrenchDefinition(fullFormedWordString).nature}
+              </div>
+              <p className="text-[10px] leading-tight text-gray-300">
+                {getFrenchDefinition(fullFormedWordString).def}
+              </p>
             </div>
           </div>
         )}

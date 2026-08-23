@@ -213,6 +213,16 @@ export interface ScrabblePodiumItem {
   stats: ScrabblePlayerStats;
 }
 
+export interface ScrabbleWordHistoryItem {
+  word: string;
+  points: number;
+  player: string;
+  nature?: string;
+  definition?: string;
+  turn?: number;
+  timestamp?: number;
+}
+
 export interface ScrabbleGameState {
   board: (BoardTile | null)[][];
   letterBagCount: number;
@@ -229,7 +239,10 @@ export interface ScrabbleGameState {
     isValid?: boolean;
     reason?: string;
     isScrabble?: boolean;
+    nature?: string;
+    definition?: string;
   };
+  playedWordsHistory?: ScrabbleWordHistoryItem[];
   lastActionLog?: string;
   winner: string | null;
   winnerName?: string | null;
