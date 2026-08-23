@@ -270,9 +270,52 @@ export const WordBoardTV: React.FC = () => {
         </div>
       </div>
 
-      {/* 3. Right Column: Dedicated "Petit Dictionnaire Scrabble" Definition Panel */}
+      {/* 3. Right Column: Tile Bag Status Card + Dedicated "Petit Dictionnaire Scrabble" Panel */}
       <div className="w-80 flex flex-col justify-between h-[90vh] space-y-3.5 z-10 flex-shrink-0">
-        {/* Dictionary Card Header */}
+        {/* Remaining Tiles Bag Status Card */}
+        <div className="p-3.5 rounded-3xl bg-white/[0.06] border border-white/15 shadow-xl backdrop-blur-xl space-y-2">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2 text-[#38BDF8]">
+              <Layers className="w-4 h-4 text-sky-400" />
+              <span className="text-xs font-black uppercase tracking-wider text-white">
+                SAC DE TUILES
+              </span>
+            </div>
+            <span className="px-2.5 py-0.5 rounded-xl bg-sky-500/20 border border-sky-500/40 text-sky-300 font-mono text-xs font-black shadow-sm">
+              {gameState.letterBagCount} / 102
+            </span>
+          </div>
+
+          {/* Progress bar of remaining tiles */}
+          <div className="space-y-1">
+            <div className="w-full h-2 rounded-full bg-black/40 border border-white/10 overflow-hidden">
+              <div
+                className={`h-full transition-all duration-500 rounded-full ${
+                  gameState.letterBagCount === 0
+                    ? 'bg-rose-500'
+                    : gameState.letterBagCount <= 15
+                    ? 'bg-amber-400 animate-pulse'
+                    : 'bg-gradient-to-r from-[#38BDF8] to-[#10B981]'
+                }`}
+                style={{ width: `${Math.max(0, Math.min(100, (gameState.letterBagCount / 102) * 100))}%` }}
+              />
+            </div>
+            <div className="flex items-center justify-between text-[10px] text-gray-400 font-bold">
+              <span>
+                {gameState.letterBagCount === 0
+                  ? '⚠️ Sac vide (Sprint final !)'
+                  : gameState.letterBagCount <= 15
+                  ? '⚡ Dernières tuiles disponibles'
+                  : '✨ Pioche active'}
+              </span>
+              <span className="font-mono text-gray-300">
+                {Math.round((gameState.letterBagCount / 102) * 100)}%
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Dictionary Card */}
         <div className="p-4 rounded-3xl bg-gradient-to-b from-[#1C2826]/90 to-[#0F1715]/90 border-2 border-[#10B981]/50 shadow-2xl backdrop-blur-xl space-y-3 flex-1 flex flex-col justify-between">
           <div className="space-y-3">
             <div className="flex items-center justify-between border-b border-white/10 pb-2.5">
