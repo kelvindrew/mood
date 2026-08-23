@@ -32,9 +32,21 @@ export const TVHomeView: React.FC = () => {
   const activeGame = games[activeIndex] || games[0];
 
   return (
-    <div className="flex flex-col min-h-screen justify-center items-center select-none forest-sunlight-bg relative overflow-hidden">
-      {/* 1. Centerpiece 3D Perspective Cover Flow Launcher (VisionOS Style) */}
-      <div className="w-full max-w-7xl px-4 flex items-center justify-center my-auto pt-16 pb-28">
+    <div className="relative w-full min-h-screen flex flex-col justify-center items-center select-none bg-[#050A08] overflow-hidden">
+      {/* 1. Full-Bleed Dynamic Ambient Background (VisionOS / Apple Music Style) */}
+      <div className="fixed inset-0 z-0 pointer-events-none transition-all duration-700 overflow-hidden">
+        <img
+          src={activeGame.heroImage || activeGame.coverImage}
+          alt={activeGame.title}
+          className="w-full h-full object-cover object-center filter blur-3xl opacity-30 scale-125 transition-opacity duration-700"
+        />
+        {/* Soft radial vignette */}
+        <div className="absolute inset-0 bg-gradient-to-t from-[#050A08] via-[#050A08]/60 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#050A08]/80 via-transparent to-[#050A08]" />
+      </div>
+
+      {/* 2. Centerpiece 3D Perspective Cover Flow Launcher (VisionOS Style) */}
+      <div className="relative z-10 w-full h-screen flex items-center justify-center pt-16 pb-24 px-4 overflow-hidden">
         <TVCoverFlowLauncher
           games={games}
           activeIndex={activeIndex}
@@ -44,7 +56,7 @@ export const TVHomeView: React.FC = () => {
         />
       </div>
 
-      {/* 2. Floating VisionOS Glassmorphic Control Bar (Minimal & Clean) */}
+      {/* 3. Floating VisionOS Glassmorphic Control Bar (Minimal & Clean) */}
       <TVFloatingControlBar
         activeGame={activeGame}
         onPrev={() => setActiveIndex((prev) => (prev > 0 ? prev - 1 : games.length - 1))}
