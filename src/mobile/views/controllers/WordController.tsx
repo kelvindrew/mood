@@ -5,7 +5,36 @@ import { MobileHeader } from '../../components/MobileHeader';
 import { ReactionFlinger } from '../../components/ReactionFlinger';
 import { triggerHaptic, hapticPatterns } from '../../components/HapticFeedback';
 import { audio } from '../../../services/audio';
-import { Check, SkipForward, Trash2, ArrowRight, ArrowDown, Grid, Sparkles, BookOpen, AlertCircle } from 'lucide-react';
+import {
+  Check,
+  SkipForward,
+  RotateCcw,
+  ArrowRight,
+  ArrowDown,
+  Grid,
+  Sparkles,
+  BookOpen,
+  RefreshCw,
+  X,
+  AlertTriangle,
+  Info,
+} from 'lucide-react';
+
+function getMultiplier(r: number, c: number): string {
+  if (r === 7 && c === 7) return 'CENTER';
+  if ((r === 0 || r === 7 || r === 14) && (c === 0 || c === 7 || c === 14) && !(r === 7 && c === 7)) return 'TW';
+  if ((r === c || r + c === 14) && ((r >= 1 && r <= 4) || (r >= 10 && r <= 13))) return 'DW';
+  if ((r === 1 || r === 5 || r === 9 || r === 13) && (c === 5 || c === 9) ||
+      (r === 5 || r === 9) && (c === 1 || c === 13)) return 'TL';
+  if (
+    (r === 0 || r === 14) && (c === 3 || c === 11) ||
+    (r === 2 || r === 12) && (c === 6 || c === 8) ||
+    (r === 3 || r === 11) && (c === 0 || c === 7 || c === 14) ||
+    (r === 6 || r === 8) && (c === 2 || c === 6 || c === 8 || c === 12) ||
+    (r === 7) && (c === 3 || c === 11)
+  ) return 'DL';
+  return 'NONE';
+}
 
 interface TileItem {
   id: string;
@@ -18,17 +47,8 @@ const MULTIPLIERS_MAP: Record<string, { label: string; bg: string; text: string 
   DW: { label: 'MD', bg: 'bg-pink-500', text: 'text-white' },
   TL: { label: 'LT', bg: 'bg-blue-600', text: 'text-white' },
   DL: { label: 'LD', bg: 'bg-sky-500', text: 'text-white' },
-  CENTER: { label: '★', bg: 'bg-brand-red', text: 'text-white' },
+  CENTER: { label: '★', bg: 'bg-amber-400', text: 'text-black' },
 };
-
-function getMultiplier(r: number, c: number): string {
-  if (r === 7 && c === 7) return 'CENTER';
-  if ((r === 0 || r === 7 || r === 14) && (c === 0 || c === 7 || c === 14) && !(r === 7 && c === 7)) return 'TW';
-  if ((r === c || r + c === 14) && (r >= 1 && r <= 4 || r >= 10 && r <= 13)) return 'DW';
-  if ((r === 1 || r === 5 || r === 9 || r === 13) && (c === 1 || c === 5 || c === 9 || c === 13)) return 'TL';
-  if ((r === 0 || r === 14) && (c === 3 || c === 11) || (r === 2 || r === 12) && (c === 6 || c === 8) || (r === 3 || r === 11) && (c === 0 || c === 7 || c === 14) || (r === 6 || r === 8) && (c === 2 || c === 6 || c === 8 || c === 12) || (r === 7) && (c === 3 || c === 11)) return 'DL';
-  return 'NONE';
-}
 
 export const WordController: React.FC = () => {
   const { room, localPlayer, sendGameAction } = useGame();
@@ -36,8 +56,11 @@ export const WordController: React.FC = () => {
 
   const [composedWord, setComposedWord] = useState<TileItem[]>([]);
   const [startRow, setStartRow] = useState<number>(7);
-  const [startCol, setStartCol] = useState<number>(10);
+  const [startCol, setStartCol] = useState<number>(7);
   const [direction, setDirection] = useState<'horizontal' | 'vertical'>('horizontal');
+  const [showSwapModal, setShowSwapModal] = useState<boolean>(false);
+  const [selectedSwapIds, setSelectedSwapIds] = useState<string[]>([]);
+  const [localError, setLocalError] = useState<string>('');
 
   if (!gameState || !localPlayer) return null;
 
@@ -47,22 +70,26 @@ export const WordController: React.FC = () => {
   const handleAddTile = (tile: TileItem) => {
     triggerHaptic(hapticPatterns.tap);
     audio.playFocus();
+    setLocalError('');
     setComposedWord((prev) => [...prev, tile]);
   };
 
   const handleRemoveTile = (tileId: string) => {
     triggerHaptic(hapticPatterns.tap);
+    setLocalError('');
     setComposedWord((prev) => prev.filter((t) => t.id !== tileId));
   };
 
   const handleClear = () => {
     triggerHaptic(hapticPatterns.tap);
+    setLocalError('');
     setComposedWord([]);
   };
 
   const handleSelectCell = (r: number, c: number) => {
     triggerHaptic(hapticPatterns.tap);
     audio.playFocus();
+    setLocalError('');
     setStartRow(r);
     setStartCol(c);
   };
@@ -70,6 +97,7 @@ export const WordController: React.FC = () => {
   const handleToggleDirection = () => {
     triggerHaptic(hapticPatterns.tap);
     audio.playFocus();
+    setLocalError('');
     setDirection((prev) => (prev === 'horizontal' ? 'vertical' : 'horizontal'));
   };
 
@@ -80,7 +108,7 @@ export const WordController: React.FC = () => {
     let curC = startCol;
 
     for (let i = 0; i < composedWord.length; i++) {
-      // Find the next available empty cell along the direction
+      // Find next available empty cell along direction
       while (curR < 15 && curC < 15 && gameState.board[curR]?.[curC] !== null) {
         if (direction === 'horizontal') curC++;
         else curR++;
@@ -103,7 +131,6 @@ export const WordController: React.FC = () => {
   const fullFormedWordString = useMemo(() => {
     if (placedTilePlacements.length === 0) return '';
 
-    // Create a virtual line copy
     const virtualBoard = gameState.board.map((row) => row.map((cell) => (cell ? { ...cell } : null)));
     for (const p of placedTilePlacements) {
       virtualBoard[p.row][p.col] = {
@@ -148,6 +175,7 @@ export const WordController: React.FC = () => {
     if (!isMyTurn || placedTilePlacements.length === 0) return;
     triggerHaptic(hapticPatterns.success);
     audio.playSelect();
+    setLocalError('');
 
     const tilesPlaced = placedTilePlacements.map((p) => ({
       row: p.row,
@@ -165,6 +193,22 @@ export const WordController: React.FC = () => {
     triggerHaptic(hapticPatterns.tap);
     sendGameAction('word_pass_turn');
     setComposedWord([]);
+    setLocalError('');
+  };
+
+  const handleToggleSwapTile = (tileId: string) => {
+    setSelectedSwapIds((prev) =>
+      prev.includes(tileId) ? prev.filter((id) => id !== tileId) : [...prev, tileId]
+    );
+  };
+
+  const handleConfirmSwap = () => {
+    if (selectedSwapIds.length === 0) return;
+    triggerHaptic(hapticPatterns.success);
+    sendGameAction('word_swap_tiles', { tileIds: selectedSwapIds });
+    setSelectedSwapIds([]);
+    setShowSwapModal(false);
+    setComposedWord([]);
   };
 
   const potentialScore = composedWord.reduce((sum, t) => sum + t.points, 0);
@@ -174,20 +218,20 @@ export const WordController: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col justify-between bg-background text-white select-none">
+    <div className="min-h-screen flex flex-col justify-between bg-[#0B100E] text-white select-none">
       <MobileHeader />
 
-      <main className="p-3 flex-1 flex flex-col justify-between space-y-3">
+      <main className="p-3 flex-1 flex flex-col justify-between space-y-2.5 max-w-lg mx-auto w-full">
         {/* Turn Status Banner */}
         <div
           className={`p-2.5 rounded-2xl text-center border transition-all ${
             isMyTurn
-              ? 'bg-brand-gold/20 border-brand-gold shadow-glow-gold'
-              : 'bg-surface-card border-white/10 text-gray-400'
+              ? 'bg-[#10B981]/20 border-[#10B981] shadow-[0_0_15px_rgba(16,185,129,0.3)]'
+              : 'bg-white/5 border-white/10 text-gray-400'
           }`}
         >
           <div className="flex items-center justify-between px-2">
-            <span className="text-[10px] font-black uppercase tracking-wider text-brand-gold">
+            <span className="text-[11px] font-black uppercase tracking-wider text-[#10B981]">
               {isMyTurn ? '🌟 VOTRE TOUR DE JOUER' : 'TOUR ADVERSE'}
             </span>
             <div className="flex items-center space-x-1 font-mono font-bold text-xs text-white">
@@ -196,18 +240,18 @@ export const WordController: React.FC = () => {
           </div>
         </div>
 
-        {/* Complete Word Live Formation Display */}
+        {/* Live Word Formation Display */}
         {fullFormedWordString && (
-          <div className="p-3 rounded-2xl bg-surface-card border-2 border-brand-cyan/60 shadow-glow-cyan flex items-center justify-between animate-scale-in">
+          <div className="p-2.5 rounded-2xl bg-white/[0.08] border-2 border-[#38BDF8] shadow-lg flex items-center justify-between animate-scale-in">
             <div className="flex items-center space-x-2">
-              <BookOpen className="w-4 h-4 text-brand-cyan" />
-              <span className="text-[10px] font-black uppercase text-gray-300">Mot complet formé :</span>
+              <BookOpen className="w-4 h-4 text-[#38BDF8]" />
+              <span className="text-[10px] font-black uppercase text-gray-300">Mot formé :</span>
             </div>
             <div className="flex items-center space-x-2">
-              <span className="text-lg font-black font-mono tracking-widest text-brand-cyan">
+              <span className="text-base font-black font-mono tracking-widest text-[#38BDF8]">
                 "{fullFormedWordString}"
               </span>
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-brand-cyan/20 text-brand-cyan">
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-[#38BDF8]/20 text-[#38BDF8]">
                 +{potentialScore} pts
               </span>
             </div>
@@ -215,18 +259,18 @@ export const WordController: React.FC = () => {
         )}
 
         {/* Interactive 15x15 Mini Scrabble Table */}
-        <div className="rounded-3xl bg-[#1A140F] border-2 border-[#3A2D23] p-2 shadow-2xl space-y-2">
+        <div className="rounded-3xl bg-[#140F0A] border-2 border-[#3A2D23] p-2 shadow-2xl space-y-2">
           <div className="flex items-center justify-between px-1">
-            <div className="flex items-center space-x-2">
-              <Grid className="w-4 h-4 text-brand-gold" />
-              <span className="text-xs font-black uppercase tracking-wide text-gray-200">
-                TABLEAU SCRABBLE ({direction === 'horizontal' ? 'HORIZONTAL ➔' : 'VERTICAL ⬇'})
+            <div className="flex items-center space-x-1.5">
+              <Grid className="w-4 h-4 text-[#FBBF24]" />
+              <span className="text-[11px] font-black uppercase tracking-wide text-gray-200">
+                TABLEAU SCRABBLE 15x15
               </span>
             </div>
 
             <button
               onClick={handleToggleDirection}
-              className="px-2.5 py-1 rounded-lg bg-surface-card border border-white/15 text-xs font-bold text-brand-cyan flex items-center space-x-1 active:scale-95 transition-all"
+              className="px-2.5 py-1 rounded-xl bg-white/10 border border-white/15 text-xs font-bold text-[#38BDF8] flex items-center space-x-1 active:scale-95 transition-all"
             >
               {direction === 'horizontal' ? <ArrowRight className="w-3.5 h-3.5" /> : <ArrowDown className="w-3.5 h-3.5" />}
               <span>{direction === 'horizontal' ? 'Horizontal' : 'Vertical'}</span>
@@ -250,13 +294,13 @@ export const WordController: React.FC = () => {
                     <button
                       key={`grid_${rIdx}_${cIdx}`}
                       onClick={() => handleSelectCell(rIdx, cIdx)}
-                      className={`relative w-full h-full rounded-sm flex items-center justify-center font-display font-black text-[9px] transition-all leading-none ${
+                      className={`relative w-full h-full rounded-xs flex items-center justify-center font-display font-black text-[9px] transition-all leading-none ${
                         isSelectedStart
-                          ? 'ring-2 ring-brand-gold bg-amber-400 text-gray-900 z-20 scale-110 shadow-lg'
+                          ? 'ring-2 ring-[#FBBF24] bg-amber-400 text-gray-950 z-20 scale-110 shadow-lg'
                           : previewTile
-                          ? 'bg-emerald-400 text-gray-900 ring-1 ring-emerald-200 z-10 animate-pulse'
+                          ? 'bg-[#10B981] text-white ring-1 ring-white z-10 animate-pulse'
                           : boardTile
-                          ? 'bg-[#EAD7B2] text-gray-900 shadow-sm'
+                          ? 'bg-[#FBF2DE] text-gray-950 shadow-sm'
                           : multConfig
                           ? `${multConfig.bg} ${multConfig.text} opacity-90`
                           : 'bg-[#221A14]/80 text-gray-600 hover:bg-[#34281F]'
@@ -276,27 +320,29 @@ export const WordController: React.FC = () => {
             </div>
           </div>
 
-          <div className="flex items-center justify-between text-[11px] text-gray-400 px-1">
+          <div className="flex items-center justify-between text-[10px] text-gray-400 px-1">
             <span>📍 Case départ : <strong className="text-white">Ligne {startRow + 1}, Col {startCol + 1}</strong></span>
-            <span className="text-brand-gold">Touchez une case pour viser</span>
+            <span className="text-[#FBBF24]">Touchez une case pour viser</span>
           </div>
         </div>
 
         {/* Word Builder Construction Area */}
-        <div className="p-3 rounded-2xl bg-surface-card border border-white/10 space-y-2 shadow-xl">
+        <div className="p-2.5 rounded-2xl bg-white/[0.06] border border-white/10 space-y-1.5 shadow-xl">
           <div className="flex items-center justify-between">
-            <span className="text-[10px] font-black uppercase text-gray-300">LETTRES POSÉES DEPUIS LE CHEVALET</span>
-            <div className="flex items-center space-x-2">
-              {composedWord.length > 0 && (
-                <button onClick={handleClear} className="p-1 text-gray-400 hover:text-white">
-                  <Trash2 className="w-3.5 h-3.5 text-rose-400" />
-                </button>
-              )}
-            </div>
+            <span className="text-[10px] font-black uppercase text-gray-300">LETTRES POSÉES</span>
+            {composedWord.length > 0 && (
+              <button
+                onClick={handleClear}
+                className="text-xs text-rose-400 font-bold flex items-center space-x-1 hover:underline"
+              >
+                <RotateCcw className="w-3 h-3" />
+                <span>Rappeler tout</span>
+              </button>
+            )}
           </div>
 
           {/* Letter Slots */}
-          <div className="flex items-center space-x-1.5 min-h-[44px] p-1.5 rounded-xl bg-surface-dark border border-dashed border-white/20 overflow-x-auto">
+          <div className="flex items-center space-x-1.5 min-h-[44px] p-1.5 rounded-xl bg-black/40 border border-dashed border-white/20 overflow-x-auto">
             {composedWord.length === 0 ? (
               <span className="text-xs text-gray-500 mx-auto">Touchez vos lettres ci-dessous pour former un mot</span>
             ) : (
@@ -304,10 +350,10 @@ export const WordController: React.FC = () => {
                 <button
                   key={t.id}
                   onClick={() => handleRemoveTile(t.id)}
-                  className="w-9 h-9 rounded-xl bg-[#EAD7B2] border border-[#D5BE93] text-gray-900 font-black font-display text-base flex items-center justify-center relative shadow-md active:scale-90 transition-transform flex-shrink-0"
+                  className="w-10 h-10 rounded-xl bg-[#FBF2DE] border border-[#D5C29A] text-gray-950 font-black font-display text-lg flex items-center justify-center relative shadow-md active:scale-90 transition-transform flex-shrink-0"
                 >
                   <span>{t.letter}</span>
-                  <span className="absolute bottom-0.5 right-0.5 text-[7px] text-gray-700 font-sans font-bold leading-none">
+                  <span className="absolute bottom-0.5 right-0.5 text-[8px] text-gray-700 font-sans font-bold leading-none">
                     {t.points}
                   </span>
                 </button>
@@ -317,12 +363,13 @@ export const WordController: React.FC = () => {
         </div>
 
         {/* Secret Player Rack of 7 Tiles */}
-        <div className="space-y-1.5">
-          <span className="text-[10px] font-black uppercase text-gray-300 block">
-            VOTRE CHEVALET PRIVÉ (7 LETTRES)
-          </span>
+        <div className="space-y-1">
+          <div className="flex items-center justify-between text-[10px] font-black uppercase text-gray-300 px-1">
+            <span>VOTRE CHEVALET PRIVÉ (7 LETTRES)</span>
+            <span className="text-[#38BDF8]">{gameState.letterBagCount} dans le sac</span>
+          </div>
 
-          <div className="grid grid-cols-7 gap-1.5 p-2.5 rounded-2xl bg-[#2A1F18] border-2 border-[#543E30] shadow-2xl">
+          <div className="grid grid-cols-7 gap-1.5 p-2 rounded-2xl bg-[#2A1F18] border-2 border-[#543E30] shadow-2xl">
             {myRack.map((tile: TileItem) => {
               const isUsed = composedWord.some((w) => w.id === tile.id);
               return (
@@ -333,7 +380,7 @@ export const WordController: React.FC = () => {
                   className={`aspect-square rounded-xl flex flex-col items-center justify-center font-display font-black text-lg relative transition-all ${
                     isUsed
                       ? 'bg-black/40 border border-white/5 text-gray-600 opacity-25'
-                      : 'bg-[#EAD7B2] border-2 border-[#D5BE93] text-gray-900 shadow-lg hover:scale-105 active:scale-90'
+                      : 'bg-[#FBF2DE] border-2 border-[#D5C29A] text-gray-950 shadow-lg hover:scale-105 active:scale-90'
                   }`}
                 >
                   <span className="leading-none">{tile.letter}</span>
@@ -346,26 +393,94 @@ export const WordController: React.FC = () => {
           </div>
         </div>
 
-        {/* Action Buttons: Validate Word & Pass Turn */}
-        <div className="grid grid-cols-3 gap-2">
+        {/* Action Controls: Validate Word, Swap Letters, Pass Turn */}
+        <div className="grid grid-cols-4 gap-2 pt-1">
           <button
             disabled={!isMyTurn || composedWord.length === 0}
             onClick={handleValidateWord}
-            className="col-span-2 py-3.5 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-500 text-white font-black text-xs shadow-glow-emerald disabled:opacity-40 flex items-center justify-center space-x-2 active:scale-95 transition-all"
+            className="col-span-2 py-3.5 rounded-2xl bg-gradient-to-r from-[#10B981] via-[#059669] to-[#F59E0B] text-white font-black text-xs shadow-lg disabled:opacity-30 flex items-center justify-center space-x-1.5 active:scale-95 transition-all"
           >
             <Check className="w-4 h-4" />
-            <span>VALIDER LE MOT COMPLET</span>
+            <span>VALIDER LE COUP</span>
+          </button>
+
+          <button
+            disabled={!isMyTurn || gameState.letterBagCount < 7}
+            onClick={() => setShowSwapModal(true)}
+            className="py-3.5 rounded-2xl bg-white/10 border border-white/15 text-[#38BDF8] font-bold text-xs hover:bg-white/20 disabled:opacity-30 flex items-center justify-center space-x-1 active:scale-95 transition-all"
+            title="Échanger des lettres avec le sac"
+          >
+            <RefreshCw className="w-3.5 h-3.5" />
+            <span>ÉCHANGER</span>
           </button>
 
           <button
             disabled={!isMyTurn}
             onClick={handlePass}
-            className="py-3.5 rounded-2xl bg-surface-card border border-white/10 text-gray-300 font-bold text-xs hover:text-white disabled:opacity-40 flex items-center justify-center space-x-1 active:scale-95 transition-all"
+            className="py-3.5 rounded-2xl bg-white/10 border border-white/15 text-gray-300 font-bold text-xs hover:text-white disabled:opacity-30 flex items-center justify-center space-x-1 active:scale-95 transition-all"
           >
             <SkipForward className="w-3.5 h-3.5" />
             <span>PASSER</span>
           </button>
         </div>
+
+        {/* Letter Swap Modal */}
+        {showSwapModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-4 animate-scale-in">
+            <div className="w-full max-w-sm p-5 rounded-3xl bg-[#1A140F] border-2 border-[#38BDF8] shadow-2xl space-y-4 text-center">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-black uppercase text-[#38BDF8] tracking-wider">
+                  ÉCHANGE DE LETTRES
+                </span>
+                <button onClick={() => setShowSwapModal(false)} className="text-gray-400 hover:text-white">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <p className="text-xs text-gray-300">
+                Sélectionnez les lettres de votre chevalet à échanger avec le sac ({gameState.letterBagCount} disponibles).
+              </p>
+
+              <div className="grid grid-cols-4 gap-2 py-2">
+                {myRack.map((tile) => {
+                  const isSelected = selectedSwapIds.includes(tile.id);
+                  return (
+                    <button
+                      key={tile.id}
+                      onClick={() => handleToggleSwapTile(tile.id)}
+                      className={`aspect-square rounded-2xl flex flex-col items-center justify-center font-display font-black text-xl relative transition-all ${
+                        isSelected
+                          ? 'bg-[#38BDF8] text-gray-950 ring-4 ring-[#38BDF8]/50 scale-105 shadow-lg'
+                          : 'bg-[#FBF2DE] text-gray-950 border-2 border-[#D5C29A]'
+                      }`}
+                    >
+                      <span>{tile.letter}</span>
+                      <span className="absolute bottom-1 right-1 text-[8px] font-sans font-bold leading-none">
+                        {tile.points}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              <div className="flex space-x-2 pt-2">
+                <button
+                  disabled={selectedSwapIds.length === 0}
+                  onClick={handleConfirmSwap}
+                  className="flex-1 py-3 rounded-2xl bg-gradient-to-r from-[#38BDF8] to-[#0284C7] text-white font-black text-xs uppercase disabled:opacity-40 shadow-lg"
+                >
+                  Confirmer ({selectedSwapIds.length})
+                </button>
+                <button
+                  onClick={() => setShowSwapModal(false)}
+                  className="px-4 py-3 rounded-2xl bg-white/10 text-gray-300 font-bold text-xs"
+                >
+                  Annuler
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         <ReactionFlinger />
       </main>

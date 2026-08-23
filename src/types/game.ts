@@ -187,16 +187,41 @@ export interface BoardTile {
   isLocked?: boolean;
 }
 
+export interface ScrabblePlayerStats {
+  wordsCount: number;
+  scrabbleCount: number;
+  bestWord: string | null;
+  bestWordPoints: number;
+  maxTurnScore: number;
+}
+
+export interface ScrabblePodiumItem {
+  id: string;
+  name: string;
+  score: number;
+  stats: ScrabblePlayerStats;
+}
+
 export interface ScrabbleGameState {
   board: (BoardTile | null)[][];
   letterBagCount: number;
   currentPlayerId: string;
   playerRacks: Record<string, { letter: string; points: number; id: string }[]>;
   playerScores?: Record<string, number>;
+  playerStats?: Record<string, ScrabblePlayerStats>;
   turnTimeLeft: number;
-  lastWordPlayed?: { word: string; points: number; player: string; isValid?: boolean; reason?: string };
+  lastWordPlayed?: {
+    word: string;
+    allWords?: string[];
+    points: number;
+    player: string;
+    isValid?: boolean;
+    reason?: string;
+    isScrabble?: boolean;
+  };
   lastActionLog?: string;
   winner: string | null;
+  finalPodium?: ScrabblePodiumItem[] | null;
 }
 
 // 5. CARD PARTY (UNO-STYLE)

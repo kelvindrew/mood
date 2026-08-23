@@ -1,9 +1,9 @@
-// Scrabble & Word Master Game Engine for PLAYFLIX
-// 15x15 standard board with dynamic bonus multipliers, French letter distribution and Complete Word ODS Verification
+// Scrabble & Word Master Official Game Engine for PLAYFLIX
+// Full 15x15 standard French Scrabble rules (ODS), multi-word cross validation, 102-letter bag, single-use multipliers & end game scoring.
 
 import { isValidScrabbleWord, findPossibleWordsFromRack } from './scrabbleDictionary.js';
 
-const LETTER_POINTS = {
+export const LETTER_POINTS = {
   A: 1, E: 1, I: 1, L: 1, N: 1, O: 1, R: 1, S: 1, T: 1, U: 1,
   D: 2, G: 2, M: 2,
   B: 3, C: 3, P: 3,
@@ -12,20 +12,52 @@ const LETTER_POINTS = {
   K: 10, W: 10, X: 10, Y: 10, Z: 10,
 };
 
-const FRENCH_LETTER_DISTRIBUTION = [
-  ...'AAAAAAAAA', ...'BB', ...'CC', ...'DDD', ...'EEEEEEEEEEEEEEE',
-  ...'FF', ...'GG', ...'HH', ...'IIIIIIII', ...'J', ...'K',
-  ...'LLLLL', ...'MMM', ...'NNNNNN', ...'OOOOOO', ...'PPP', ...'Q',
-  ...'RRRRRR', ...'SSSSSS', ...'TTTTTT', ...'UUUUUU', ...'VV', ...'W',
-  ...'X', ...'Y', ...'Z'
+// Official French Scrabble 102-letter distribution
+export const FRENCH_LETTER_DISTRIBUTION = [
+  ...'AAAAAAAAA', // 9 A
+  ...'BB',        // 2 B
+  ...'CC',        // 2 C
+  ...'DDD',       // 3 D
+  ...'EEEEEEEEEEEEEEE', // 15 E
+  ...'FF',        // 2 F
+  ...'GG',        // 2 G
+  ...'HH',        // 2 H
+  ...'IIIIIIII',  // 8 I
+  ...'J',         // 1 J
+  ...'K',         // 1 K
+  ...'LLLLL',     // 5 L
+  ...'MMM',       // 3 M
+  ...'NNNNNN',    // 6 N
+  ...'OOOOOO',    // 6 O
+  ...'PPP',       // 3 P
+  ...'Q',         // 1 Q
+  ...'RRRRRR',    // 6 R
+  ...'SSSSSS',    // 6 S
+  ...'TTTTTT',    // 6 T
+  ...'UUUUUU',    // 6 U
+  ...'VV',        // 2 V
+  ...'W',         // 1 W
+  ...'X',         // 1 X
+  ...'Y',         // 1 Y
+  ...'Z'          // 1 Z
 ];
 
-function getMultiplier(r, c) {
-  if (r === 7 && c === 7) return 'CENTER'; // MD (x2)
+/**
+ * Multiplier map for standard 15x15 French Scrabble board
+ */
+export function getMultiplier(r, c) {
+  if (r === 7 && c === 7) return 'CENTER'; // Case centrale (MD x2)
   if ((r === 0 || r === 7 || r === 14) && (c === 0 || c === 7 || c === 14) && !(r === 7 && c === 7)) return 'TW'; // Mot Triple (x3)
   if ((r === c || r + c === 14) && ((r >= 1 && r <= 4) || (r >= 10 && r <= 13))) return 'DW'; // Mot Double (x2)
-  if ((r === 1 || r === 5 || r === 9 || r === 13) && (c === 1 || c === 5 || c === 9 || c === 13)) return 'TL'; // Lettre Triple (x3)
-  if ((r === 0 || r === 14) && (c === 3 || c === 11) || (r === 2 || r === 12) && (c === 6 || c === 8) || (r === 3 || r === 11) && (c === 0 || c === 7 || c === 14) || (r === 6 || r === 8) && (c === 2 || c === 6 || c === 8 || c === 12) || (r === 7) && (c === 3 || c === 11)) return 'DL'; // Lettre Double (x2)
+  if ((r === 1 || r === 5 || r === 9 || r === 13) && (c === 5 || c === 9) ||
+      (r === 5 || r === 9) && (c === 1 || c === 13)) return 'TL'; // Lettre Triple (x3)
+  if (
+    (r === 0 || r === 14) && (c === 3 || c === 11) ||
+    (r === 2 || r === 12) && (c === 6 || c === 8) ||
+    (r === 3 || r === 11) && (c === 0 || c === 7 || c === 14) ||
+    (r === 6 || r === 8) && (c === 2 || c === 6 || c === 8 || c === 12) ||
+    (r === 7) && (c === 3 || c === 11)
+  ) return 'DL'; // Lettre Double (x2)
   return 'NONE';
 }
 
@@ -49,23 +81,30 @@ export class WordEngine {
     this.letterBag = [...FRENCH_LETTER_DISTRIBUTION].sort(() => Math.random() - 0.5);
     this.playerRacks = {};
     this.playerScores = {};
+    this.playerStats = {};
     this.winner = null;
+    this.finalPodium = null;
     this.turnTimeLeft = 45;
     this.lastWordPlayed = null;
-    this.lastActionLog = 'La partie de Scrabble commence ! Placez vos mots.';
+    this.consecutivePasses = 0;
+    this.lastActionLog = 'La partie de Scrabble commence ! Placez le premier mot sur la case centrale ★.';
     this.onStateChange = onStateChange;
     this.onGameOver = onGameOver;
 
-    // Initialize 15x15 board
+    // Initialize 15x15 clean board
     this.board = Array(15).fill(null).map(() => Array(15).fill(null));
-
-    // Seed starter word in center
-    this.seedInitialBoard();
 
     // Distribute 7 letters to each player
     for (const player of this.players) {
       this.playerRacks[player.id] = this.drawLetters(7);
       this.playerScores[player.id] = 0;
+      this.playerStats[player.id] = {
+        wordsCount: 0,
+        scrabbleCount: 0,
+        bestWord: null,
+        bestWordPoints: 0,
+        maxTurnScore: 0,
+      };
     }
 
     this.timer = null;
@@ -74,19 +113,13 @@ export class WordEngine {
     this.checkBotTurn();
   }
 
-  seedInitialBoard() {
-    const starterWord = "SALON";
-    const startRow = 7;
-    const startCol = 5;
-    for (let i = 0; i < starterWord.length; i++) {
-      const letter = starterWord[i];
-      this.board[startRow][startCol + i] = {
-        letter,
-        points: LETTER_POINTS[letter] || 1,
-        placedBy: 'PLAYFLIX',
-        isLocked: true,
-      };
+  isBoardEmpty() {
+    for (let r = 0; r < 15; r++) {
+      for (let c = 0; c < 15; c++) {
+        if (this.board[r][c] !== null) return false;
+      }
     }
+    return true;
   }
 
   drawLetters(count) {
@@ -145,29 +178,77 @@ export class WordEngine {
     const rackLetters = rack.map(r => r.letter);
     const possibleWords = findPossibleWordsFromRack(rackLetters, 3, 6);
 
+    const empty = this.isBoardEmpty();
+
     if (possibleWords.length > 0) {
-      const wordToPlay = possibleWords[0];
-      // Find empty row or col
-      const row = Math.floor(Math.random() * 4) + 3; // rows 3 to 6
-      const col = Math.floor(Math.random() * (15 - wordToPlay.length));
-
-      const tilesPlaced = [];
-      for (let i = 0; i < wordToPlay.length; i++) {
-        const letter = wordToPlay[i];
-        const rackTile = rack.find(r => r.letter === letter && !tilesPlaced.some(t => t.tileId === r.id));
-        if (rackTile) {
-          tilesPlaced.push({
-            row,
-            col: col + i,
-            letter,
-            tileId: rackTile.id,
-          });
+      for (const wordToPlay of possibleWords) {
+        let row, col;
+        if (empty) {
+          // First move must cover (7, 7)
+          row = 7;
+          col = 7 - Math.floor(wordToPlay.length / 2);
+        } else {
+          // Find an existing letter to hook on
+          let hooked = false;
+          for (let r = 0; r < 15 && !hooked; r++) {
+            for (let c = 0; c < 15 && !hooked; c++) {
+              if (this.board[r][c]) {
+                const char = this.board[r][c].letter;
+                const charIdx = wordToPlay.indexOf(char);
+                if (charIdx !== -1) {
+                  // Try horizontal placement
+                  const testCol = c - charIdx;
+                  if (testCol >= 0 && testCol + wordToPlay.length <= 15) {
+                    row = r;
+                    col = testCol;
+                    hooked = true;
+                  }
+                }
+              }
+            }
+          }
+          if (!hooked) {
+            row = 7;
+            col = 7;
+          }
         }
-      }
 
-      if (tilesPlaced.length === wordToPlay.length) {
-        this.playWord(bot.id, tilesPlaced);
-        return;
+        const tilesPlaced = [];
+        let canPlace = true;
+
+        for (let i = 0; i < wordToPlay.length; i++) {
+          const letter = wordToPlay[i];
+          const curR = row;
+          const curC = col + i;
+
+          if (curC < 0 || curC >= 15) { canPlace = false; break; }
+
+          const existing = this.board[curR][curC];
+          if (existing) {
+            if (existing.letter !== letter) {
+              canPlace = false;
+              break;
+            }
+          } else {
+            const rackTile = rack.find(r => r.letter === letter && !tilesPlaced.some(t => t.tileId === r.id));
+            if (rackTile) {
+              tilesPlaced.push({
+                row: curR,
+                col: curC,
+                letter,
+                tileId: rackTile.id,
+              });
+            } else {
+              canPlace = false;
+              break;
+            }
+          }
+        }
+
+        if (canPlace && tilesPlaced.length > 0) {
+          const res = this.playWord(bot.id, tilesPlaced);
+          if (res.success) return;
+        }
       }
     }
 
@@ -176,7 +257,7 @@ export class WordEngine {
   }
 
   /**
-   * Main Word Placement & Complete Word Verification
+   * Main Word Placement & Multi-Word Verification (French ODS Scrabble Rules)
    * @param {string} playerId 
    * @param {Array<{ row: number, col: number, letter: string, tileId: string }>} tilesPlaced 
    */
@@ -193,19 +274,44 @@ export class WordEngine {
 
     const rack = this.playerRacks[playerId] || [];
 
-    // 1. Verify player actually possesses the tiles placed
+    // 1. Verify player possesses all placed tiles and target squares are empty
+    const usedTileIds = new Set();
     for (const t of tilesPlaced) {
-      const rackIndex = rack.findIndex(r => r.id === t.tileId && r.letter === t.letter);
-      if (rackIndex === -1) {
-        return { success: false, error: 'Lettre non possédée dans le chevalet' };
+      if (t.row < 0 || t.row >= 15 || t.col < 0 || t.col >= 15) {
+        return { success: false, error: 'Coordonnées en dehors du plateau 15x15' };
       }
       if (this.board[t.row][t.col] !== null) {
-        return { success: false, error: 'Case déjà occupée sur le plateau' };
+        return { success: false, error: `La case (${t.row + 1}, ${t.col + 1}) est déjà occupée` };
+      }
+      const rackIndex = rack.findIndex(r => r.id === t.tileId && r.letter === t.letter && !usedTileIds.has(r.id));
+      if (rackIndex === -1) {
+        return { success: false, error: `Lettre '${t.letter}' non possédée dans le chevalet` };
+      }
+      usedTileIds.add(t.tileId);
+    }
+
+    // 2. Verify Line Alignment (Single Row OR Single Col)
+    const isHorizontal = tilesPlaced.every(t => t.row === tilesPlaced[0].row);
+    const isVertical = tilesPlaced.every(t => t.col === tilesPlaced[0].col);
+
+    if (!isHorizontal && !isVertical) {
+      return { success: false, error: 'Toutes les lettres d’un coup doivent être alignées sur une seule ligne ou colonne' };
+    }
+
+    // 3. First Move Rule: Must cover center square (7, 7)
+    const emptyBoard = this.isBoardEmpty();
+    if (emptyBoard) {
+      const coversCenter = tilesPlaced.some(t => t.row === 7 && t.col === 7);
+      if (!coversCenter) {
+        return { success: false, error: 'Le premier mot doit obligatoirement passer par la case centrale ★ (Ligne 8, Colonne 8)' };
+      }
+      if (tilesPlaced.length < 2) {
+        return { success: false, error: 'Le premier mot doit comporter au moins 2 lettres' };
       }
     }
 
-    // 2. Build Virtual Simulation Board containing existing tiles + new tiles
-    const simBoard = this.board.map(row => row.map(cell => cell ? { ...cell } : null));
+    // 4. Build Simulation Board to test word formation and continuity
+    const simBoard = this.board.map(row => row.map(cell => cell ? { ...cell, isNew: false } : null));
     for (const t of tilesPlaced) {
       simBoard[t.row][t.col] = {
         letter: t.letter,
@@ -218,109 +324,188 @@ export class WordEngine {
       };
     }
 
-    // 3. Determine Word Orientation (Horizontal or Vertical)
-    const isHorizontal = tilesPlaced.length === 1
-      ? (tilesPlaced[0].col > 0 && simBoard[tilesPlaced[0].row][tilesPlaced[0].col - 1] !== null) ||
-        (tilesPlaced[0].col < 14 && simBoard[tilesPlaced[0].row][tilesPlaced[0].col + 1] !== null)
-      : tilesPlaced.every(t => t.row === tilesPlaced[0].row);
-
-    // 4. Extract the COMPLETE CONTIGUOUS WORD formed on the board
-    let fullWordTiles = [];
-    let wordFormed = '';
-
+    // Check continuity along the main placement line (no empty gap between min & max)
     if (isHorizontal) {
       const r = tilesPlaced[0].row;
       const cols = tilesPlaced.map(t => t.col);
-      let minCol = Math.min(...cols);
-      let maxCol = Math.max(...cols);
-
-      // Walk left to find the exact start of the word on the board
-      while (minCol > 0 && simBoard[r][minCol - 1] !== null) {
-        minCol--;
-      }
-      // Walk right to find the exact end of the word on the board
-      while (maxCol < 14 && simBoard[r][maxCol + 1] !== null) {
-        maxCol++;
-      }
-
+      const minCol = Math.min(...cols);
+      const maxCol = Math.max(...cols);
       for (let c = minCol; c <= maxCol; c++) {
-        const cell = simBoard[r][c];
-        if (cell) {
-          fullWordTiles.push({ ...cell, row: r, col: c });
-          wordFormed += cell.letter;
+        if (simBoard[r][c] === null) {
+          return { success: false, error: 'Les lettres doivent être continues sans case vide' };
         }
       }
     } else {
       const c = tilesPlaced[0].col;
       const rows = tilesPlaced.map(t => t.row);
-      let minRow = Math.min(...rows);
-      let maxRow = Math.max(...rows);
-
-      // Walk up to find the exact start of the word on the board
-      while (minRow > 0 && simBoard[minRow - 1][c] !== null) {
-        minRow--;
-      }
-      // Walk down to find the exact end of the word on the board
-      while (maxRow < 14 && simBoard[maxRow + 1][c] !== null) {
-        maxRow++;
-      }
-
+      const minRow = Math.min(...rows);
+      const maxRow = Math.max(...rows);
       for (let r = minRow; r <= maxRow; r++) {
-        const cell = simBoard[r][c];
-        if (cell) {
-          fullWordTiles.push({ ...cell, row: r, col: c });
-          wordFormed += cell.letter;
+        if (simBoard[r][c] === null) {
+          return { success: false, error: 'Les lettres doivent être continues sans case vide' };
         }
       }
     }
 
-    wordFormed = wordFormed.toUpperCase();
-
-    // 5. Verify the COMPLETE word against the Official French Scrabble Dictionary
-    const isValid = isValidScrabbleWord(wordFormed);
-
-    if (!isValid) {
-      // ❌ WORD REJECTED BY DICTIONARY : 0 Points & Pass Turn (penalized!)
-      this.lastWordPlayed = {
-        word: wordFormed,
-        points: 0,
-        player: currentPlayer.name,
-        isValid: false,
-        reason: 'Mot absent du dictionnaire officiel Scrabble',
-      };
-      this.lastActionLog = `❌ "${wordFormed}" REFUSÉ par le dictionnaire ! 0 point. Tour passé pour ${currentPlayer.name}.`;
-
-      // Player keeps letters in rack, but loses their turn as requested
-      this.nextTurn();
-      return {
-        success: false,
-        isValid: false,
-        word: wordFormed,
-        score: 0,
-        error: `Le mot complet "${wordFormed}" n'est pas reconnu dans le dictionnaire officiel.`,
-      };
-    }
-
-    // ✅ WORD VALIDATED BY DICTIONARY : Calculate Score with Board Multipliers
-    let wordMultiplier = 1;
-    let letterScoreSum = 0;
-
-    for (const t of fullWordTiles) {
-      const basePts = LETTER_POINTS[t.letter] || 1;
-      let tilePts = basePts;
-
-      if (t.isNew) {
-        // Multipliers only apply to newly placed tiles
-        const mult = getMultiplier(t.row, t.col);
-        if (mult === 'TL') tilePts *= 3;
-        else if (mult === 'DL') tilePts *= 2;
-        else if (mult === 'TW') wordMultiplier *= 3;
-        else if (mult === 'DW' || mult === 'CENTER') wordMultiplier *= 2;
+    // 5. Subsequent Moves: Must connect to at least one existing tile on the board
+    if (!emptyBoard) {
+      let isConnected = false;
+      for (const t of tilesPlaced) {
+        const neighbors = [
+          [t.row - 1, t.col],
+          [t.row + 1, t.col],
+          [t.row, t.col - 1],
+          [t.row, t.col + 1],
+        ];
+        for (const [nr, nc] of neighbors) {
+          if (nr >= 0 && nr < 15 && nc >= 0 && nc < 15) {
+            if (this.board[nr][nc] !== null) {
+              isConnected = true;
+              break;
+            }
+          }
+        }
+        if (isConnected) break;
       }
 
-      letterScoreSum += tilePts;
+      if (!isConnected) {
+        return { success: false, error: 'Le nouveau mot doit être connecté aux lettres déjà posées sur le plateau' };
+      }
+    }
 
-      // Lock tile on the actual board
+    // 6. Extract ALL Formed Words (Main Word + All Perpendicular Cross Words)
+    const allFormedWords = [];
+
+    // 6A. Extract Main Word
+    if (isHorizontal) {
+      const r = tilesPlaced[0].row;
+      let minCol = Math.min(...tilesPlaced.map(t => t.col));
+      let maxCol = Math.max(...tilesPlaced.map(t => t.col));
+      while (minCol > 0 && simBoard[r][minCol - 1] !== null) minCol--;
+      while (maxCol < 14 && simBoard[r][maxCol + 1] !== null) maxCol++;
+
+      const tiles = [];
+      let str = '';
+      for (let c = minCol; c <= maxCol; c++) {
+        const cell = simBoard[r][c];
+        tiles.push({ ...cell, row: r, col: c });
+        str += cell.letter;
+      }
+      if (str.length >= 2 || (emptyBoard && str.length >= 2)) {
+        allFormedWords.push({ word: str.toUpperCase(), tiles, isMain: true });
+      }
+    } else {
+      const c = tilesPlaced[0].col;
+      let minRow = Math.min(...tilesPlaced.map(t => t.row));
+      let maxRow = Math.max(...tilesPlaced.map(t => t.row));
+      while (minRow > 0 && simBoard[minRow - 1][c] !== null) minRow--;
+      while (maxRow < 14 && simBoard[maxRow + 1][c] !== null) maxRow++;
+
+      const tiles = [];
+      let str = '';
+      for (let r = minRow; r <= maxRow; r++) {
+        const cell = simBoard[r][c];
+        tiles.push({ ...cell, row: r, col: c });
+        str += cell.letter;
+      }
+      if (str.length >= 2 || (emptyBoard && str.length >= 2)) {
+        allFormedWords.push({ word: str.toUpperCase(), tiles, isMain: true });
+      }
+    }
+
+    // 6B. Extract Cross Words (perpendicular to each newly placed tile)
+    for (const t of tilesPlaced) {
+      if (isHorizontal) {
+        // Vertical cross word at column t.col
+        let minR = t.row;
+        let maxR = t.row;
+        while (minR > 0 && simBoard[minR - 1][t.col] !== null) minR--;
+        while (maxR < 14 && simBoard[maxR + 1][t.col] !== null) maxR++;
+
+        if (minR !== maxR) {
+          const crossTiles = [];
+          let crossStr = '';
+          for (let r = minR; r <= maxR; r++) {
+            const cell = simBoard[r][t.col];
+            crossTiles.push({ ...cell, row: r, col: t.col });
+            crossStr += cell.letter;
+          }
+          allFormedWords.push({ word: crossStr.toUpperCase(), tiles: crossTiles, isMain: false });
+        }
+      } else {
+        // Horizontal cross word at row t.row
+        let minC = t.col;
+        let maxC = t.col;
+        while (minC > 0 && simBoard[t.row][minC - 1] !== null) minC--;
+        while (maxC < 14 && simBoard[t.row][maxC + 1] !== null) maxC++;
+
+        if (minC !== maxC) {
+          const crossTiles = [];
+          let crossStr = '';
+          for (let c = minC; c <= maxC; c++) {
+            const cell = simBoard[t.row][c];
+            crossTiles.push({ ...cell, row: t.row, col: c });
+            crossStr += cell.letter;
+          }
+          allFormedWords.push({ word: crossStr.toUpperCase(), tiles: crossTiles, isMain: false });
+        }
+      }
+    }
+
+    if (allFormedWords.length === 0) {
+      return { success: false, error: 'Le placement ne forme aucun mot de 2 lettres ou plus' };
+    }
+
+    // 7. Verify Every Word Against the French Scrabble ODS Dictionary
+    for (const fw of allFormedWords) {
+      if (!isValidScrabbleWord(fw.word)) {
+        return {
+          success: false,
+          isValid: false,
+          word: fw.word,
+          error: `Le mot "${fw.word}" n'est pas présent dans le dictionnaire officiel Scrabble. Vous pouvez corriger votre coup.`,
+        };
+      }
+    }
+
+    // 8. Calculate Scores for all formed words (with single-use multipliers on new tiles only)
+    let totalScore = 0;
+    const wordDetails = [];
+
+    for (const fw of allFormedWords) {
+      let wordMultiplier = 1;
+      let wordLetterSum = 0;
+
+      for (const t of fw.tiles) {
+        const basePts = LETTER_POINTS[t.letter] || 1;
+        let tilePts = basePts;
+
+        if (t.isNew) {
+          const mult = getMultiplier(t.row, t.col);
+          if (mult === 'TL') tilePts *= 3;
+          else if (mult === 'DL') tilePts *= 2;
+          else if (mult === 'TW') wordMultiplier *= 3;
+          else if (mult === 'DW' || mult === 'CENTER') wordMultiplier *= 2;
+        }
+
+        wordLetterSum += tilePts;
+      }
+
+      const currentWordScore = wordLetterSum * wordMultiplier;
+      totalScore += currentWordScore;
+      wordDetails.push(`${fw.word} (+${currentWordScore})`);
+    }
+
+    // 9. Scrabble Bonus (+50 points for placing all 7 tiles)
+    const isScrabble = tilesPlaced.length === 7;
+    if (isScrabble) {
+      totalScore += 50;
+      wordDetails.push('SCRABBLE (+50)');
+    }
+
+    // 10. Commit new tiles to official board
+    for (const t of tilesPlaced) {
+      const basePts = LETTER_POINTS[t.letter] || 1;
       this.board[t.row][t.col] = {
         letter: t.letter,
         points: basePts,
@@ -329,72 +514,106 @@ export class WordEngine {
       };
     }
 
-    let totalScore = letterScoreSum * wordMultiplier;
-
-    // Scrabble 7-letter bonus!
-    if (tilesPlaced.length === 7) {
-      totalScore += 50;
-    }
-
-    // Remove only the newly placed tiles from player's rack
+    // 11. Remove placed tiles from player's rack
     for (const t of tilesPlaced) {
       const idx = rack.findIndex(r => r.id === t.tileId);
       if (idx !== -1) rack.splice(idx, 1);
     }
 
-    this.playerScores[playerId] = (this.playerScores[playerId] || 0) + totalScore;
-
-    // Refill rack up to 7 letters
+    // 12. Refill player's rack from letter bag
     const needed = 7 - rack.length;
     const newTiles = this.drawLetters(needed);
     this.playerRacks[playerId] = [...rack, ...newTiles];
 
+    // 13. Update player's score & statistics
+    this.playerScores[playerId] = (this.playerScores[playerId] || 0) + totalScore;
+    const stats = this.playerStats[playerId];
+    stats.wordsCount += allFormedWords.length;
+    if (isScrabble) stats.scrabbleCount++;
+    stats.maxTurnScore = Math.max(stats.maxTurnScore, totalScore);
+
+    const mainWordStr = allFormedWords[0]?.word || '';
+    if (!stats.bestWord || totalScore > stats.bestWordPoints) {
+      stats.bestWord = mainWordStr;
+      stats.bestWordPoints = totalScore;
+    }
+
+    this.consecutivePasses = 0; // Reset consecutive pass counter
+
     this.lastWordPlayed = {
-      word: wordFormed,
+      word: mainWordStr,
+      allWords: allFormedWords.map(f => f.word),
       points: totalScore,
       player: currentPlayer.name,
       isValid: true,
+      isScrabble,
     };
-    this.lastActionLog = `🎉 "${wordFormed}" est VALIDE (+${totalScore} pts) pour ${currentPlayer.name} !`;
 
-    // Check game over
+    this.lastActionLog = `🎉 ${currentPlayer.name} a posé "${mainWordStr}" (+${totalScore} pts)${isScrabble ? ' ✨ SCRABBLE +50 !' : ''}`;
+
+    // 14. Check Game Over conditions
     if (this.letterBag.length === 0 && this.playerRacks[playerId].length === 0) {
-      this.endGame();
-      return { success: true, isValid: true, word: wordFormed, score: totalScore };
+      this.endGame(playerId);
+      return { success: true, isValid: true, word: mainWordStr, score: totalScore, isGameOver: true };
     }
 
     this.nextTurn();
-    return { success: true, isValid: true, word: wordFormed, score: totalScore };
+    return { success: true, isValid: true, word: mainWordStr, score: totalScore };
   }
 
   swapLetters(playerId, tileIdsToSwap) {
-    if (this.getCurrentPlayer()?.id !== playerId) return false;
+    if (this.winner) return { success: false, error: 'Partie terminée' };
+    const currentPlayer = this.getCurrentPlayer();
+    if (!currentPlayer || currentPlayer.id !== playerId) {
+      return { success: false, error: "Ce n'est pas votre tour" };
+    }
+
+    if (this.letterBag.length < 7) {
+      return { success: false, error: 'Échange impossible : il reste moins de 7 lettres dans le sac' };
+    }
+
+    if (!tileIdsToSwap || tileIdsToSwap.length === 0) {
+      return { success: false, error: 'Aucune lettre sélectionnée pour l’échange' };
+    }
+
     const rack = this.playerRacks[playerId] || [];
-    const swapped = [];
+    const swappedLetters = [];
 
     for (const id of tileIdsToSwap) {
       const idx = rack.findIndex(r => r.id === id);
       if (idx !== -1) {
-        swapped.push(rack.splice(idx, 1)[0].letter);
+        swappedLetters.push(rack.splice(idx, 1)[0].letter);
       }
     }
 
-    // Put swapped letters back in bag
-    this.letterBag.push(...swapped);
+    // Put swapped letters back in bag and reshuffle
+    this.letterBag.push(...swappedLetters);
     this.letterBag.sort(() => Math.random() - 0.5);
 
-    // Draw new ones
-    const newTiles = this.drawLetters(swapped.length);
+    // Draw new tiles
+    const newTiles = this.drawLetters(swappedLetters.length);
     this.playerRacks[playerId] = [...rack, ...newTiles];
 
-    this.lastActionLog = `${this.getCurrentPlayer()?.name} a échangé ${swapped.length} lettre(s).`;
+    this.consecutivePasses = 0;
+    this.lastActionLog = `🔄 ${currentPlayer.name} a échangé ${swappedLetters.length} lettre(s).`;
     this.nextTurn();
-    return true;
+    return { success: true, count: swappedLetters.length };
   }
 
   passTurn(playerId) {
-    if (this.getCurrentPlayer()?.id !== playerId) return;
-    this.lastActionLog = `${this.getCurrentPlayer()?.name} passe son tour.`;
+    if (this.winner) return;
+    const currentPlayer = this.getCurrentPlayer();
+    if (!currentPlayer || (playerId && currentPlayer.id !== playerId)) return;
+
+    this.consecutivePasses++;
+    this.lastActionLog = `⏭ ${currentPlayer.name} passe son tour.`;
+
+    // If all players pass twice in a row, end game
+    if (this.consecutivePasses >= this.players.length * 2) {
+      this.endGame(null);
+      return;
+    }
+
     this.nextTurn();
   }
 
@@ -406,20 +625,48 @@ export class WordEngine {
     this.notify();
   }
 
-  endGame() {
+  endGame(finisherPlayerId = null) {
     if (this.timer) clearInterval(this.timer);
     if (this.botTimer) clearTimeout(this.botTimer);
-    let highestScore = -1;
-    let winnerId = null;
-    for (const [pId, score] of Object.entries(this.playerScores)) {
-      if (score > highestScore) {
-        highestScore = score;
-        winnerId = pId;
+
+    // Final score deductions and bonus
+    let finisherBonus = 0;
+
+    for (const player of this.players) {
+      const rack = this.playerRacks[player.id] || [];
+      const remainingPoints = rack.reduce((sum, t) => sum + (LETTER_POINTS[t.letter] || 1), 0);
+
+      if (player.id === finisherPlayerId) {
+        // Player who emptied rack doesn't lose points
+      } else {
+        // Subtract remaining tile points from player's score
+        this.playerScores[player.id] = Math.max(0, (this.playerScores[player.id] || 0) - remainingPoints);
+        finisherBonus += remainingPoints;
       }
     }
-    this.winner = winnerId;
+
+    // Finisher receives sum of all opponents' remaining tile points
+    if (finisherPlayerId && finisherBonus > 0) {
+      this.playerScores[finisherPlayerId] = (this.playerScores[finisherPlayerId] || 0) + finisherBonus;
+    }
+
+    // Build Final Rankings
+    const rankedPlayers = [...this.players].map(p => ({
+      id: p.id,
+      name: p.name,
+      score: this.playerScores[p.id] || 0,
+      stats: this.playerStats[p.id] || {},
+    })).sort((a, b) => b.score - a.score);
+
+    this.winner = rankedPlayers[0]?.id || null;
+    this.finalPodium = rankedPlayers;
+
+    this.lastActionLog = `🏆 Fin de partie ! Victoire de ${rankedPlayers[0]?.name} avec ${rankedPlayers[0]?.score} points !`;
     this.notify();
-    if (this.onGameOver) this.onGameOver(winnerId);
+
+    if (this.onGameOver) {
+      this.onGameOver(this.winner, this.finalPodium);
+    }
   }
 
   getState() {
@@ -429,10 +676,12 @@ export class WordEngine {
       currentPlayerId: this.getCurrentPlayer()?.id || '',
       playerRacks: this.playerRacks,
       playerScores: this.playerScores,
+      playerStats: this.playerStats,
       turnTimeLeft: this.turnTimeLeft,
       lastWordPlayed: this.lastWordPlayed,
       lastActionLog: this.lastActionLog,
       winner: this.winner,
+      finalPodium: this.finalPodium,
     };
   }
 
