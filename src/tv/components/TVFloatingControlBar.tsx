@@ -36,19 +36,19 @@ export const TVFloatingControlBar: React.FC<TVFloatingControlBarProps> = ({
   };
 
   return (
-    <div className="fixed bottom-7 left-0 right-0 z-40 flex items-center justify-center pointer-events-auto select-none animate-scale-in">
-      {/* Floating Free-Floating Control Elements (Strictly Centered, Without Surrounding Container) */}
-      <div className="flex items-center justify-center space-x-8 max-w-4xl w-full px-6">
-        {/* 1. Left Navigation Playback Controls */}
-        <div className="flex items-center space-x-3">
+    <div className="fixed bottom-6 left-0 right-0 z-40 flex items-center justify-center pointer-events-auto select-none animate-scale-in">
+      {/* Pure Naked Floating Controls (Strictly Centered, Without Any Surrounding Capsule or Circle Wrappers) */}
+      <div className="flex items-center justify-center space-x-10 max-w-4xl px-4">
+        {/* 1. Left Navigation Controls (Pure Icons) */}
+        <div className="flex items-center space-x-4">
           <button
             data-tv-focus
             tabIndex={0}
             onClick={onPrev}
-            className="w-11 h-11 rounded-full text-white/80 hover:text-white hover:bg-white/10 flex items-center justify-center transition-transform active:scale-90 outline-none focus:scale-115 focus:ring-2 focus:ring-white"
+            className="text-white/70 hover:text-white p-2 transition-transform active:scale-90 outline-none focus:scale-125 focus:text-[#FBBF24]"
             title="Précédent"
           >
-            <SkipBack className="w-5 h-5 fill-current" />
+            <SkipBack className="w-6 h-6 fill-current drop-shadow-md" />
           </button>
 
           <button
@@ -58,7 +58,7 @@ export const TVFloatingControlBar: React.FC<TVFloatingControlBarProps> = ({
               audio.playSelect();
               onPlay(activeGame);
             }}
-            className="w-14 h-14 rounded-full bg-white text-black flex items-center justify-center shadow-[0_0_30px_rgba(255,255,255,0.85)] transition-all hover:scale-110 active:scale-95 outline-none focus:scale-120 focus:ring-4 focus:ring-[#10B981]"
+            className="w-13 h-13 rounded-full bg-white text-black flex items-center justify-center shadow-[0_0_35px_rgba(255,255,255,0.9)] transition-all hover:scale-110 active:scale-95 outline-none focus:scale-125 focus:ring-4 focus:ring-[#10B981]"
             title="Lancer le Salon"
           >
             <Play className="w-6 h-6 fill-current ml-0.5" />
@@ -68,21 +68,21 @@ export const TVFloatingControlBar: React.FC<TVFloatingControlBarProps> = ({
             data-tv-focus
             tabIndex={0}
             onClick={onNext}
-            className="w-11 h-11 rounded-full text-white/80 hover:text-white hover:bg-white/10 flex items-center justify-center transition-transform active:scale-90 outline-none focus:scale-115 focus:ring-2 focus:ring-white"
+            className="text-white/70 hover:text-white p-2 transition-transform active:scale-90 outline-none focus:scale-125 focus:text-[#FBBF24]"
             title="Suivant"
           >
-            <SkipForward className="w-5 h-5 fill-current" />
+            <SkipForward className="w-6 h-6 fill-current drop-shadow-md" />
           </button>
         </div>
 
-        {/* 2. Center Active Game Track Info with Progress Line */}
+        {/* 2. Center Active Game Track Info */}
         <div
           onClick={() => onMoreInfo(activeGame)}
-          className="flex items-center space-x-4 px-3 py-1 cursor-pointer transition-colors max-w-md truncate"
+          className="flex items-center space-x-4 cursor-pointer transition-transform hover:scale-105 max-w-md truncate"
         >
           {/* Square Thumbnail with subtle progress line underneath */}
           <div className="flex flex-col items-center space-y-1 flex-shrink-0">
-            <div className="w-12 h-12 rounded-2xl overflow-hidden border border-white/30 shadow-lg relative">
+            <div className="w-12 h-12 rounded-xl overflow-hidden shadow-lg relative">
               <img
                 src={activeGame.coverImage || activeGame.heroImage}
                 alt={activeGame.title}
@@ -95,10 +95,10 @@ export const TVFloatingControlBar: React.FC<TVFloatingControlBarProps> = ({
           </div>
 
           <div className="flex flex-col truncate">
-            <span className="font-display font-black text-base text-white truncate drop-shadow-md">
+            <span className="font-display font-black text-base text-white truncate drop-shadow-lg">
               {activeGame.title}
             </span>
-            <span className="text-xs text-[#9CA3AF] font-medium truncate">
+            <span className="text-xs text-gray-400 font-medium truncate">
               {activeGame.tagline || `${activeGame.category} • ${activeGame.minPlayers}-${activeGame.maxPlayers} Joueurs`}
             </span>
           </div>
@@ -111,8 +111,8 @@ export const TVFloatingControlBar: React.FC<TVFloatingControlBarProps> = ({
           </div>
         </div>
 
-        {/* 3. Right Icons */}
-        <div className="flex items-center space-x-2 text-white/80">
+        {/* 3. Right Icons (Pure Naked Icons) */}
+        <div className="flex items-center space-x-3 text-white/70">
           <button
             data-tv-focus
             tabIndex={0}
@@ -120,10 +120,10 @@ export const TVFloatingControlBar: React.FC<TVFloatingControlBarProps> = ({
               audio.playSelect();
               onMoreInfo(activeGame);
             }}
-            className="w-10 h-10 rounded-full text-white/80 hover:text-white hover:bg-white/10 flex items-center justify-center transition-all outline-none focus:scale-115 focus:ring-2 focus:ring-white"
+            className="p-2 hover:text-white transition-transform outline-none focus:scale-125 focus:text-[#FBBF24]"
             title="Détails & Règles"
           >
-            <MessageSquareQuote className="w-5 h-5" />
+            <MessageSquareQuote className="w-5 h-5 drop-shadow-md" />
           </button>
 
           <button
@@ -133,20 +133,20 @@ export const TVFloatingControlBar: React.FC<TVFloatingControlBarProps> = ({
               audio.playSelect();
               setTvView('categories');
             }}
-            className="w-10 h-10 rounded-full text-white/80 hover:text-white hover:bg-white/10 flex items-center justify-center transition-all outline-none focus:scale-115 focus:ring-2 focus:ring-white"
+            className="p-2 hover:text-white transition-transform outline-none focus:scale-125 focus:text-[#FBBF24]"
             title="Tous les Jeux"
           >
-            <ListFilter className="w-5 h-5" />
+            <ListFilter className="w-5 h-5 drop-shadow-md" />
           </button>
 
           <button
             data-tv-focus
             tabIndex={0}
             onClick={toggleMute}
-            className="w-10 h-10 rounded-full text-white/80 hover:text-white hover:bg-white/10 flex items-center justify-center transition-all outline-none focus:scale-115 focus:ring-2 focus:ring-white"
+            className="p-2 hover:text-white transition-transform outline-none focus:scale-125 focus:text-[#FBBF24]"
             title={isMuted ? 'Activer le son' : 'Couper le son'}
           >
-            {isMuted ? <VolumeX className="w-5 h-5 text-rose-400" /> : <Volume2 className="w-5 h-5" />}
+            {isMuted ? <VolumeX className="w-5 h-5 text-rose-400" /> : <Volume2 className="w-5 h-5 drop-shadow-md" />}
           </button>
         </div>
       </div>
