@@ -1,16 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import { useGame } from '../../context/GameContext';
 import { adminCms } from '../../services/adminCmsService';
-import { TVHeroBanner } from '../components/TVHeroBanner';
+import { TVCoverFlowLauncher } from '../components/TVCoverFlowLauncher';
+import { TVFloatingControlBar } from '../components/TVFloatingControlBar';
 import { TVGameRow } from '../components/TVGameRow';
 import { GameCatalogItem } from '../../types/game';
 import { tvNav } from '../../services/tvNavigation';
-import { Flame, Sparkles, Trophy, Dice6, BookOpen, Zap } from 'lucide-react';
+import { Flame, Sparkles, Trophy, Dice6, Zap } from 'lucide-react';
 
 export const TVHomeView: React.FC = () => {
   const { setSelectedGame, setTvView, createRoom } = useGame();
   const [games, setGames] = useState<GameCatalogItem[]>(adminCms.getGamesCatalog());
-  const [featuredGameIndex, setFeaturedGameIndex] = useState<number>(0);
+  const [activeIndex, setActiveIndex] = useState<number>(0);
 
   useEffect(() => {
     tvNav.setInitialFocus('button');
@@ -30,7 +31,7 @@ export const TVHomeView: React.FC = () => {
     setTvView('detail');
   };
 
-  const featuredGame = games[featuredGameIndex] || games[0];
+  const activeGame = games[activeIndex] || games[0];
 
   const arcadeAndActionGames = games.filter((g) =>
     ['mini_racing', 'quick_games', 'four_pics'].includes(g.id)
@@ -49,16 +50,18 @@ export const TVHomeView: React.FC = () => {
   );
 
   return (
-    <div className="flex flex-col min-h-screen pb-28 select-none forest-sunlight-bg">
-      {/* Hero Banner with Featured Game (Forest Sunlight & Glassmorphism Theme) */}
-      <TVHeroBanner
-        game={featuredGame}
-        onPlay={handlePlayGame}
+    <div className="flex flex-col min-h-screen pt-20 pb-36 select-none forest-sunlight-bg relative">
+      {/* 1. Centerpiece 3D Perspective Cover Flow Launcher (VisionOS Style) */}
+      <TVCoverFlowLauncher
+        games={games}
+        activeIndex={activeIndex}
+        onIndexChange={setActiveIndex}
+        onPlayGame={handlePlayGame}
         onMoreInfo={handleMoreInfo}
       />
 
-      {/* Clean Category Rails */}
-      <div className="flex flex-col space-y-8 -mt-8 relative z-20">
+      {/* 2. Secondary Horizontal Rails for Rapid Category Exploration */}
+      <div className="flex flex-col space-y-6 mt-4 relative z-20">
         <TVGameRow
           title="⚡ Quick Games & Nouveautés 3D"
           games={arcadeAndActionGames.length > 0 ? arcadeAndActionGames : games}
@@ -99,6 +102,15 @@ export const TVHomeView: React.FC = () => {
           onPlayGame={handlePlayGame}
         />
       </div>
+
+      {/* 3. Floating VisionOS Glassmorphic Control Bar (Exact match of Reference Image) */}
+      <TVFloatingControlBar
+        activeGame={activeGame}
+        onPrev={() => setActiveIndex((prev) => (prev > 0 ? prev - 1 : games.length - 1))}
+        onNext={() => setActiveIndex((prev) => (prev < games.length - 1 ? prev + 1 : 0))}
+        onPlay={handlePlayGame}
+        onMoreInfo={handleMoreInfo}
+      />
     </div>
   );
 };

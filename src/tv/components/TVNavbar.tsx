@@ -1,24 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import { useGame, TVView } from '../../context/GameContext';
-import { Sparkles, Layers, User, Settings, Smartphone, Wifi, Menu, Home, Bot } from 'lucide-react';
+import {
+  Globe,
+  ChevronLeft,
+  ChevronRight,
+  Sparkles,
+  Smartphone,
+  Wifi,
+  Search,
+  RefreshCw,
+  Sliders,
+  Layers,
+} from 'lucide-react';
 import { audio } from '../../services/audio';
-
-interface NavItem {
-  id: TVView;
-  label: string;
-  icon: React.ElementType;
-}
-
-const NAV_ITEMS: NavItem[] = [
-  { id: 'home', label: 'Home', icon: Home },
-  { id: 'categories', label: 'Design & Jeux', icon: Layers },
-  { id: 'profiles', label: 'Profils', icon: User },
-  { id: 'settings', label: 'Paramètres TV', icon: Settings },
-];
 
 export const TVNavbar: React.FC = () => {
   const { tvView, setTvView, isSimulatorOpen, setIsSimulatorOpen, room } = useGame();
   const [time, setTime] = useState<string>('');
+  const [searchCode, setSearchCode] = useState<string>('');
 
   useEffect(() => {
     const updateTime = () => {
@@ -30,74 +29,87 @@ export const TVNavbar: React.FC = () => {
     return () => clearInterval(interval);
   }, []);
 
-  const handleNavClick = (view: TVView) => {
+  const handleNav = (view: TVView) => {
     audio.playSelect();
     setTvView(view);
   };
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-40 px-[5vw] py-4 flex items-center justify-between pointer-events-auto select-none">
-      {/* Frosted Glass Floating Navbar (Inspired by Forest Sunlight UI) */}
-      <div className="w-full mx-auto px-6 py-3.5 rounded-full bg-[#0A1612]/75 backdrop-blur-xl border border-white/15 shadow-[0_15px_35px_rgba(0,0,0,0.6),inset_0_1px_1px_rgba(255,255,255,0.2)] flex items-center justify-between">
-        {/* Left: Brand Logo & Hamburger */}
-        <div className="flex items-center space-x-6">
-          <div
+    <header className="fixed top-5 left-0 right-0 z-40 px-[5vw] flex items-center justify-center pointer-events-auto select-none">
+      {/* Top VisionOS Capsule Bar (Exact match of Reference Image Top Bar) */}
+      <div className="glass-pill-bar px-5 py-2.5 rounded-full flex items-center justify-between w-full max-w-4xl shadow-[0_15px_40px_rgba(0,0,0,0.6)]">
+        {/* 1. Left Controls: Brand Logo & Navigation History */}
+        <div className="flex items-center space-x-2">
+          <button
             data-tv-focus
             tabIndex={0}
-            onClick={() => handleNavClick('home')}
-            className="flex items-center space-x-3 cursor-pointer group outline-none focus:scale-105 transition-transform"
+            onClick={() => handleNav('home')}
+            className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-all outline-none focus:ring-2 focus:ring-[#10B981]"
+            title="Accueil"
           >
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-[#10B981] via-[#059669] to-[#F59E0B] flex items-center justify-center shadow-[0_0_20px_rgba(16,185,129,0.5)] group-focus:ring-2 group-focus:ring-white border border-white/30">
-              <Menu className="w-5 h-5 text-white" />
-            </div>
-            <div className="flex flex-col">
-              <span className="font-display font-black text-xl tracking-widest text-white drop-shadow-md flex items-center space-x-1.5">
-                <span>PLAYFLIX</span>
-                <span className="text-[#FBBF24] font-mono text-xs">AI</span>
-              </span>
-            </div>
-          </div>
+            <Globe className="w-4 h-4 text-[#34D399]" />
+          </button>
 
-          {/* Navigation Links */}
-          <nav className="flex items-center space-x-1">
-            {NAV_ITEMS.map((item) => {
-              const Icon = item.icon;
-              const isActive = tvView === item.id;
-              return (
-                <button
-                  key={item.id}
-                  data-tv-focus
-                  tabIndex={0}
-                  onClick={() => handleNavClick(item.id)}
-                  className={`flex items-center space-x-2 px-5 py-2 rounded-full font-bold text-sm transition-all duration-200 outline-none ${
-                    isActive
-                      ? 'bg-white text-[#0A1612] font-black shadow-[0_0_25px_rgba(255,255,255,0.6)] scale-105'
-                      : 'text-[#D1D5DB] hover:text-white hover:bg-white/10 focus:bg-white focus:text-[#0A1612] focus:font-black focus:scale-110 focus:shadow-[0_0_30px_rgba(251,191,36,0.6)]'
-                  }`}
-                >
-                  <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-[#059669]' : ''}`} />
-                  <span>{item.label}</span>
-                </button>
-              );
-            })}
-          </nav>
+          <button
+            data-tv-focus
+            tabIndex={0}
+            onClick={() => handleNav('home')}
+            className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/15 text-gray-300 hover:text-white flex items-center justify-center transition-all outline-none focus:ring-2 focus:ring-white"
+            title="Précédent"
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </button>
+
+          <button
+            data-tv-focus
+            tabIndex={0}
+            onClick={() => handleNav('categories')}
+            className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/15 text-gray-300 hover:text-white flex items-center justify-center transition-all outline-none focus:ring-2 focus:ring-white"
+            title="Suivant / Catégories"
+          >
+            <ChevronRight className="w-4 h-4" />
+          </button>
+
+          <span className="hidden md:inline-block px-2.5 py-0.5 rounded-full bg-white/10 text-[#FBBF24] font-mono text-[10px] font-black uppercase">
+            PLAYFLIX AI
+          </span>
         </div>
 
-        {/* Right Status & Meta Info */}
-        <div className="flex items-center space-x-4">
-          <div className="hidden lg:flex items-center space-x-2 text-xs font-semibold text-[#9CA3AF]">
-            <span>Designed for Smart TV & Mobile</span>
-          </div>
+        {/* 2. Center Capsule Title / Room Search Display */}
+        <div className="flex items-center space-x-2 px-6 py-1 rounded-full bg-black/40 border border-white/10 text-xs text-gray-200">
+          <span className="w-2 h-2 rounded-full bg-[#10B981] animate-pulse" />
+          <span className="font-display font-black text-white tracking-widest text-xs">
+            {room ? `SALON ACTIF #${room.code}` : 'PLAYFLIX SMART TV LAUNCHER'}
+          </span>
+          <span className="text-gray-500">•</span>
+          <span className="text-[#FBBF24] font-mono text-[11px] font-bold">10 JEUX 3D</span>
+        </div>
 
-          {/* Connected Room indicator if in party */}
-          {room && (
-            <div className="flex items-center space-x-2 px-4 py-1.5 rounded-full bg-[#10B981]/20 border border-[#10B981]/40 text-[#34D399] text-xs font-mono font-bold">
-              <Wifi className="w-3.5 h-3.5 text-[#34D399] animate-pulse" />
-              <span>SALON #{room.code}</span>
-            </div>
-          )}
+        {/* 3. Right Status & Quick Utilities */}
+        <div className="flex items-center space-x-2">
+          {/* Categories Button */}
+          <button
+            data-tv-focus
+            tabIndex={0}
+            onClick={() => handleNav('categories')}
+            className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-gray-300 hover:text-white flex items-center justify-center transition-all outline-none focus:ring-2 focus:ring-[#FBBF24]"
+            title="Catalogue de Catégories"
+          >
+            <Layers className="w-3.5 h-3.5 text-[#38BDF8]" />
+          </button>
 
-          {/* Simulator Toggle */}
+          {/* AI Content Studio Button */}
+          <button
+            data-tv-focus
+            tabIndex={0}
+            onClick={() => handleNav('admin')}
+            className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-gray-300 hover:text-white flex items-center justify-center transition-all outline-none focus:ring-2 focus:ring-[#FBBF24]"
+            title="AI Studio (Gemini)"
+          >
+            <Sparkles className="w-3.5 h-3.5 text-[#FBBF24]" />
+          </button>
+
+          {/* Controller Simulator */}
           <button
             data-tv-focus
             tabIndex={0}
@@ -105,18 +117,16 @@ export const TVNavbar: React.FC = () => {
               audio.playSelect();
               setIsSimulatorOpen(!isSimulatorOpen);
             }}
-            className={`flex items-center space-x-2 px-4 py-1.5 rounded-full text-xs font-bold transition-all outline-none ${
-              isSimulatorOpen
-                ? 'bg-[#F59E0B] text-black font-black shadow-[0_0_20px_rgba(245,158,11,0.6)]'
-                : 'bg-white/10 text-white hover:bg-white/20 focus:bg-white focus:text-black focus:scale-105'
+            className={`w-8 h-8 rounded-full flex items-center justify-center transition-all outline-none focus:ring-2 focus:ring-white ${
+              isSimulatorOpen ? 'bg-[#F59E0B] text-black' : 'bg-white/10 hover:bg-white/20 text-gray-300 hover:text-white'
             }`}
+            title="Manette Mobile"
           >
             <Smartphone className="w-3.5 h-3.5" />
-            <span>{isSimulatorOpen ? 'Fermer Manette' : 'Manette Test'}</span>
           </button>
 
-          {/* Digital Clock */}
-          <div className="px-3.5 py-1 rounded-xl bg-black/40 border border-white/10 text-white font-mono font-bold text-xs tracking-wider">
+          {/* Digital Time Pill */}
+          <div className="px-3 py-1 rounded-full bg-white/10 border border-white/10 text-white font-mono text-xs font-bold">
             {time || '20:00'}
           </div>
         </div>

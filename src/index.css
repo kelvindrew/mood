@@ -91,7 +91,33 @@
               inset 0 1px 1px rgba(255, 255, 255, 0.3);
 }
 
+/* 3D Cover Flow & visionOS Glass Capsule Layout */
+.coverflow-stage {
+  perspective: 1400px;
+  perspective-origin: center 50%;
+  transform-style: preserve-3d;
+}
+
+.coverflow-item {
+  transition: transform 0.38s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.38s ease-out, filter 0.38s ease-out;
+  transform-style: preserve-3d;
+  will-change: transform, opacity;
+}
+
+.glass-pill-bar {
+  background: rgba(10, 20, 18, 0.68);
+  backdrop-filter: blur(28px);
+  -webkit-backdrop-filter: blur(28px);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.65),
+              inset 0 1px 1.5px rgba(255, 255, 255, 0.3);
+}
+
 .scrollbar-none {
   scrollbar-width: none;
   -ms-overflow-style: none;
+}
+
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
 }
