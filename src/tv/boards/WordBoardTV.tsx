@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useGame } from '../../context/GameContext';
 import { ScrabbleGameState, ScrabbleWordHistoryItem } from '../../types/game';
 import { getFrenchDefinition, WordDefinitionItem } from '../../data/frenchDefinitions';
@@ -20,6 +20,10 @@ import {
   History,
   GraduationCap,
   ChevronRight,
+  ChevronUp,
+  ChevronDown,
+  ArrowUp,
+  ArrowDown,
 } from 'lucide-react';
 
 function getMultiplier(r: number, c: number): string {
@@ -52,6 +56,7 @@ export const WordBoardTV: React.FC = () => {
 
   const [endStage, setEndStage] = useState<number>(1);
   const [selectedWordHistory, setSelectedWordHistory] = useState<ScrabbleWordHistoryItem | null>(null);
+  const historyScrollRef = useRef<HTMLDivElement>(null);
 
   const isGameOver = !!(gameState?.isGameOver || gameState?.winner);
 
@@ -100,18 +105,27 @@ export const WordBoardTV: React.FC = () => {
     };
   })();
 
+  const handleScrollHistory = (direction: 'up' | 'down') => {
+    if (historyScrollRef.current) {
+      const scrollAmount = direction === 'up' ? -120 : 120;
+      historyScrollRef.current.scrollBy({ top: scrollAmount, behavior: 'smooth' });
+    }
+  };
+
   const handleReplay = () => {
     sendGameAction('word_restart');
   };
 
+  const totalWordsCount = gameState.playedWordsHistory?.length || (gameState.lastWordPlayed ? 1 : 0);
+
   return (
-    <div className="w-full min-h-screen flex items-center justify-between px-8 py-5 select-none bg-[#070D0B] text-white relative overflow-hidden">
+    <div className="w-full min-h-screen flex items-center justify-between px-8 py-4 select-none bg-[#070D0B] text-white relative overflow-hidden">
       {/* Ambient background glow */}
       <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-emerald-900/15 rounded-full blur-[140px] pointer-events-none" />
       <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-amber-900/15 rounded-full blur-[140px] pointer-events-none" />
 
       {/* 1. Left Column: Turn info & Live Leaderboard */}
-      <div className="w-72 flex flex-col justify-between h-[90vh] space-y-3.5 z-10 flex-shrink-0">
+      <div className="w-72 flex flex-col justify-between h-[92vh] space-y-3 z-10 flex-shrink-0">
         {/* Active Player Card */}
         <div className="p-4 rounded-3xl bg-white/[0.06] border border-white/15 shadow-2xl backdrop-blur-xl">
           <div className="flex items-center justify-between">
@@ -122,13 +136,13 @@ export const WordBoardTV: React.FC = () => {
             </div>
           </div>
 
-          <div className="flex items-center space-x-3 my-2.5">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#10B981] to-[#059669] border border-white/20 flex items-center justify-center text-white font-black text-xl shadow-lg">
+          <div className="flex items-center space-x-3 my-2">
+            <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-[#10B981] to-[#059669] border border-white/20 flex items-center justify-center text-white font-black text-lg shadow-lg">
               {currentPlayer?.name.charAt(0).toUpperCase() || 'J'}
             </div>
             <div className="truncate">
-              <h2 className="text-lg font-black font-display text-white truncate">{currentPlayer?.name || 'Joueur'}</h2>
-              <span className="text-[11px] text-gray-400 font-semibold">Posez vos lettres</span>
+              <h2 className="text-base font-black font-display text-white truncate">{currentPlayer?.name || 'Joueur'}</h2>
+              <span className="text-[10px] text-gray-400 font-semibold">Posez vos lettres</span>
             </div>
           </div>
 
@@ -141,27 +155,16 @@ export const WordBoardTV: React.FC = () => {
               style={{ width: `${Math.max(0, Math.min(100, (gameState.turnTimeLeft / 45) * 100))}%` }}
             />
           </div>
-
-          {/* Letter Bag Count */}
-          <div className="flex items-center justify-between pt-2.5 mt-2.5 border-t border-white/10 text-xs font-bold text-gray-300">
-            <div className="flex items-center space-x-1.5">
-              <Layers className="w-3.5 h-3.5 text-[#38BDF8]" />
-              <span className="text-[11px]">Sac de Lettres :</span>
-            </div>
-            <span className="px-2 py-0.5 rounded-lg bg-white/10 font-mono text-[#FBBF24] text-xs font-black">
-              {gameState.letterBagCount} restantes
-            </span>
-          </div>
         </div>
 
         {/* Players Leaderboard */}
-        <div className="p-4 rounded-3xl bg-white/[0.06] border border-white/10 backdrop-blur-md space-y-3 flex-1 flex flex-col justify-between">
+        <div className="p-4 rounded-3xl bg-white/[0.06] border border-white/10 backdrop-blur-md space-y-2.5 flex-1 flex flex-col justify-between">
           <div className="flex items-center justify-between text-xs font-black uppercase tracking-wider text-gray-300">
             <span>CLASSEMENT EN DIRECT</span>
             <Trophy className="w-4 h-4 text-[#FBBF24]" />
           </div>
 
-          <div className="space-y-2 flex-1">
+          <div className="space-y-1.5 flex-1">
             {room?.players.map((p, idx) => {
               const score = (gameState.playerScores && gameState.playerScores[p.id]) || 0;
               const isCurrent = p.id === gameState.currentPlayerId;
@@ -270,8 +273,8 @@ export const WordBoardTV: React.FC = () => {
         </div>
       </div>
 
-      {/* 3. Right Column: Tile Bag Status Card + Dedicated "Petit Dictionnaire Scrabble" Panel */}
-      <div className="w-80 flex flex-col justify-between h-[90vh] space-y-3.5 z-10 flex-shrink-0">
+      {/* 3. Right Column: Tile Bag Card + Scrollable "Petit Dico Scrabble" & History */}
+      <div className="w-84 flex flex-col justify-between h-[92vh] space-y-3 z-10 flex-shrink-0">
         {/* Remaining Tiles Bag Status Card */}
         <div className="p-3.5 rounded-3xl bg-white/[0.06] border border-white/15 shadow-xl backdrop-blur-xl space-y-2">
           <div className="flex items-center justify-between">
@@ -315,75 +318,104 @@ export const WordBoardTV: React.FC = () => {
           </div>
         </div>
 
-        {/* Dictionary Card */}
-        <div className="p-4 rounded-3xl bg-gradient-to-b from-[#1C2826]/90 to-[#0F1715]/90 border-2 border-[#10B981]/50 shadow-2xl backdrop-blur-xl space-y-3 flex-1 flex flex-col justify-between">
-          <div className="space-y-3">
-            <div className="flex items-center justify-between border-b border-white/10 pb-2.5">
-              <div className="flex items-center space-x-2 text-[#10B981]">
-                <BookOpen className="w-5 h-5 text-emerald-400" />
-                <span className="text-xs font-black uppercase tracking-wider text-white">
-                  LE PETIT DICO SCRABBLE
-                </span>
-              </div>
-              <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] font-black font-mono">
-                ODS
+        {/* Dictionary Card with Scrollable History */}
+        <div className="p-4 rounded-3xl bg-gradient-to-b from-[#1C2826]/95 to-[#0F1715]/95 border-2 border-[#10B981]/50 shadow-2xl backdrop-blur-xl space-y-3 flex-1 flex flex-col justify-between overflow-hidden">
+          {/* Header */}
+          <div className="flex items-center justify-between border-b border-white/10 pb-2 flex-shrink-0">
+            <div className="flex items-center space-x-2 text-[#10B981]">
+              <BookOpen className="w-5 h-5 text-emerald-400" />
+              <span className="text-xs font-black uppercase tracking-wider text-white">
+                LE PETIT DICO SCRABBLE
               </span>
             </div>
-
-            {/* Featured Definition Box */}
-            <div className="p-4 rounded-2xl bg-black/50 border border-white/15 space-y-2 shadow-inner animate-scale-in">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <Bookmark className="w-4 h-4 text-[#FBBF24]" />
-                  <span className="text-xl font-black font-mono tracking-widest text-[#FBBF24]">
-                    "{currentWordToDefine.word}"
-                  </span>
-                </div>
-                {gameState.lastWordPlayed && gameState.lastWordPlayed.word === currentWordToDefine.word && (
-                  <span className="px-2 py-0.5 rounded bg-emerald-500/30 text-emerald-300 font-bold text-[10px]">
-                    +{gameState.lastWordPlayed.points} pts
-                  </span>
-                )}
-              </div>
-
-              {/* Nature / Grammatical Category */}
-              <div className="text-[11px] font-bold italic text-emerald-300/90 font-serif">
-                — {currentWordToDefine.nature}
-              </div>
-
-              {/* Definition Text */}
-              <p className="text-xs text-gray-200 leading-relaxed font-sans pt-1 border-t border-white/10">
-                {currentWordToDefine.def}
-              </p>
-            </div>
+            <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] font-black font-mono">
+              ODS
+            </span>
           </div>
 
-          {/* Word History List with Quick Definition Click */}
-          <div className="space-y-2 pt-2 border-t border-white/10 flex-1 flex flex-col justify-end">
-            <div className="flex items-center justify-between text-[11px] font-bold text-gray-400 px-1">
-              <span className="flex items-center space-x-1">
-                <History className="w-3.5 h-3.5 text-[#38BDF8]" />
-                <span>Mots récemment joués :</span>
-              </span>
-              <span className="text-[9px] text-gray-400">Touchez pour définir</span>
+          {/* Featured Definition Box */}
+          <div className="p-3.5 rounded-2xl bg-black/55 border border-white/15 space-y-1.5 shadow-inner flex-shrink-0 animate-scale-in">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <Bookmark className="w-4 h-4 text-[#FBBF24]" />
+                <span className="text-lg font-black font-mono tracking-widest text-[#FBBF24]">
+                  "{currentWordToDefine.word}"
+                </span>
+              </div>
+              {selectedWordHistory ? (
+                <button
+                  onClick={() => setSelectedWordHistory(null)}
+                  className="text-[10px] px-2 py-0.5 rounded-md bg-white/10 text-gray-300 hover:text-white flex items-center space-x-1"
+                >
+                  <RotateCcw className="w-2.5 h-2.5" />
+                  <span>Dernier mot</span>
+                </button>
+              ) : gameState.lastWordPlayed ? (
+                <span className="px-2 py-0.5 rounded bg-emerald-500/30 text-emerald-300 font-bold text-[10px]">
+                  +{gameState.lastWordPlayed.points} pts
+                </span>
+              ) : null}
             </div>
 
-            <div className="space-y-1.5 max-h-48 overflow-y-auto pr-1">
+            {/* Nature / Grammatical Category */}
+            <div className="text-[11px] font-bold italic text-emerald-300 font-serif">
+              — {currentWordToDefine.nature}
+            </div>
+
+            {/* Definition Text */}
+            <p className="text-xs text-gray-200 leading-relaxed font-sans pt-1 border-t border-white/10 line-clamp-3">
+              {currentWordToDefine.def}
+            </p>
+          </div>
+
+          {/* Scrollable Words Found History Section */}
+          <div className="flex-1 flex flex-col min-h-0 space-y-1.5 pt-1 border-t border-white/10">
+            <div className="flex items-center justify-between text-[11px] font-bold text-gray-400 px-1 flex-shrink-0">
+              <span className="flex items-center space-x-1 text-gray-300">
+                <History className="w-3.5 h-3.5 text-[#38BDF8]" />
+                <span>Mots trouvés ({totalWordsCount}) :</span>
+              </span>
+
+              {/* Scroll Controls for TV remote & click */}
+              <div className="flex items-center space-x-1">
+                <button
+                  onClick={() => handleScrollHistory('up')}
+                  className="p-1 rounded-md bg-white/10 hover:bg-white/20 active:scale-90 text-gray-300 hover:text-white transition-all"
+                  title="Défiler vers le haut"
+                >
+                  <ChevronUp className="w-3.5 h-3.5" />
+                </button>
+                <button
+                  onClick={() => handleScrollHistory('down')}
+                  className="p-1 rounded-md bg-white/10 hover:bg-white/20 active:scale-90 text-gray-300 hover:text-white transition-all"
+                  title="Défiler vers le bas"
+                >
+                  <ChevronDown className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+
+            {/* Scrollable List of All Played Words */}
+            <div
+              ref={historyScrollRef}
+              className="flex-1 overflow-y-auto pr-1 space-y-1.5 scroll-smooth custom-scrollbar"
+              style={{ maxHeight: '180px' }}
+            >
               {gameState.playedWordsHistory && gameState.playedWordsHistory.length > 0 ? (
-                gameState.playedWordsHistory.slice(0, 5).map((item, idx) => {
+                gameState.playedWordsHistory.map((item, idx) => {
                   const isSelected = selectedWordHistory?.word === item.word;
                   return (
                     <button
-                      key={`hist_${idx}_${item.word}`}
+                      key={`hist_${idx}_${item.word}_${item.timestamp || idx}`}
                       onClick={() => setSelectedWordHistory(item)}
                       className={`w-full p-2 rounded-xl text-left flex items-center justify-between text-xs border transition-all ${
                         isSelected
-                          ? 'bg-[#10B981]/30 border-[#10B981] text-white shadow-md'
-                          : 'bg-black/30 border-white/5 text-gray-300 hover:bg-white/10'
+                          ? 'bg-[#10B981]/30 border-[#10B981] text-white shadow-md scale-101'
+                          : 'bg-black/35 border-white/5 text-gray-300 hover:bg-white/10 hover:border-white/15'
                       }`}
                     >
                       <div className="flex items-center space-x-2 truncate">
-                        <span className="font-black font-mono text-[#FBBF24]">{item.word}</span>
+                        <span className="font-black font-mono text-[#FBBF24] text-xs">{item.word}</span>
                         <span className="text-[10px] text-gray-400 truncate">({item.player})</span>
                       </div>
                       <div className="flex items-center space-x-1.5 flex-shrink-0">
@@ -395,7 +427,7 @@ export const WordBoardTV: React.FC = () => {
                 })
               ) : (
                 <div className="p-3 text-center text-xs text-gray-400 italic bg-black/20 rounded-xl">
-                  Les définitions des mots posés apparaîtront ici.
+                  Les mots joués s'afficheront ici au fil de la partie.
                 </div>
               )}
             </div>

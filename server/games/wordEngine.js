@@ -185,7 +185,7 @@ export class WordEngine {
         if (this.isCurrentPlayerBot() && !this.isGameOver && !this.winner) {
           this.playBotMove();
         }
-      }, 1500);
+      }, 3800);
     }
   }
 
@@ -527,7 +527,7 @@ export class WordEngine {
         timestamp: Date.now(),
       },
       ...this.playedWordsHistory,
-    ].slice(0, 20);
+    ].slice(0, 100);
 
     this.lastActionLog = `🎉 ${currentPlayer.name} a posé "${mainWordStr}" (+${totalScore} pts)${isScrabble ? ' ✨ SCRABBLE +50 !' : ''}`;
 
