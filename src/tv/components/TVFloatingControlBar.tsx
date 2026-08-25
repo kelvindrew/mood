@@ -36,9 +36,14 @@ export const TVFloatingControlBar: React.FC<TVFloatingControlBarProps> = ({
   };
 
   return (
-    <div className="fixed bottom-6 left-0 right-0 z-40 flex items-center justify-center pointer-events-auto select-none animate-scale-in">
+    /* E9-layout TV : la barre vit DANS la rangée basse réservée par la grille
+       de TVHomeView (plus de position:fixed => zéro superposition possible) */
+    <div className="relative w-full flex items-center justify-center pointer-events-auto select-none">
       {/* Pure Naked Floating Controls (Strictly Centered, Without Any Surrounding Capsule or Circle Wrappers) */}
-      <div className="flex items-center justify-center space-x-10 max-w-4xl px-4">
+      <div
+        className="flex items-center justify-center max-w-5xl w-full px-4"
+        style={{ gap: 'clamp(16px, 2.6vw, 48px)' }}
+      >
         {/* 1. Left Navigation Controls (Pure Icons) */}
         <div className="flex items-center space-x-4">
           <button

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useGame } from '../context/GameContext';
 import { TVNavbar } from './components/TVNavbar';
 import { TVHomeView } from './views/TVHomeView';
@@ -16,6 +16,14 @@ import { SimulatorDrawer } from './components/SimulatorDrawer';
 
 export const TVApp: React.FC = () => {
   const { tvView } = useGame();
+
+  // Couche CSS TV (scaling typographique, perf, focus) — jamais appliquée au mobile
+  useEffect(() => {
+    document.documentElement.classList.add('tv-ui');
+    return () => {
+      document.documentElement.classList.remove('tv-ui');
+    };
+  }, []);
 
   const renderCurrentView = () => {
     switch (tvView) {

@@ -54,6 +54,65 @@
   box-shadow: 0 0 0 4px #FFFFFF, 0 0 40px 10px rgba(229, 9, 20, 0.75) !important;
 }
 
+/* ============================================================
+   COUCHE TV DÉDIÉE (<html class="tv-ui"> posée par TVApp)
+   Zéro impact sur le mobile : toutes les règles sont scopées.
+   ============================================================ */
+
+:root {
+  /* Hauteurs réservées aux barres fixes (navbar / barre d'actions) */
+  --tv-nav-h: clamp(44px, 5.5vh, 68px);
+  --tv-bar-h: clamp(58px, 9vh, 104px);
+}
+
+/* Scaling typographique TV : lisible à 3 m en 720p, proportionné en 4K.
+   Tout ce qui est exprimé en rem (text-xs/sm/base...) suit automatiquement. */
+html.tv-ui {
+  font-size: clamp(14px, 0.42vw + 9px, 25px);
+}
+/* Écrans 720p/768p : on garde la lisibilité sans casser les layouts verticaux */
+@media (max-height: 800px) {
+  html.tv-ui {
+    font-size: clamp(13px, 0.34vw + 9px, 17px);
+  }
+}
+
+/* Perf Hisense/VIDAA : suppression des backdrop-filter coûteux sur les
+   surfaces TV (le motif glass-pill-bar est uniquement utilisé côté TV) */
+html.tv-ui .glass-pill-bar {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background: rgba(8, 16, 14, 0.85);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.6);
+}
+
+/* Panneau TV standard : opaque translucide SANS blur (remplace backdrop-blur) */
+.tv-panel {
+  background: rgba(255, 255, 255, 0.055);
+  border: 1px solid rgba(255, 255, 255, 0.11);
+}
+
+/* Scroll interne discret pour les panneaux à hauteur bornée */
+.tv-scroll {
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.22) transparent;
+}
+.tv-scroll::-webkit-scrollbar {
+  width: 4px;
+}
+.tv-scroll::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.22);
+  border-radius: 999px;
+}
+
+/* Animations infinies décoratives coupées sur TV (GPU) — les retours
+   fonctionnels essentiels (pulse du chrono) sont conservés */
+html.tv-ui .animate-spin-slow,
+html.tv-ui .animate-bounce {
+  animation: none !important;
+}
+
 @keyframes scaleIn {
   0% {
     transform: scale(0.95);

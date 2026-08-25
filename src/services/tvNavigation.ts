@@ -55,7 +55,7 @@ const FOCUSABLE_SELECTOR =
 const RING_CLASS = 'tv-focus-ring';
 const RING_STYLE_ID = 'tv-nav-ring-style';
 const RING_CSS = `
-.${RING_CLASS}{outline:3px solid #FBBF24 !important;outline-offset:2px !important;}
+.${RING_CLASS}{outline:4px solid #FBBF24 !important;outline-offset:3px !important;box-shadow:0 0 26px rgba(251,191,36,0.6) !important;}
 `;
 
 function isEditableTarget(el: EventTarget | null): boolean {
