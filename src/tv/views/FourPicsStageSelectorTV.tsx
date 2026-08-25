@@ -22,6 +22,7 @@ import {
 import { audio } from '../../services/audio';
 import { playSoundFX } from '../../engine/PlaySoundFX';
 import { tvNav } from '../../services/tvNavigation';
+import { useTvBack } from '../hooks/useTvNav';
 
 interface FourPicsStageSelectorTVProps {
   onSelectStage: (level: number, stageNumber: number) => void;
@@ -37,6 +38,9 @@ export const FourPicsStageSelectorTV: React.FC<FourPicsStageSelectorTVProps> = (
   const [progress, setProgress] = useState<FourPicsProgressState>(fourPicsProgress.getState());
   const [selectedLevel, setSelectedLevel] = useState<number>(progress.unlockedLevel || 1);
   const [stagePage, setStagePage] = useState<number>(0); // 0 = stages 1-50, 1 = stages 51-100
+
+  // M5 — Back télécommande = retour au plateau (prop onBack existant)
+  useTvBack(onBack);
 
   useEffect(() => {
     tvNav.setInitialFocus('button');

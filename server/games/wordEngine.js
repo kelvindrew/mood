@@ -719,6 +719,25 @@ export class WordEngine {
     };
   }
 
+  /**
+   * C1 — État PUBLIC diffusé à toute la salle (TV, spectateurs, joueurs).
+   * Les chevalets (lettres en main) ne sont JAMAIS inclus : seul leur
+   * propriétaire les reçoit via getPrivateState().
+   */
+  getPublicState() {
+    const { playerRacks, ...publicState } = this.getState();
+    return publicState;
+  }
+
+  /**
+   * C1 — Fragment PRIVÉ envoyé uniquement au socket du joueur concerné.
+   */
+  getPrivateState(playerId) {
+    return {
+      playerRacks: { [playerId]: this.playerRacks[playerId] || [] },
+    };
+  }
+
   notify() {
     if (this.onStateChange) {
       this.onStateChange(this.getState());

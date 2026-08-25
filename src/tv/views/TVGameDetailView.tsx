@@ -1,9 +1,194 @@
 import React, { useState, useEffect } from 'react';
 import { useGame } from '../../context/GameContext';
 import { GAMES_CATALOG } from '../../data/gamesCatalog';
+import { GameCatalogItem } from '../../types/game';
 import { Play, Heart, BookOpen, ArrowLeft, Users, Clock, Flame, CheckCircle, Sliders, Shield, Loader2, AlertCircle } from 'lucide-react';
 import { audio } from '../../services/audio';
 import { tvNav } from '../../services/tvNavigation';
+import { useTvBack, useTvModalScope } from '../hooks/useTvNav';
+
+// M6 — Modale « Règles du jeu » : focus trap + Back/Échap = fermer
+const RulesModal: React.FC<{ game: GameCatalogItem; onClose: () => void }> = ({ game, onClose }) => {
+  const scopeRef = useTvModalScope(onClose);
+
+  return (
+    <div ref={scopeRef} className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/80 backdrop-blur-md">
+      <div className="w-full max-w-2xl bg-surface-card border border-white/20 rounded-3xl p-8 shadow-2xl flex flex-col space-y-6">
+        <div className="flex items-center justify-between border-b border-white/10 pb-4">
+          <div className="flex items-center space-x-3">
+            <BookOpen className="w-6 h-6 text-brand-gold" />
+            <h2 className="text-2xl font-black font-display text-white">Règles du Jeu : {game.title}</h2>
+          </div>
+        </div>
+
+        <div className="space-y-3 max-h-[50vh] overflow-y-auto pr-2">
+          {game.rules.map((rule, idx) => (
+            <div key={idx} className="flex items-start space-x-3 p-3.5 rounded-xl bg-surface-light border border-white/5">
+              <span className="w-6 h-6 rounded-full bg-brand-red text-white flex items-center justify-center font-bold text-xs flex-shrink-0">
+                {idx + 1}
+              </span>
+              <p className="text-sm text-gray-200 leading-relaxed font-medium">{rule}</p>
+            </div>
+          ))}
+        </div>
+
+        <div className="flex justify-end pt-2">
+          <button
+            data-tv-focus
+            tabIndex={0}
+            onClick={onClose}
+            className="px-8 py-3 rounded-xl bg-white text-background font-black text-sm hover:bg-gray-200 focus:bg-brand-red focus:text-white focus:ring-4 focus:ring-white transition-all outline-none"
+          >
+            COMPRIS !
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// M6 — Modale « Créer un salon » : focus trap + Back/Échap = fermer
+interface CreateModalProps {
+  game: GameCatalogItem;
+  isCreating: boolean;
+  createError: string;
+  maxPlayers: number;
+  turnDuration: number;
+  gameMode: string;
+  onClose: () => void;
+  onMaxPlayers: (n: number) => void;
+  onTurnDuration: (s: number) => void;
+  onGameMode: (m: string) => void;
+  onCreate: () => void;
+}
+
+const CreateRoomModal: React.FC<CreateModalProps> = ({
+  game, isCreating, createError,
+  maxPlayers, turnDuration, gameMode,
+  onClose, onMaxPlayers, onTurnDuration, onGameMode, onCreate,
+}) => {
+  const scopeRef = useTvModalScope(onClose);
+
+  return (
+    <div ref={scopeRef} className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/85 backdrop-blur-lg">
+      <div className="w-full max-w-lg bg-surface-card border border-brand-red/40 rounded-3xl p-8 shadow-glow-red flex flex-col space-y-6">
+        <div className="flex items-center space-x-3 border-b border-white/10 pb-4">
+          <Sliders className="w-6 h-6 text-brand-red" />
+          <div>
+            <h2 className="text-2xl font-black font-display text-white">CRÉER UN SALON</h2>
+            <p className="text-xs text-gray-400">Paramétrez votre partie de {game.title}</p>
+          </div>
+        </div>
+
+        {/* Options */}
+        <div className="space-y-4">
+          <div>
+            <label className="text-xs font-black text-gray-300 uppercase tracking-wider block mb-2">Nombre Maximum de Joueurs</label>
+            <div className="grid grid-cols-4 gap-2">
+              {[2, 3, 4, game.maxPlayers > 4 ? game.maxPlayers : 4].map((num, i) => (
+                <button
+                  key={i}
+                  data-tv-focus
+                  tabIndex={0}
+                  onClick={() => onMaxPlayers(num)}
+                  className={`py-2.5 rounded-xl font-black text-sm border transition-all outline-none ${
+                    maxPlayers === num
+                      ? 'bg-brand-red border-brand-red text-white shadow-glow-red'
+                      : 'bg-surface-light border-white/10 text-gray-300 hover:border-white/30 focus:ring-2 focus:ring-brand-red'
+                  }`}
+                >
+                  {num} Joueurs
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <label className="text-xs font-black text-gray-300 uppercase tracking-wider block mb-2">Chronomètre par Tour</label>
+            <div className="grid grid-cols-3 gap-2">
+              {[15, 30, 45].map((sec) => (
+                <button
+                  key={sec}
+                  data-tv-focus
+                  tabIndex={0}
+                  onClick={() => onTurnDuration(sec)}
+                  className={`py-2.5 rounded-xl font-bold text-xs border transition-all outline-none ${
+                    turnDuration === sec
+                      ? 'bg-brand-gold text-background border-brand-gold font-black'
+                      : 'bg-surface-light border-white/10 text-gray-300 hover:border-white/30 focus:ring-2 focus:ring-brand-gold'
+                  }`}
+                >
+                  {sec} secondes
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <label className="text-xs font-black text-gray-300 uppercase tracking-wider block mb-2">Mode de Partie</label>
+            <div className="grid grid-cols-2 gap-2">
+              {['standard', 'rapide'].map((mode) => (
+                <button
+                  key={mode}
+                  data-tv-focus
+                  tabIndex={0}
+                  onClick={() => onGameMode(mode)}
+                  className={`py-2.5 rounded-xl font-bold text-xs capitalize border transition-all outline-none ${
+                    gameMode === mode
+                      ? 'bg-brand-purple text-white border-brand-purple shadow-glow-purple'
+                      : 'bg-surface-light border-white/10 text-gray-300 hover:border-white/30 focus:ring-2 focus:ring-brand-purple'
+                  }`}
+                >
+                  Mode {mode}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {createError && (
+          <div className="p-3 rounded-xl bg-rose-950/80 border border-rose-500/50 text-rose-300 text-xs flex items-center space-x-2">
+            <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
+            <span>{createError}</span>
+          </div>
+        )}
+
+        {/* Modal Actions */}
+        <div className="flex items-center justify-between pt-4 border-t border-white/10">
+          <button
+            data-tv-focus
+            tabIndex={0}
+            disabled={isCreating}
+            onClick={onClose}
+            className="px-5 py-3 rounded-xl bg-surface-light text-gray-300 hover:text-white font-bold text-sm outline-none focus:ring-2 focus:ring-white disabled:opacity-50"
+          >
+            Annuler
+          </button>
+
+          <button
+            data-tv-focus
+            tabIndex={0}
+            disabled={isCreating}
+            onClick={onCreate}
+            className="flex items-center space-x-2 px-8 py-3.5 rounded-2xl bg-brand-red hover:bg-red-600 text-white font-black text-base shadow-glow-red hover:scale-105 focus:scale-105 focus:bg-white focus:text-brand-red focus:ring-4 focus:ring-brand-red transition-all outline-none disabled:opacity-75"
+          >
+            {isCreating ? (
+              <>
+                <Loader2 className="w-5 h-5 animate-spin" />
+                <span>CRÉATION DU SALON...</span>
+              </>
+            ) : (
+              <>
+                <Play className="w-5 h-5 fill-current" />
+                <span>GÉNÉRER LE SALON</span>
+              </>
+            )}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 export const TVGameDetailView: React.FC = () => {
   const { selectedGame, setSelectedGame, setTvView, createRoom } = useGame();
@@ -18,9 +203,17 @@ export const TVGameDetailView: React.FC = () => {
   const [turnDuration, setTurnDuration] = useState(30);
   const [gameMode, setGameMode] = useState('standard');
 
+  // M5 — Back télécommande = retour au catalogue (comme le bouton haut-gauche)
+  useTvBack(() => {
+    if (showRulesModal) { setShowRulesModal(false); return; }
+    if (showCreateModal) { setShowCreateModal(false); return; }
+    audio.playBack();
+    setTvView('home');
+  });
+
   useEffect(() => {
     tvNav.setInitialFocus('button');
-  }, [showRulesModal, showCreateModal]);
+  }, []);
 
   const handleCreateRoom = async () => {
     if (isCreating) return;
@@ -215,165 +408,24 @@ export const TVGameDetailView: React.FC = () => {
 
       {/* MODAL: Game Rules */}
       {showRulesModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/80 backdrop-blur-md">
-          <div className="w-full max-w-2xl bg-surface-card border border-white/20 rounded-3xl p-8 shadow-2xl flex flex-col space-y-6">
-            <div className="flex items-center justify-between border-b border-white/10 pb-4">
-              <div className="flex items-center space-x-3">
-                <BookOpen className="w-6 h-6 text-brand-gold" />
-                <h2 className="text-2xl font-black font-display text-white">Règles du Jeu : {selectedGame.title}</h2>
-              </div>
-            </div>
-
-            <div className="space-y-3 max-h-[50vh] overflow-y-auto pr-2">
-              {selectedGame.rules.map((rule, idx) => (
-                <div key={idx} className="flex items-start space-x-3 p-3.5 rounded-xl bg-surface-light border border-white/5">
-                  <span className="w-6 h-6 rounded-full bg-brand-red text-white flex items-center justify-center font-bold text-xs flex-shrink-0">
-                    {idx + 1}
-                  </span>
-                  <p className="text-sm text-gray-200 leading-relaxed font-medium">{rule}</p>
-                </div>
-              ))}
-            </div>
-
-            <div className="flex justify-end pt-2">
-              <button
-                data-tv-focus
-                tabIndex={0}
-                onClick={() => {
-                  audio.playBack();
-                  setShowRulesModal(false);
-                }}
-                className="px-8 py-3 rounded-xl bg-white text-background font-black text-sm hover:bg-gray-200 focus:bg-brand-red focus:text-white focus:ring-4 focus:ring-white transition-all outline-none"
-              >
-                COMPRIS !
-              </button>
-            </div>
-          </div>
-        </div>
+        <RulesModal game={selectedGame} onClose={() => setShowRulesModal(false)} />
       )}
 
       {/* MODAL: Create Room Customization */}
       {showCreateModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/85 backdrop-blur-lg">
-          <div className="w-full max-w-lg bg-surface-card border border-brand-red/40 rounded-3xl p-8 shadow-glow-red flex flex-col space-y-6">
-            <div className="flex items-center space-x-3 border-b border-white/10 pb-4">
-              <Sliders className="w-6 h-6 text-brand-red" />
-              <div>
-                <h2 className="text-2xl font-black font-display text-white">CRÉER UN SALON</h2>
-                <p className="text-xs text-gray-400">Paramétrez votre partie de {selectedGame.title}</p>
-              </div>
-            </div>
-
-            {/* Options */}
-            <div className="space-y-4">
-              <div>
-                <label className="text-xs font-black text-gray-300 uppercase tracking-wider block mb-2">Nombre Maximum de Joueurs</label>
-                <div className="grid grid-cols-4 gap-2">
-                  {[2, 3, 4, selectedGame.maxPlayers > 4 ? selectedGame.maxPlayers : 4].map((num, i) => (
-                    <button
-                      key={i}
-                      data-tv-focus
-                      tabIndex={0}
-                      onClick={() => setMaxPlayers(num)}
-                      className={`py-2.5 rounded-xl font-black text-sm border transition-all outline-none ${
-                        maxPlayers === num
-                          ? 'bg-brand-red border-brand-red text-white shadow-glow-red'
-                          : 'bg-surface-light border-white/10 text-gray-300 hover:border-white/30 focus:ring-2 focus:ring-brand-red'
-                      }`}
-                    >
-                      {num} Joueurs
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <label className="text-xs font-black text-gray-300 uppercase tracking-wider block mb-2">Chronomètre par Tour</label>
-                <div className="grid grid-cols-3 gap-2">
-                  {[15, 30, 45].map((sec) => (
-                    <button
-                      key={sec}
-                      data-tv-focus
-                      tabIndex={0}
-                      onClick={() => setTurnDuration(sec)}
-                      className={`py-2.5 rounded-xl font-bold text-xs border transition-all outline-none ${
-                        turnDuration === sec
-                          ? 'bg-brand-gold text-background border-brand-gold font-black'
-                          : 'bg-surface-light border-white/10 text-gray-300 hover:border-white/30 focus:ring-2 focus:ring-brand-gold'
-                      }`}
-                    >
-                      {sec} secondes
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <label className="text-xs font-black text-gray-300 uppercase tracking-wider block mb-2">Mode de Partie</label>
-                <div className="grid grid-cols-2 gap-2">
-                  {['standard', 'rapide'].map((mode) => (
-                    <button
-                      key={mode}
-                      data-tv-focus
-                      tabIndex={0}
-                      onClick={() => setGameMode(mode)}
-                      className={`py-2.5 rounded-xl font-bold text-xs capitalize border transition-all outline-none ${
-                        gameMode === mode
-                          ? 'bg-brand-purple text-white border-brand-purple shadow-glow-purple'
-                          : 'bg-surface-light border-white/10 text-gray-300 hover:border-white/30 focus:ring-2 focus:ring-brand-purple'
-                      }`}
-                    >
-                      Mode {mode}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {createError && (
-              <div className="p-3 rounded-xl bg-rose-950/80 border border-rose-500/50 text-rose-300 text-xs flex items-center space-x-2">
-                <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
-                <span>{createError}</span>
-              </div>
-            )}
-
-            {/* Modal Actions */}
-            <div className="flex items-center justify-between pt-4 border-t border-white/10">
-              <button
-                data-tv-focus
-                tabIndex={0}
-                disabled={isCreating}
-                onClick={() => {
-                  audio.playBack();
-                  setShowCreateModal(false);
-                }}
-                className="px-5 py-3 rounded-xl bg-surface-light text-gray-300 hover:text-white font-bold text-sm outline-none focus:ring-2 focus:ring-white disabled:opacity-50"
-              >
-                Annuler
-              </button>
-
-              <button
-                data-tv-focus
-                tabIndex={0}
-                disabled={isCreating}
-                onClick={handleCreateRoom}
-                className="flex items-center space-x-2 px-8 py-3.5 rounded-2xl bg-brand-red hover:bg-red-600 text-white font-black text-base shadow-glow-red hover:scale-105 focus:scale-105 focus:bg-white focus:text-brand-red focus:ring-4 focus:ring-brand-red transition-all outline-none disabled:opacity-75"
-              >
-                {isCreating ? (
-                  <>
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                    <span>CRÉATION DU SALON...</span>
-                  </>
-                ) : (
-                  <>
-                    <Play className="w-5 h-5 fill-current" />
-                    <span>GÉNÉRER LE SALON</span>
-                  </>
-                )}
-              </button>
-            </div>
-          </div>
-        </div>
+        <CreateRoomModal
+          game={selectedGame}
+          isCreating={isCreating}
+          createError={createError}
+          maxPlayers={maxPlayers}
+          turnDuration={turnDuration}
+          gameMode={gameMode}
+          onClose={() => setShowCreateModal(false)}
+          onMaxPlayers={setMaxPlayers}
+          onTurnDuration={setTurnDuration}
+          onGameMode={setGameMode}
+          onCreate={handleCreateRoom}
+        />
       )}
     </div>
   );

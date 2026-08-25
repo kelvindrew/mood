@@ -5,11 +5,18 @@ import { TVGameCard } from '../components/TVGameCard';
 import { Layers, Flame, Users, Sparkles, Trophy, Brain, Zap } from 'lucide-react';
 import { audio } from '../../services/audio';
 import { tvNav } from '../../services/tvNavigation';
+import { useTvBack } from '../hooks/useTvNav';
 import { GameCatalogItem } from '../../types/game';
 
 export const TVCategoriesView: React.FC = () => {
   const { setSelectedGame, setTvView, createRoom } = useGame();
   const [selectedCat, setSelectedCat] = useState('all');
+
+  // M5 — Back télécommande = retour à l'accueil
+  useTvBack(() => {
+    audio.playBack();
+    setTvView('home');
+  });
 
   useEffect(() => {
     tvNav.setInitialFocus('button');

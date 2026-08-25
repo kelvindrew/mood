@@ -169,7 +169,10 @@ export class QuizEngine {
     this.notify();
 
     // After 5s show next question or end
-    setTimeout(() => {
+    // E2 — timer suivi : annulé par un re-planification éventuelle et par destroy()
+    if (this.transitionTimer) clearTimeout(this.transitionTimer);
+    this.transitionTimer = setTimeout(() => {
+      if (this._destroyed) return; // E2 : jamais d'action après destruction/replay
       if (this.currentQuestionIndex + 1 < Math.min(5, this.questions.length)) {
         this.currentQuestionIndex++;
         this.startQuestionTimer();
@@ -214,6 +217,28 @@ export class QuizEngine {
     };
   }
 
+  /**
+   * C1 — État PUBLIC : pendant la phase 'question', correctIndex et
+   * explanation sont retirés de la question diffusée. Ils réapparaissent
+   * automatiquement aux phases 'reveal' / 'game_over' (révélation publique).
+   */
+  getPublicState() {
+    const state = this.getState();
+    if (state.currentQuestion && this.state === 'question') {
+      const { correctIndex, explanation, ...safeQuestion } = state.currentQuestion;
+      state.currentQuestion = safeQuestion;
+    }
+    return state;
+  }
+
+  /**
+   * C1 — Aucune donnée privée par joueur dans ce jeu : les scores/réponses
+   * sont publics par conception.
+   */
+  getPrivateState() {
+    return null;
+  }
+
   notify() {
     if (this.onStateChange) {
       this.onStateChange(this.getState());
@@ -221,6 +246,8 @@ export class QuizEngine {
   }
 
   destroy() {
+    this._destroyed = true; // E2
     if (this.timer) clearInterval(this.timer);
+    if (this.transitionTimer) clearTimeout(this.transitionTimer);
   }
 }

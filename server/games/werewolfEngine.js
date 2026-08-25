@@ -168,6 +168,30 @@ export class WerewolfEngine {
     };
   }
 
+  /**
+   * C1 — État PUBLIC : les rôles et les cibles choisies (targetId, votes
+   * en cours) sont retirés de la liste diffusée. Ne restent que id, name,
+   * avatar et isAlive.
+   */
+  getPublicState() {
+    const state = this.getState();
+    const publicPlayers = {};
+    for (const [id, ps] of Object.entries(this.playerStates)) {
+      const { role, targetId, ...safePlayer } = ps;
+      publicPlayers[id] = safePlayer;
+    }
+    state.players = publicPlayers;
+    return state;
+  }
+
+  /**
+   * C1 — Fragment PRIVÉ : chaque joueur ne reçoit que son propre rôle.
+   */
+  getPrivateState(playerId) {
+    const ps = this.playerStates[playerId];
+    return ps ? { myRole: ps.role } : null;
+  }
+
   notify() {
     if (this.onStateChange) {
       this.onStateChange(this.getState());

@@ -19,6 +19,84 @@ interface MobileJoinViewProps {
   defaultRoomCode?: string;
 }
 
+// ---------------------------------------------------------------
+// C4 — Compression du selfie AVANT toute émission Socket.IO.
+// Le serveur applique la limite Socket.IO par défaut (1 Mo/frame) :
+// un Base64 brut de photo smartphone (2 à 8 Mo) déconnecterait le joueur.
+// Pattern repris de ImageUploader.processImageFile (canvas resize + JPEG),
+// adapté à l'usage avatar avec un plafond de taille strict.
+// ---------------------------------------------------------------
+const SELFIE_MAX_DIM = 320;        // l'avatar est affiché en ~80px sur la TV
+const SELFIE_QUALITY = 0.82;       // qualité JPEG suffisante pour un visage
+const SELFIE_MAX_BYTES = 150_000;  // plafond dur du dataURL émis (~150 Ko)
+
+function loadHtmlImage(src: string): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = () => reject(new Error('Décodage de la photo impossible'));
+    img.src = src;
+  });
+}
+
+function drawToDataUrl(img: HTMLImageElement, maxDim: number, quality: number): string {
+  let width = img.naturalWidth;
+  let height = img.naturalHeight;
+
+  if (width > maxDim || height > maxDim) {
+    if (width > height) {
+      height = Math.round((height * maxDim) / width);
+      width = maxDim;
+    } else {
+      width = Math.round((width * maxDim) / height);
+      height = maxDim;
+    }
+  }
+
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.max(1, width);
+  canvas.height = Math.max(1, height);
+  const ctx = canvas.getContext('2d');
+  if (!ctx) throw new Error('Canvas indisponible sur cet appareil');
+  ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+  return canvas.toDataURL('image/jpeg', quality);
+}
+
+/**
+ * Redimensionne puis compresse la photo en JPEG progressivement jusqu'à
+ * passer sous SELFIE_MAX_BYTES. Ne renvoie JAMAIS le Base64 brut : si la
+ * compression échoue, la promesse est rejetée (l'appelant affiche une erreur).
+ */
+async function compressSelfieFile(file: File): Promise<string> {
+  if (!file.type.startsWith('image/')) {
+    throw new Error('Le fichier sélectionné n’est pas une image');
+  }
+
+  const objectUrl = URL.createObjectURL(file);
+  try {
+    const img = await loadHtmlImage(objectUrl);
+
+    let maxDim = SELFIE_MAX_DIM;
+    let quality = SELFIE_QUALITY;
+    let dataUrl = drawToDataUrl(img, maxDim, quality);
+
+    // Dégradation progressive : qualité d'abord (jusqu'à 0.55),
+    // puis réduction dimensionnelle par pas de 25% jusqu'à 96px minimum.
+    while (dataUrl.length * 0.75 > SELFIE_MAX_BYTES && maxDim > 96) {
+      if (quality > 0.55) {
+        quality = Math.max(0.55, quality - 0.12);
+      } else {
+        maxDim = Math.round(maxDim * 0.75);
+      }
+      dataUrl = drawToDataUrl(img, maxDim, quality);
+    }
+
+    return dataUrl;
+  } finally {
+    URL.revokeObjectURL(objectUrl);
+  }
+}
+
 export const MobileJoinView: React.FC<MobileJoinViewProps> = ({ defaultRoomCode = '' }) => {
   const { joinRoom } = useGame();
   const [code, setCode] = useState(defaultRoomCode);
@@ -42,16 +120,22 @@ export const MobileJoinView: React.FC<MobileJoinViewProps> = ({ defaultRoomCode 
     }
   }, []);
 
-  const handleSelfieCapture = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // C4 — la photo est compressée LOCALEMENT (redimension + JPEG) avant d'être
+  // conservée puis émise. Aucun Base64 brut ne quitte le téléphone.
+  const handleSelfieCapture = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        const base64 = event.target?.result as string;
-        setSelfieImage(base64);
-        triggerHaptic(hapticPatterns.success);
-      };
-      reader.readAsDataURL(file);
+    e.target.value = ''; // permet de reprendre la même photo après erreur
+    if (!file) return;
+
+    try {
+      const compressed = await compressSelfieFile(file);
+      setSelfieImage(compressed);
+      setError('');
+      triggerHaptic(hapticPatterns.success);
+    } catch {
+      setSelfieImage(undefined);
+      setError('Impossible de traiter la photo. Réessayez ou choisissez un avatar.');
+      triggerHaptic(hapticPatterns.error);
     }
   };
 
@@ -78,7 +162,7 @@ export const MobileJoinView: React.FC<MobileJoinViewProps> = ({ defaultRoomCode 
     triggerHaptic(hapticPatterns.tap);
     audio.playSelect();
 
-    const res = await joinRoom(cleanCode, cleanName, selectedAvatar, isSpectator);
+    const res = await joinRoom(cleanCode, cleanName, selectedAvatar, isSpectator, selfieImage);
     setIsLoading(false);
 
     if (!res.success) {

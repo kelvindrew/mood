@@ -38,7 +38,8 @@ export const FRENCH_DEFINITIONS = {
   IL: { nature: 'pronom personnel', def: 'Pronom sujet de la 3e personne du singulier masculin.' },
   IN: { nature: 'adjectif invariable', def: 'À la mode, branché, tendance.' },
   JE: { nature: 'pronom personnel', def: 'Pronom de la 1ère personne du singulier désignant le locuteur.' },
-  KA: { nature: 'nom masculin', def: 'Dans l’Égypte antique, le double spirituel accompagnant chaque individu.' },
+  // NB: 'KA' défini plus bas — l'entrée conservée est celle qui était déjà
+  // effective à l'exécution (dernière déclaration).
   LA: { nature: 'article / note', def: 'Article défini féminin OU sixième note de la gamme musicale.' },
   LE: { nature: 'article défini', def: 'Article défini masculin singulier.' },
   LI: { nature: 'nom masculin', def: 'Ancienne unité de mesure de distance chinoise valant environ 500 mètres.' },

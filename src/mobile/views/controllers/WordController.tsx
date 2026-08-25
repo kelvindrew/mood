@@ -64,6 +64,81 @@ export const WordController: React.FC = () => {
   const [selectedSwapIds, setSelectedSwapIds] = useState<string[]>([]);
   const [localError, setLocalError] = useState<string>('');
 
+  // Compute exact cell assignments for newly placed tiles, skipping occupied board cells
+  // C2 : ces hooks doivent être appelés à CHAQUE render dans le même ordre,
+  // y compris pendant la transition où gameState n'est pas encore arrivé
+  // (room.status='playing' mais aucun game_state_update reçu). Ils sont donc
+  // placés AVANT tout early-return et tolèrent un état absent.
+  const placedTilePlacements = useMemo(() => {
+    const placements: { row: number; col: number; tile: TileItem }[] = [];
+    if (!gameState) return placements;
+
+    let curR = startRow;
+    let curC = startCol;
+
+    for (let i = 0; i < composedWord.length; i++) {
+      while (curR < 15 && curC < 15 && gameState.board[curR]?.[curC] !== null) {
+        if (direction === 'horizontal') curC++;
+        else curR++;
+      }
+
+      if (curR < 15 && curC < 15) {
+        placements.push({
+          row: curR,
+          col: curC,
+          tile: composedWord[i],
+        });
+        if (direction === 'horizontal') curC++;
+        else curR++;
+      }
+    }
+    return placements;
+  }, [composedWord, startRow, startCol, direction, gameState?.board]);
+
+  // Compute the COMPLETE reconstructed word formed on the board
+  const fullFormedWordString = useMemo(() => {
+    if (!gameState || placedTilePlacements.length === 0) return '';
+
+    const virtualBoard = gameState.board.map((row) => row.map((cell) => (cell ? { ...cell } : null)));
+    for (const p of placedTilePlacements) {
+      virtualBoard[p.row][p.col] = {
+        letter: p.tile.letter,
+        points: p.tile.points,
+      };
+    }
+
+    let word = '';
+    if (direction === 'horizontal') {
+      const r = placedTilePlacements[0].row;
+      const cols = placedTilePlacements.map((p) => p.col);
+      let minC = Math.min(...cols);
+      let maxC = Math.max(...cols);
+
+      while (minC > 0 && virtualBoard[r][minC - 1] !== null) minC--;
+      while (maxC < 14 && virtualBoard[r][maxC + 1] !== null) maxC++;
+
+      for (let c = minC; c <= maxC; c++) {
+        const cell = virtualBoard[r][c];
+        if (cell) word += cell.letter;
+      }
+    } else {
+      const c = placedTilePlacements[0].col;
+      const rows = placedTilePlacements.map((p) => p.row);
+      let minR = Math.min(...rows);
+      let maxR = Math.max(...rows);
+
+      while (minR > 0 && virtualBoard[minR - 1][c] !== null) minR--;
+      while (maxR < 14 && virtualBoard[maxR + 1][c] !== null) maxR++;
+
+      for (let r = minR; r <= maxR; r++) {
+        const cell = virtualBoard[r][c];
+        if (cell) word += cell.letter;
+      }
+    }
+
+    return word.toUpperCase();
+  }, [placedTilePlacements, direction, gameState?.board]);
+
   if (!gameState || !localPlayer) return null;
 
   const isGameOver = !!(gameState.isGameOver || gameState.winner);
@@ -110,75 +185,6 @@ export const WordController: React.FC = () => {
     setLocalError('');
     setDirection((prev) => (prev === 'horizontal' ? 'vertical' : 'horizontal'));
   };
-
-  // Compute exact cell assignments for newly placed tiles, skipping occupied board cells
-  const placedTilePlacements = useMemo(() => {
-    const placements: { row: number; col: number; tile: TileItem }[] = [];
-    let curR = startRow;
-    let curC = startCol;
-
-    for (let i = 0; i < composedWord.length; i++) {
-      while (curR < 15 && curC < 15 && gameState.board[curR]?.[curC] !== null) {
-        if (direction === 'horizontal') curC++;
-        else curR++;
-      }
-
-      if (curR < 15 && curC < 15) {
-        placements.push({
-          row: curR,
-          col: curC,
-          tile: composedWord[i],
-        });
-        if (direction === 'horizontal') curC++;
-        else curR++;
-      }
-    }
-    return placements;
-  }, [composedWord, startRow, startCol, direction, gameState.board]);
-
-  // Compute the COMPLETE reconstructed word formed on the board
-  const fullFormedWordString = useMemo(() => {
-    if (placedTilePlacements.length === 0) return '';
-
-    const virtualBoard = gameState.board.map((row) => row.map((cell) => (cell ? { ...cell } : null)));
-    for (const p of placedTilePlacements) {
-      virtualBoard[p.row][p.col] = {
-        letter: p.tile.letter,
-        points: p.tile.points,
-      };
-    }
-
-    let word = '';
-    if (direction === 'horizontal') {
-      const r = placedTilePlacements[0].row;
-      const cols = placedTilePlacements.map((p) => p.col);
-      let minC = Math.min(...cols);
-      let maxC = Math.max(...cols);
-
-      while (minC > 0 && virtualBoard[r][minC - 1] !== null) minC--;
-      while (maxC < 14 && virtualBoard[r][maxC + 1] !== null) maxC++;
-
-      for (let c = minC; c <= maxC; c++) {
-        const cell = virtualBoard[r][c];
-        if (cell) word += cell.letter;
-      }
-    } else {
-      const c = placedTilePlacements[0].col;
-      const rows = placedTilePlacements.map((p) => p.row);
-      let minR = Math.min(...rows);
-      let maxR = Math.max(...rows);
-
-      while (minR > 0 && virtualBoard[minR - 1][c] !== null) minR--;
-      while (maxR < 14 && virtualBoard[maxR + 1][c] !== null) maxR++;
-
-      for (let r = minR; r <= maxR; r++) {
-        const cell = virtualBoard[r][c];
-        if (cell) word += cell.letter;
-      }
-    }
-
-    return word.toUpperCase();
-  }, [placedTilePlacements, direction, gameState.board]);
 
   const handleValidateWord = () => {
     if (!isMyTurn || isGameOver || placedTilePlacements.length === 0) return;

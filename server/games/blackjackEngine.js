@@ -49,6 +49,9 @@ export class BlackjackEngine {
     this.initRound();
 
     this.timer = null;
+    this.botTimer = null; // E2
+    this.botContinuationTimer = null; // E2
+    this.dealerDrawInterval = null; // E2
     this.startTurnTimer();
     this.checkBotTurn();
   }
@@ -127,9 +130,11 @@ export class BlackjackEngine {
 
   checkBotTurn() {
     if (this.gamePhase !== 'player_turns') return;
+    // E2 — pattern menteurEngine : un seul timer bot à la fois
+    if (this.botTimer) clearTimeout(this.botTimer);
     if (this.isCurrentPlayerBot()) {
-      setTimeout(() => {
-        if (this.gamePhase === 'player_turns' && this.isCurrentPlayerBot()) {
+      this.botTimer = setTimeout(() => {
+        if (!this._destroyed && this.gamePhase === 'player_turns' && this.isCurrentPlayerBot()) {
           this.executeBotAction();
         }
       }, 1000);
@@ -147,8 +152,22 @@ export class BlackjackEngine {
     if (hand.score < 17) {
       this.handleHit(bot.id);
       // If still < 17 and not bust, continue
+      // E2 — continuation suivie dans son PROPRE slot : ne doit ni fuiter après
+      // destroy(), ni écraser le timer bot du joueur suivant planifié par
+      // handleHit->advancePlayerTurn ; sa garde annule l'action si le tour a changé.
       if (!hand.isBust && hand.score < 17) {
-        setTimeout(() => this.executeBotAction(), 800);
+        if (this.botContinuationTimer) clearTimeout(this.botContinuationTimer);
+        this.botContinuationTimer = setTimeout(() => {
+          if (
+            !this._destroyed &&
+            this.gamePhase === 'player_turns' &&
+            this.getCurrentPlayer()?.id === bot.id &&
+            !this.playerHands[bot.id]?.isStand &&
+            !this.playerHands[bot.id]?.isBust
+          ) {
+            this.executeBotAction();
+          }
+        }, 800);
       }
     } else {
       this.handleStand(bot.id);
@@ -229,7 +248,13 @@ export class BlackjackEngine {
     this.dealerHand.score = calculateBlackjackScore(this.dealerHand.cards);
     this.notify();
 
-    const dealerDrawInterval = setInterval(() => {
+    // E2 — interval du croupier suivi : annulable par destroy()
+    if (this.dealerDrawInterval) clearInterval(this.dealerDrawInterval);
+    this.dealerDrawInterval = setInterval(() => {
+      if (this._destroyed) {
+        clearInterval(this.dealerDrawInterval);
+        return;
+      }
       if (this.dealerHand.score < 17) {
         const c = this.deck.pop();
         this.dealerHand.cards.push(c);
@@ -239,7 +264,7 @@ export class BlackjackEngine {
         }
         this.notify();
       } else {
-        clearInterval(dealerDrawInterval);
+        clearInterval(this.dealerDrawInterval);
         this.resolveRound();
       }
     }, 1000);
@@ -280,6 +305,33 @@ export class BlackjackEngine {
     };
   }
 
+  /**
+   * C1 — État PUBLIC : la hole card du croupier est remplacée par une carte
+   * factice tant que hideHoleCard est actif (le score affiché ne porte que
+   * sur la carte visible). Les mains des joueurs restent publiques : c'est
+   * la règle du blackjack (cartes découvertes sur la table, affichées TV).
+   */
+  getPublicState() {
+    const state = this.getState();
+    if (state.dealerHand && state.dealerHand.hideHoleCard && state.dealerHand.cards.length > 1) {
+      state.dealerHand = {
+        ...state.dealerHand,
+        cards: [
+          state.dealerHand.cards[0],
+          { id: 'hole_card_hidden', suit: 'spades', rank: '?', value: 0 },
+        ],
+      };
+    }
+    return state;
+  }
+
+  /**
+   * C1 — Aucun fragment privé : les mains joueurs sont publiques par règle.
+   */
+  getPrivateState() {
+    return null;
+  }
+
   notify() {
     if (this.onStateChange) {
       this.onStateChange(this.getState());
@@ -287,6 +339,10 @@ export class BlackjackEngine {
   }
 
   destroy() {
+    this._destroyed = true; // E2
     if (this.timer) clearInterval(this.timer);
+    if (this.botTimer) clearTimeout(this.botTimer);
+    if (this.botContinuationTimer) clearTimeout(this.botContinuationTimer);
+    if (this.dealerDrawInterval) clearInterval(this.dealerDrawInterval);
   }
 }

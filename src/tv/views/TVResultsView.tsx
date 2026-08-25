@@ -4,12 +4,44 @@ import confetti from 'canvas-confetti';
 import { Trophy, RotateCcw, Home, Sparkles, Flame, ShieldAlert, Award } from 'lucide-react';
 import { audio } from '../../services/audio';
 import { tvNav } from '../../services/tvNavigation';
+import { useTvBack } from '../hooks/useTvNav';
 
 export const TVResultsView: React.FC = () => {
   const { room, replayGame, returnToHome } = useGame();
 
+  // M5 — Back télécommande = retour à l'accueil (partie terminée, non destructif)
+  useTvBack(() => {
+    audio.playBack();
+    returnToHome();
+  });
+
   const players = room?.players || [];
-  const winner = players[0] || { name: 'Champion', avatar: '👑', color: 'red' };
+
+  // C3 — Le podium est issu du classement final explicite calculé par le
+  // serveur à partir du résultat RÉEL de la partie (scores, ordre d'arrivée,
+  // jetons, statuts, pions, équipe...), jamais de la position dans room.players.
+  const ranking = room?.finalRanking || [];
+  const resolveEntry = (idx: number) => {
+    const entry = ranking[idx];
+    if (!entry) return null;
+    const player = players.find((p) => p.id === entry.playerId);
+    return {
+      playerId: entry.playerId,
+      name: entry.name || player?.name || 'Joueur',
+      avatar: player?.avatar || entry.avatar || '🎮',
+      selfieImage: player?.selfieImage,
+      score: entry.score ?? 0,
+      rank: entry.rank,
+    };
+  };
+
+  const winner = resolveEntry(0) || (players[0] ? {
+    playerId: players[0].id, name: players[0].name, avatar: players[0].avatar, selfieImage: players[0].selfieImage, score: players[0].score, rank: 1,
+  } : { playerId: '', name: 'Champion', avatar: '👑', selfieImage: undefined as string | undefined, score: 0, rank: 1 });
+  const second = resolveEntry(1);
+  const third = resolveEntry(2);
+  // Ex æquo en tête (jeux à score) : plusieurs rangs 1
+  const coChampions = ranking.filter((e) => e.rank === winner.rank).length;
 
   useEffect(() => {
     // Play celebratory victory fanfare
@@ -56,18 +88,20 @@ export const TVResultsView: React.FC = () => {
           <span>FIN DE PARTIE • RÉSULTATS OFFICIELS</span>
         </div>
         <h1 className="text-5xl lg:text-6xl font-black font-display text-white tracking-tight">
-          VICTOIRE ÉCLATANTE !
+          {room?.resultLabel || 'VICTOIRE ÉCLATANTE !'}
         </h1>
       </div>
 
       {/* Center Podium of Champions */}
       <div className="relative z-10 flex items-end justify-center space-x-6 my-auto pt-4">
         {/* 2nd Place */}
-        {players.length > 1 && (
+        {second && (
           <div className="flex flex-col items-center animate-scale-in">
-            <div className="text-5xl mb-2">{players[1]?.avatar || '🥈'}</div>
-            <div className="font-bold text-base text-gray-200">{players[1]?.name || 'Joueur 2'}</div>
-            <div className="text-xs text-gray-400 mb-2">2ème Place</div>
+            <div className="text-5xl mb-2">{second.avatar || '🥈'}</div>
+            <div className="font-bold text-base text-gray-200">{second.name || 'Joueur 2'}</div>
+            <div className="text-xs text-gray-400 mb-2">
+              2ème Place{second.score > 0 ? ` • ${second.score} pts` : ''}
+            </div>
             <div className="w-44 h-32 rounded-t-3xl bg-surface-card border-t-4 border-gray-400 flex flex-col items-center justify-center p-4 shadow-xl">
               <span className="font-display font-black text-4xl text-gray-400">2</span>
               <span className="text-[11px] text-gray-400 mt-1">Excellent match</span>
@@ -86,7 +120,9 @@ export const TVResultsView: React.FC = () => {
             )}
           </div>
           <div className="font-black font-display text-2xl text-white tracking-wide">{winner.name}</div>
-          <div className="text-xs font-bold text-brand-gold uppercase tracking-wider mb-2">★ CHAMPION DU SALON ★</div>
+          <div className="text-xs font-bold text-brand-gold uppercase tracking-wider mb-2">
+            ★ CHAMPION DU SALON ★{coChampions > 1 ? ' • EX ÆQUO' : ''}
+          </div>
           <div className="w-52 h-44 rounded-t-3xl bg-gradient-to-t from-brand-red/60 via-brand-red/30 to-brand-gold/30 border-t-4 border-brand-gold flex flex-col items-center justify-center p-4 shadow-glow-gold">
             <span className="font-display font-black text-6xl text-white drop-shadow-md">1</span>
             <span className="text-xs font-black text-brand-gold mt-1 tracking-wider uppercase">VICTOIRE</span>
@@ -94,11 +130,13 @@ export const TVResultsView: React.FC = () => {
         </div>
 
         {/* 3rd Place */}
-        {players.length > 2 && (
+        {third && (
           <div className="flex flex-col items-center animate-scale-in">
-            <div className="text-5xl mb-2">{players[2]?.avatar || '🥉'}</div>
-            <div className="font-bold text-base text-gray-200">{players[2]?.name || 'Joueur 3'}</div>
-            <div className="text-xs text-gray-400 mb-2">3ème Place</div>
+            <div className="text-5xl mb-2">{third.avatar || '🥉'}</div>
+            <div className="font-bold text-base text-gray-200">{third.name || 'Joueur 3'}</div>
+            <div className="text-xs text-gray-400 mb-2">
+              3ème Place{third.score > 0 ? ` • ${third.score} pts` : ''}
+            </div>
             <div className="w-44 h-24 rounded-t-3xl bg-surface-card border-t-4 border-amber-700 flex flex-col items-center justify-center p-4 shadow-xl">
               <span className="font-display font-black text-3xl text-amber-700">3</span>
               <span className="text-[11px] text-gray-400 mt-1">Bien joué</span>

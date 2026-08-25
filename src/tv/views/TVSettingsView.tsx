@@ -3,12 +3,19 @@ import { useGame } from '../../context/GameContext';
 import { Settings, Volume2, Tv, Wifi, Shield, Cpu, Smartphone, Check } from 'lucide-react';
 import { audio } from '../../services/audio';
 import { tvNav } from '../../services/tvNavigation';
+import { useTvBack } from '../hooks/useTvNav';
 
 export const TVSettingsView: React.FC = () => {
-  const { serverLanIp } = useGame();
+  const { serverLanIp, setTvView } = useGame();
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [tvPlatform, setTvPlatform] = useState('Hisense VIDAA OS');
   const [resolution, setResolution] = useState('4K Ultra HD (3840x2160)');
+
+  // M5 — Back télécommande = retour à l'accueil
+  useTvBack(() => {
+    audio.playBack();
+    setTvView('home');
+  });
 
   useEffect(() => {
     tvNav.setInitialFocus('button');

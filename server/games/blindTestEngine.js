@@ -122,7 +122,10 @@ export class BlindTestEngine {
     this.state = 'reveal';
     this.notify();
 
-    setTimeout(() => {
+    // E2 — timer suivi : annulé par destroy(), garde anti-zombie
+    if (this.transitionTimer) clearTimeout(this.transitionTimer);
+    this.transitionTimer = setTimeout(() => {
+      if (this._destroyed) return;
       if (this.currentSongIndex + 1 < this.songs.length) {
         this.currentSongIndex++;
         this.startSongTimer();
@@ -162,6 +165,28 @@ export class BlindTestEngine {
     };
   }
 
+  /**
+   * C1 — État PUBLIC : pendant 'playing' et 'buzzed', le titre, l'artiste
+   * (ce SONT les réponses) et correctIndex sont retirés. Seuls la catégorie,
+   * les options, la mélodie (jouée à voix haute sur la TV) circulent.
+   * Tout est révélé aux phases 'reveal' / 'game_over'.
+   */
+  getPublicState() {
+    const state = this.getState();
+    if (state.currentSong && this.state !== 'reveal' && this.state !== 'game_over') {
+      const { correctIndex, title, artist, ...safeSong } = state.currentSong;
+      state.currentSong = safeSong;
+    }
+    return state;
+  }
+
+  /**
+   * C1 — Aucune donnée privée par joueur dans ce jeu.
+   */
+  getPrivateState() {
+    return null;
+  }
+
   notify() {
     if (this.onStateChange) {
       this.onStateChange(this.getState());
@@ -169,6 +194,8 @@ export class BlindTestEngine {
   }
 
   destroy() {
+    this._destroyed = true; // E2
     if (this.timer) clearInterval(this.timer);
+    if (this.transitionTimer) clearTimeout(this.transitionTimer);
   }
 }

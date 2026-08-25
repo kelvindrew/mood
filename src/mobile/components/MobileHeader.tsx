@@ -1,11 +1,20 @@
 import React from 'react';
-import { useGame } from '../../context/GameContext';
-import { Wifi, Volume2, VolumeX, Shield, User } from 'lucide-react';
+import { useGame, ConnectionState } from '../../context/GameContext';
+import { Volume2, VolumeX, User } from 'lucide-react';
 import { audio } from '../../services/audio';
 
+// E9 — badge reflétant l'état RÉEL de la liaison Socket.IO
+const BADGE: Record<ConnectionState, { label: string; wrap: string; dot: string; ping: boolean }> = {
+  connected: { label: 'CONNECTÉ', wrap: 'bg-emerald-500/20 text-emerald-400', dot: 'bg-emerald-400', ping: true },
+  connecting: { label: 'CONNEXION…', wrap: 'bg-amber-500/20 text-amber-300', dot: 'bg-amber-400', ping: true },
+  reconnecting: { label: 'RECONNEXION…', wrap: 'bg-rose-500/20 text-rose-300', dot: 'bg-rose-400', ping: true },
+  disconnected: { label: 'HORS LIGNE', wrap: 'bg-rose-500/20 text-rose-400', dot: 'bg-rose-500', ping: false },
+};
+
 export const MobileHeader: React.FC = () => {
-  const { room, localPlayer, selectedGame } = useGame();
+  const { room, localPlayer, selectedGame, connectionState } = useGame();
   const [muted, setMuted] = React.useState(false);
+  const badge = BADGE[connectionState];
 
   const toggleSound = () => {
     const isMuted = audio.toggleMute();
@@ -35,9 +44,12 @@ export const MobileHeader: React.FC = () => {
       </div>
 
       <div className="flex items-center space-x-3">
-        <div className="flex items-center space-x-1 px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] font-bold">
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
-          <span>CONNECTÉ</span>
+        <div
+          data-conn={connectionState}
+          className={`flex items-center space-x-1 px-2 py-0.5 rounded-full text-[10px] font-bold ${badge.wrap}`}
+        >
+          <span className={`w-1.5 h-1.5 rounded-full ${badge.dot} ${badge.ping ? 'animate-ping' : ''}`} />
+          <span>{badge.label}</span>
         </div>
 
         <button

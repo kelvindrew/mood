@@ -26,6 +26,7 @@ export class PresidentEngine {
     this.dealDeck();
 
     this.timer = null;
+    this.botTimer = null; // E2
     this.startTurnTimer();
     this.checkBotTurn();
   }
@@ -86,9 +87,11 @@ export class PresidentEngine {
 
   checkBotTurn() {
     if (this.finishedPlayers.length >= this.players.length - 1) return;
+    // E2 — pattern menteurEngine : un seul timer bot à la fois
+    if (this.botTimer) clearTimeout(this.botTimer);
     if (this.isCurrentPlayerBot()) {
-      setTimeout(() => {
-        if (this.isCurrentPlayerBot()) {
+      this.botTimer = setTimeout(() => {
+        if (!this._destroyed && this.isCurrentPlayerBot()) {
           this.executeBotPlay();
         }
       }, 1200);
@@ -289,6 +292,24 @@ export class PresidentEngine {
     };
   }
 
+  /**
+   * C1 — État PUBLIC : les mains complètes sont retirées, seuls les compteurs
+   * publics (playerCardCounts) circulent.
+   */
+  getPublicState() {
+    const { playerHands, ...publicState } = this.getState();
+    return publicState;
+  }
+
+  /**
+   * C1 — Fragment PRIVÉ : uniquement la main du joueur destinataire.
+   */
+  getPrivateState(playerId) {
+    return {
+      playerHands: { [playerId]: this.playerHands[playerId] || [] },
+    };
+  }
+
   notify() {
     if (this.onStateChange) {
       this.onStateChange(this.getState());
@@ -296,6 +317,8 @@ export class PresidentEngine {
   }
 
   destroy() {
+    this._destroyed = true; // E2
     if (this.timer) clearInterval(this.timer);
+    if (this.botTimer) clearTimeout(this.botTimer);
   }
 }

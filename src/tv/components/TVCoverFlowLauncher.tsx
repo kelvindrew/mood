@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useCallback } from 'react';
 import { GameCatalogItem } from '../../types/game';
 import { Sparkles, Users, Clock, ChevronLeft, ChevronRight } from 'lucide-react';
 import { audio } from '../../services/audio';
+import { tvNav } from '../../services/tvNavigation';
 
 interface TVCoverFlowLauncherProps {
   games: GameCatalogItem[];
@@ -29,25 +30,35 @@ export const TVCoverFlowLauncher: React.FC<TVCoverFlowLauncherProps> = ({
     onIndexChange(activeIndex < games.length - 1 ? activeIndex + 1 : 0);
   }, [activeIndex, games.length, onIndexChange]);
 
-  // Keyboard navigation for TV D-Pad & Desktop
+  // M4 — source de vérité UNIQUE : plus aucun listener window local.
+  // Le CoverFlow consomme Gauche/Droite (rotation du carrousel) via le
+  // pipeline central tvNav ; Haut/Bas restent spatiaux (navbar / barre
+  // flottante), et Select sur le poster central lance la partie.
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'ArrowLeft') {
+    return tvNav.registerKeyHandler((action, e) => {
+      if (action === 'left') {
         e.preventDefault();
         handlePrev();
-      } else if (e.key === 'ArrowRight') {
+        audio.playSelect();
+        return true;
+      }
+      if (action === 'right') {
         e.preventDefault();
         handleNext();
-      } else if (e.key === 'Enter' || e.key === ' ') {
-        if (document.activeElement === containerRef.current) {
+        audio.playSelect();
+        return true;
+      }
+      if (action === 'select') {
+        const active = document.activeElement as HTMLElement | null;
+        if (active && containerRef.current && active === containerRef.current) {
           e.preventDefault();
+          audio.playSelect();
           onPlayGame(activeGame);
+          return true;
         }
       }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+      return false;
+    });
   }, [handlePrev, handleNext, activeGame, onPlayGame]);
 
   return (

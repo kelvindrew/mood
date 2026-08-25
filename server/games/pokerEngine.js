@@ -38,6 +38,7 @@ export class PokerEngine {
     this.initHand();
 
     this.timer = null;
+    this.botTimer = null; // E2
     this.startTurnTimer();
     this.checkBotTurn();
   }
@@ -111,9 +112,11 @@ export class PokerEngine {
 
   checkBotTurn() {
     if (this.winnerId || this.stage === 'showdown') return;
+    // E2 — pattern menteurEngine : un seul timer bot à la fois
+    if (this.botTimer) clearTimeout(this.botTimer);
     if (this.isCurrentPlayerBot()) {
-      setTimeout(() => {
-        if (this.isCurrentPlayerBot()) {
+      this.botTimer = setTimeout(() => {
+        if (!this._destroyed && this.isCurrentPlayerBot()) {
           this.executeBotAction();
         }
       }, 1200);
@@ -303,6 +306,24 @@ export class PokerEngine {
     };
   }
 
+  /**
+   * C1 — État PUBLIC : les hole cards sont retirées du flux commun.
+   * Les cartes communautaires, tapis et mises restent publics.
+   */
+  getPublicState() {
+    const { playerHands, ...publicState } = this.getState();
+    return publicState;
+  }
+
+  /**
+   * C1 — Fragment PRIVÉ : uniquement les deux hole cards du joueur destinataire.
+   */
+  getPrivateState(playerId) {
+    return {
+      playerHands: { [playerId]: this.playerHands[playerId] || [] },
+    };
+  }
+
   notify() {
     if (this.onStateChange) {
       this.onStateChange(this.getState());
@@ -310,6 +331,8 @@ export class PokerEngine {
   }
 
   destroy() {
+    this._destroyed = true; // E2
     if (this.timer) clearInterval(this.timer);
+    if (this.botTimer) clearTimeout(this.botTimer);
   }
 }

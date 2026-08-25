@@ -243,6 +243,25 @@ export class CardEngine {
     };
   }
 
+  /**
+   * C1 — État PUBLIC : les mains complètes sont retirées, seuls les compteurs
+   * publics (playerCardCounts) circulent. Chaque joueur reçoit sa main via
+   * getPrivateState().
+   */
+  getPublicState() {
+    const { playerHands, ...publicState } = this.getState();
+    return publicState;
+  }
+
+  /**
+   * C1 — Fragment PRIVÉ : uniquement la main du joueur destinataire.
+   */
+  getPrivateState(playerId) {
+    return {
+      playerHands: { [playerId]: this.playerHands[playerId] || [] },
+    };
+  }
+
   notify() {
     if (this.onStateChange) {
       this.onStateChange(this.getState());

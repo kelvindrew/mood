@@ -27,7 +27,10 @@ export const WerewolfController: React.FC = () => {
   const myState = gameState.players && gameState.players[localPlayer.id];
   if (!myState) return null;
 
-  const roleInfo = ROLE_DETAILS[myState.role] || ROLE_DETAILS.villager;
+  // C1 : le rôle n'est plus diffusé publiquement — il arrive uniquement
+  // via le flux privé 'private_state' destiné à ce joueur.
+  const myRole: WerewolfRole = gameState.myRole || 'villager';
+  const roleInfo = ROLE_DETAILS[myRole] || ROLE_DETAILS.villager;
   const isNight = gameState.phase.startsWith('night');
   const isVoting = gameState.phase === 'day_voting';
   const alivePlayers = Object.values(gameState.players).filter((p) => p.isAlive && p.id !== localPlayer.id);
@@ -84,7 +87,7 @@ export const WerewolfController: React.FC = () => {
               <span>{isNight ? 'Phase Nocturne' : isVoting ? 'Tribunal & Vote du Village' : 'Débat en cours'}</span>
             </div>
             <p className="text-xs text-gray-400">
-              {isNight && myState.role === 'werewolf'
+              {isNight && myRole === 'werewolf'
                 ? '🐺 Choisissez votre victime cette nuit :'
                 : isVoting
                 ? '⚖️ Votez contre le joueur suspect :'
@@ -93,7 +96,7 @@ export const WerewolfController: React.FC = () => {
           </div>
 
           {/* Target Selection Grid */}
-          {(isNight && myState.role === 'werewolf' || isVoting) && myState.isAlive && (
+          {(isNight && myRole === 'werewolf' || isVoting) && myState.isAlive && (
             <div className="grid grid-cols-2 gap-2.5 max-h-[220px] overflow-y-auto pr-1">
               {alivePlayers.map((p) => {
                 const isSelected = selectedTarget === p.id;

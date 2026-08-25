@@ -125,7 +125,7 @@ export interface PresidentGameState {
   currentTurnPlayerId: string;
   passedPlayers: string[];
   playerCardCounts: Record<string, number>;
-  playerHands: Record<string, PlayingCard[]>; // Secret on mobile
+  playerHands?: Record<string, PlayingCard[]>; // C1: privé — uniquement via private_state
   finishedPlayers: { playerId: string; name: string; rankTitle: PresidentRankType }[];
   isRevolution: boolean; // 4 cards of same rank reverses hierarchy
   turnTimeLeft: number;
@@ -144,7 +144,7 @@ export interface PokerGameState {
   currentTurnPlayerId: string;
   playerChips: Record<string, number>;
   playerBets: Record<string, number>;
-  playerHands: Record<string, PlayingCard[]>; // Secret 2 hole cards
+  playerHands?: Record<string, PlayingCard[]>; // C1: privé — uniquement via private_state
   foldedPlayers: string[];
   allInPlayers: string[];
   turnTimeLeft: number;
@@ -227,7 +227,7 @@ export interface ScrabbleGameState {
   board: (BoardTile | null)[][];
   letterBagCount: number;
   currentPlayerId: string;
-  playerRacks: Record<string, { letter: string; points: number; id: string }[]>;
+  playerRacks?: Record<string, { letter: string; points: number; id: string }[]>; // C1: privé — uniquement via private_state
   playerScores?: Record<string, number>;
   playerStats?: Record<string, ScrabblePlayerStats>;
   turnTimeLeft: number;
@@ -273,7 +273,7 @@ export interface CardGameState {
   direction: 1 | -1;
   currentPlayerId: string;
   playerCardCounts: Record<string, number>;
-  playerHands: Record<string, UnoCard[]>;
+  playerHands?: Record<string, UnoCard[]>; // C1: privé — uniquement via private_state
   drawPileCount: number;
   unoCalledBy: Record<string, boolean>;
   winner: string | null;
@@ -286,8 +286,8 @@ export interface QuizQuestion {
   category: string;
   question: string;
   options: [string, string, string, string];
-  correctIndex: number;
-  explanation: string;
+  correctIndex?: number; // C1: masqué pendant la phase 'question', révélé ensuite
+  explanation?: string; // C1: idem
   image?: string;
 }
 
@@ -328,7 +328,7 @@ export interface DrawGuessMessage {
 export interface DrawGameState {
   currentDrawerId: string;
   drawerName: string;
-  secretWord: string;
+  secretWord?: string; // C1: privé — dessinateur uniquement pendant 'drawing', public à la révélation
   maskedWord: string;
   category: string;
   strokes: DrawStroke[];
@@ -348,9 +348,9 @@ export interface WerewolfPlayerState {
   id: string;
   name: string;
   avatar: string;
-  role: WerewolfRole;
+  role?: WerewolfRole; // C1: jamais diffusé publiquement
   isAlive: boolean;
-  targetId?: string;
+  targetId?: string; // C1: retiré du flux public
 }
 
 export interface WerewolfGameState {
@@ -358,6 +358,7 @@ export interface WerewolfGameState {
   dayNumber: number;
   timeRemaining: number;
   players: Record<string, WerewolfPlayerState>;
+  myRole?: WerewolfRole; // C1: privé — reçu uniquement par private_state
   lastNightVictimId: string | null;
   lastExecutedId: string | null;
   winnerTeam: 'villagers' | 'werewolves' | null;
@@ -367,12 +368,12 @@ export interface WerewolfGameState {
 // 9. BLIND TEST
 export interface BlindTestSong {
   id: string;
-  title: string;
-  artist: string;
+  title?: string; // C1: masqué pendant 'playing'/'buzzed', révélé ensuite
+  artist?: string; // C1: idem
   category: string;
   melodyNotes: number[];
   options: [string, string, string, string];
-  correctIndex: number;
+  correctIndex?: number; // C1: masqué jusqu'à la révélation
 }
 
 export interface BlindTestGameState {
@@ -414,7 +415,7 @@ export interface MenteurGameState {
   lastPlay: MenteurPlayedBatch | null;
   accusationResult: MenteurAccusationResult | null;
   playerCardCounts: Record<string, number>;
-  playerHands: Record<string, PlayingCard[]>; // Secret on mobile
+  playerHands?: Record<string, PlayingCard[]>; // C1: privé — uniquement via private_state
   turnTimeLeft: number;
   lastActionLog: string;
   winner: string | null;
@@ -435,7 +436,7 @@ export interface InterGameState {
   direction: 1 | -1;
   currentTurnPlayerId: string;
   playerCardCounts: Record<string, number>;
-  playerHands: Record<string, PlayingCard[]>; // Secret on mobile
+  playerHands?: Record<string, PlayingCard[]>; // C1: privé — uniquement via private_state
   drawDeckCount: number;
   lastSpecialEffect: InterSpecialEffect | null;
   scores: Record<string, number>;
@@ -528,6 +529,17 @@ export interface QuickGamesGameState {
 // ----------------------------------------------------
 // ROOM STATE
 // ----------------------------------------------------
+export interface FinalRankingEntry {
+  playerId: string;
+  name: string;
+  avatar: string;
+  color: string;
+  score: number;
+  rank: number; // rang réel (partagé en cas d'ex æquo pour les jeux à score)
+  isWinner: boolean;
+  team?: 'villagers' | 'werewolves'; // jeux par équipes (werewolf)
+}
+
 export interface RoomState {
   code: string;
   gameId: GameId;
@@ -558,4 +570,6 @@ export interface RoomState {
   reactions: { id: string; emoji: string; playerName: string; timestamp: number }[];
   activeGage?: { title: string; challenge: string; targetPlayerName: string } | null;
   tournamentScores?: Record<string, number>;
+  finalRanking?: FinalRankingEntry[] | null; // C3 : classement réel construit par le serveur
+  resultLabel?: string | null; // C3 : libellé pour victoires non individuelles (équipes)
 }

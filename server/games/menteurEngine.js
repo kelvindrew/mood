@@ -350,6 +350,25 @@ export class MenteurEngine {
     };
   }
 
+  /**
+   * C1 — État PUBLIC : les mains sont retirées (le bluff redevient possible).
+   * lastPlay reste sans realCards ; accusationResult (révélation publique)
+   * et playerCardCounts restent diffusés à tous.
+   */
+  getPublicState() {
+    const { playerHands, ...publicState } = this.getState();
+    return publicState;
+  }
+
+  /**
+   * C1 — Fragment PRIVÉ : uniquement la main du joueur destinataire.
+   */
+  getPrivateState(playerId) {
+    return {
+      playerHands: { [playerId]: this.playerHands[playerId] || [] },
+    };
+  }
+
   notify() {
     if (this.onStateChange) {
       this.onStateChange(this.getState());

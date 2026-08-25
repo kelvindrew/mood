@@ -20,21 +20,25 @@ export const LudoController: React.FC = () => {
   const gameState = room?.gameState as LudoGameState | undefined;
   const shakeDetectorRef = useRef<ShakeDetector | null>(null);
 
-  if (!gameState || !localPlayer) return null;
-
   // Find player's assigned color
-  const playerIndex = room?.players.findIndex((p) => p.id === localPlayer.id) ?? 0;
+  // C2 : ces dérivations alimentent le useEffect ci-dessous ; elles tolèrent
+  // un état absent (transition room.status='playing' -> premier
+  // game_state_update) afin que le hook s'exécute toujours, dans le même ordre.
+  const playerIndex = room?.players.findIndex((p) => p.id === localPlayer?.id) ?? 0;
   const defaultColors = ['red', 'green', 'yellow', 'blue'];
-  const playerColor = (gameState.players && gameState.players.includes(localPlayer.color as any))
-    ? localPlayer.color
-    : (gameState.players?.[playerIndex] || defaultColors[playerIndex % 4] || 'red');
+  const playerColor: string =
+    gameState && localPlayer
+      ? gameState.players && gameState.players.includes(localPlayer.color as any)
+        ? localPlayer.color
+        : gameState.players?.[playerIndex] || defaultColors[playerIndex % 4] || 'red'
+      : '';
 
   const colorCfg = COLOR_NAMES[playerColor] || COLOR_NAMES.red;
-  const isMyTurn = gameState.currentTurnColor === playerColor;
-  const myPawns: LudoPawn[] = (gameState.pawns && gameState.pawns[playerColor]) || [];
-  const canRoll = isMyTurn && gameState.canRollDice;
-  const movablePawns = isMyTurn ? gameState.movablePawns || [] : [];
-  const movableOptions: LudoMovableOption[] = isMyTurn ? gameState.movableOptions || [] : [];
+  const isMyTurn = !!(gameState && localPlayer && gameState.currentTurnColor === playerColor);
+  const myPawns: LudoPawn[] = (gameState && playerColor && gameState.pawns && gameState.pawns[playerColor]) || [];
+  const canRoll = isMyTurn && !!gameState?.canRollDice;
+  const movablePawns = isMyTurn ? gameState?.movablePawns || [] : [];
+  const movableOptions: LudoMovableOption[] = isMyTurn ? gameState?.movableOptions || [] : [];
 
   const handleRollDice = () => {
     if (!canRoll) return;
@@ -44,6 +48,7 @@ export const LudoController: React.FC = () => {
   };
 
   // Setup Gyroscopic Shake Detector for physical dice rolling
+  // C2 : hook inconditionnel — jamais après l'early-return.
   useEffect(() => {
     shakeDetectorRef.current = new ShakeDetector(() => {
       if (canRoll) {
@@ -56,6 +61,8 @@ export const LudoController: React.FC = () => {
       shakeDetectorRef.current?.stop();
     };
   }, [canRoll]);
+
+  if (!gameState || !localPlayer) return null;
 
   const handleSelectPawn = (pawnId: number) => {
     if (!isMyTurn || !movablePawns.includes(pawnId)) return;

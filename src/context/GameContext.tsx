@@ -8,6 +8,9 @@ export type AppMode = 'tv' | 'mobile';
 export type TVView = 'home' | 'game_detail' | 'detail' | 'categories' | 'lobby' | 'gameplay' | 'playing' | 'results' | 'profile' | 'profiles' | 'settings' | 'admin';
 export type MobileView = 'join' | 'lobby' | 'controller' | 'spectator';
 
+// E9 — état de connexion Socket.IO exposé à l'interface
+export type ConnectionState = 'connecting' | 'connected' | 'disconnected' | 'reconnecting';
+
 interface GameContextType {
   appMode: AppMode;
   setAppMode: (mode: AppMode) => void;
@@ -20,8 +23,9 @@ interface GameContextType {
   room: RoomState | null;
   localPlayer: Player | null;
   serverLanIp: string;
+  connectionState: ConnectionState; // E9
   createRoom: (gameId: GameId, settings?: unknown) => Promise<{ success: boolean; code?: string; error?: string }>;
-  joinRoom: (code: string, name: string, avatar: string, isSpectator?: boolean) => Promise<{ success: boolean; error?: string }>;
+  joinRoom: (code: string, name: string, avatar: string, isSpectator?: boolean, selfieImage?: string) => Promise<{ success: boolean; error?: string }>;
   toggleReady: () => void;
   addBot: (difficulty?: string) => void;
   removeBot: (botId?: string) => void;
@@ -47,6 +51,8 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [localPlayer, setLocalPlayer] = useState<Player | null>(null);
   const [serverLanIp, setServerLanIp] = useState<string>('localhost');
   const [isSimulatorOpen, setIsSimulatorOpen] = useState<boolean>(false);
+  // E9 — la reconnexion automatique reste gérée par socketService
+  const [connectionState, setConnectionState] = useState<ConnectionState>('connecting');
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -80,9 +86,46 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   useEffect(() => {
     const socket = socketService.connect();
 
+    // C1 — Cache du dernier fragment privé reçu (main, rôle, mot secret...).
+    // Keyé par gameId:code pour ne jamais fusionner un fragment périmé
+    // d'un ancien jeu dans l'état d'un nouveau.
+    let latestPrivateFragment: Record<string, unknown> | null = null;
+    let latestPrivateKey = '';
+    const stateKey = (r: { gameId: string; code: string } | null | undefined) =>
+      r ? `${r.gameId}:${r.code}` : '';
+
     socket.on('connect', () => {
       console.log('[GameContext] Connected to socket server');
+      setConnectionState('connected'); // E9
     });
+
+    // E9 — machine à états de connexion (la reconnexion auto reste active)
+    const handleDisconnect = (reason: string) => {
+      if (reason === 'io client disconnect') {
+        // Déconnexion volontaire du client : pas de reconnexion en cours
+        setConnectionState('disconnected');
+        return;
+      }
+      setConnectionState('reconnecting');
+      // 'io server disconnect' : socket.io ne retente PAS seul -> on relance
+      if (reason === 'io server disconnect' && typeof socket.connect === 'function') {
+        socket.connect();
+      }
+    };
+    const handleConnectError = () => {
+      // Avant la première connexion réussie on reste en « connecting » ;
+      // ensuite toute erreur signifie qu'on retente = « reconnecting ».
+      setConnectionState((prev) => (prev === 'connecting' ? 'connecting' : prev === 'connected' ? 'reconnecting' : prev));
+    };
+    const handleReconnectAttempt = () => {
+      setConnectionState((prev) => (prev === 'connected' ? prev : 'reconnecting'));
+    };
+
+    socket.on('disconnect', handleDisconnect);
+    socket.on('connect_error', handleConnectError);
+    if (socket.io && typeof socket.io.on === 'function') {
+      socket.io.on('reconnect_attempt', handleReconnectAttempt);
+    }
 
     socket.on('server_info', (data: { lanIp: string }) => {
       if (data?.lanIp && data.lanIp !== 'localhost') {
@@ -92,6 +135,13 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     });
 
     socket.on('room_state_update', (updatedRoom: RoomState) => {
+      // C1 — Invalide le fragment privé si on change de jeu/salon ou que la
+      // partie n'est plus en cours (retour lobby, résultats, etc.)
+      if (updatedRoom.status !== 'playing' || stateKey(updatedRoom) !== latestPrivateKey) {
+        latestPrivateFragment = null;
+        latestPrivateKey = '';
+      }
+
       setRoom(updatedRoom);
 
       if (updatedRoom.serverLanIp && updatedRoom.serverLanIp !== 'localhost') {
@@ -121,12 +171,40 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       });
     });
 
+    // C1 — L'état public diffusé est enrichi à la réception avec notre
+    // propre fragment privé déjà connu, pour éviter tout flash de contenu
+    // manquant entre les deux flux.
     socket.on('game_state_update', (gameState: unknown) => {
       setRoom((prev) => {
         if (!prev) return null;
+        const incoming = gameState as RoomState['gameState'];
+        if (latestPrivateFragment && stateKey(prev) === latestPrivateKey && incoming) {
+          return {
+            ...prev,
+            gameState: { ...incoming, ...latestPrivateFragment } as RoomState['gameState'],
+          };
+        }
         return {
           ...prev,
-          gameState: gameState as RoomState['gameState'],
+          gameState: incoming,
+        };
+      });
+    });
+
+    // C1 — Fragment PRIVÉ unicast : contient uniquement NOS données
+    // (playerHands:{[monId]:...}, playerRacks:{[monId]:...}, myRole,
+    // secretWord si dessinateur...). Fusion superficielle dans gameState.
+    socket.on('private_state', (fragment: Record<string, unknown>) => {
+      setRoom((prev) => {
+        if (!prev || !fragment) return prev ?? null;
+        latestPrivateFragment = fragment;
+        latestPrivateKey = stateKey(prev);
+        return {
+          ...prev,
+          gameState: {
+            ...((prev.gameState ?? {}) as unknown as Record<string, unknown>),
+            ...fragment,
+          } as unknown as RoomState['gameState'],
         };
       });
     });
@@ -138,7 +216,13 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     return () => {
       socket.off('room_state_update');
       socket.off('game_state_update');
+      socket.off('private_state');
       socket.off('reaction_received');
+      socket.off('disconnect', handleDisconnect);
+      socket.off('connect_error', handleConnectError);
+      if (socket.io && typeof socket.io.off === 'function') {
+        socket.io.off('reconnect_attempt', handleReconnectAttempt);
+      }
     };
   }, []);
 
@@ -155,8 +239,9 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     return { success: false, error: res.error || 'Erreur lors de la création du salon' };
   };
 
-  const joinRoom = async (code: string, name: string, avatar: string, isSpectator = false) => {
-    const res = await socketService.joinRoom(code, { name, avatar }, isSpectator);
+  const joinRoom = async (code: string, name: string, avatar: string, isSpectator = false, selfieImage?: string) => {
+    // C4 — selfieImage est déjà compressée côté mobile (≤ ~150 Ko) avant émission
+    const res = await socketService.joinRoom(code, { name, avatar, selfieImage }, isSpectator);
     if (res.success && res.room && res.player) {
       setRoom(res.room);
       setLocalPlayer(res.player);
@@ -167,50 +252,59 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     return { success: false, error: res.error || 'Impossible de rejoindre le salon' };
   };
 
+  // E9 — les actions de jeu sont ignorées tant qu'on n'est pas connecté ;
+  // createRoom/joinRoom restent accessibles (elles affichent leurs propres erreurs).
+  const canSend = connectionState === 'connected';
+
   const toggleReady = () => {
-    if (room) socketService.toggleReady(room.code);
+    if (!canSend || !room) return;
+    socketService.toggleReady(room.code);
   };
 
   const addBot = (difficulty = 'medium') => {
-    if (room) socketService.addBot(room.code, difficulty);
+    if (!canSend || !room) return;
+    socketService.addBot(room.code, difficulty);
   };
 
   const removeBot = (botId?: string) => {
-    if (room) socketService.removeBot(room.code, botId);
+    if (!canSend || !room) return;
+    socketService.removeBot(room.code, botId);
   };
 
   const setPlayerColor = (color: PlayerColor) => {
-    if (room) socketService.setPlayerColor(room.code, color);
+    if (!canSend || !room) return;
+    socketService.setPlayerColor(room.code, color);
   };
 
   const startGame = () => {
-    if (room) socketService.startGame(room.code);
+    if (!canSend || !room) return;
+    socketService.startGame(room.code);
   };
 
   const sendGameAction = (action: string, payload: Record<string, unknown> = {}) => {
-    if (room) {
-      const actionPayload = {
-        ...payload,
-        playerId: localPlayer?.id,
-      };
-      socketService.sendGameAction(room.code, action, actionPayload);
-    }
+    if (!canSend || !room) return;
+    const actionPayload = {
+      ...payload,
+      playerId: localPlayer?.id,
+    };
+    socketService.sendGameAction(room.code, action, actionPayload);
   };
 
   const sendReaction = (emoji: string) => {
-    if (room) socketService.sendReaction(room.code, emoji);
+    if (!canSend || !room) return;
+    socketService.sendReaction(room.code, emoji);
   };
 
   const replayGame = () => {
-    if (room) socketService.replayGame(room.code);
+    if (!canSend || !room) return;
+    socketService.replayGame(room.code);
   };
 
   const returnToLobby = () => {
-    if (room) {
-      socketService.returnToLobby(room.code);
-      setTvView('lobby');
-      setMobileView('lobby');
-    }
+    // Navigation locale toujours permise ; l'émission est protégée
+    if (canSend && room) socketService.returnToLobby(room.code);
+    setTvView('lobby');
+    setMobileView('lobby');
   };
 
   const returnToHome = () => {
@@ -232,6 +326,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         room,
         localPlayer,
         serverLanIp,
+        connectionState,
         createRoom,
         joinRoom,
         toggleReady,

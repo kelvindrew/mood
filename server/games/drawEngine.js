@@ -126,7 +126,10 @@ export class DrawEngine {
     this.maskedWord = this.secretWord;
     this.notify();
 
-    setTimeout(() => {
+    // E2 — timer suivi : annulé par destroy(), garde anti-zombie
+    if (this.transitionTimer) clearTimeout(this.transitionTimer);
+    this.transitionTimer = setTimeout(() => {
+      if (this._destroyed) return;
       this.roundIndex++;
       if (this.roundIndex >= this.totalRounds) {
         this.endGame();
@@ -174,6 +177,29 @@ export class DrawEngine {
     };
   }
 
+  /**
+   * C1 — État PUBLIC : le mot secret est retiré pendant la phase 'drawing'
+   * (seul maskedWord circule). Il est inclus aux phases de révélation.
+   */
+  getPublicState() {
+    const state = this.getState();
+    if (this.state === 'drawing') {
+      delete state.secretWord;
+    }
+    return state;
+  }
+
+  /**
+   * C1 — Fragment PRIVÉ : le mot complet est envoyé uniquement au dessinateur
+   * en cours de manche.
+   */
+  getPrivateState(playerId) {
+    if (this.state === 'drawing' && this.getCurrentDrawer()?.id === playerId) {
+      return { secretWord: this.secretWord };
+    }
+    return null;
+  }
+
   notify() {
     if (this.onStateChange) {
       this.onStateChange(this.getState());
@@ -181,6 +207,8 @@ export class DrawEngine {
   }
 
   destroy() {
+    this._destroyed = true; // E2
     if (this.timer) clearInterval(this.timer);
+    if (this.transitionTimer) clearTimeout(this.transitionTimer);
   }
 }

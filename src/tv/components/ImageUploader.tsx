@@ -35,7 +35,7 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
       const img = new Image();
       img.onload = () => {
         const canvas = document.createElement('canvas');
-        let maxDim = aspectRatio === 'banner' ? 1280 : 640;
+        const maxDim = aspectRatio === 'banner' ? 1280 : 640;
         let width = img.width;
         let height = img.height;
 

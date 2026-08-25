@@ -1,9 +1,19 @@
 import React, { useEffect } from 'react';
 import { useGame } from '../../context/GameContext';
 import { Trophy, Award, Star, Flame, Shield, UserCheck, Gamepad2 } from 'lucide-react';
+import { audio } from '../../services/audio';
 import { tvNav } from '../../services/tvNavigation';
+import { useTvBack } from '../hooks/useTvNav';
 
 export const TVProfilesView: React.FC = () => {
+  const { setTvView } = useGame();
+
+  // M5 — Back télécommande = retour à l'accueil
+  useTvBack(() => {
+    audio.playBack();
+    setTvView('home');
+  });
+
   useEffect(() => {
     tvNav.setInitialFocus('button');
   }, []);

@@ -67,6 +67,8 @@ export class RoomManager {
       reactions: [],
       activeGage: null,
       tournamentScores: {},
+      finalRanking: null,
+      resultLabel: null,
       createdAt: Date.now(),
     };
 
@@ -158,8 +160,20 @@ export class RoomManager {
     }
 
     this.broadcastRoomUpdate(room);
-    if (room.gameState) {
-      this.io.to(socketId).emit('game_state_update', room.gameState);
+    if (room.gameState && room.gameEngine) {
+      // C1 — Reconnexion : état public + fragment privé ciblé (jamais l'état brut)
+      this.io.to(socketId).emit(
+        'game_state_update',
+        typeof room.gameEngine.getPublicState === 'function'
+          ? room.gameEngine.getPublicState()
+          : room.gameState
+      );
+      if (player && typeof room.gameEngine.getPrivateState === 'function') {
+        const privateFragment = room.gameEngine.getPrivateState(player.id);
+        if (privateFragment) {
+          this.io.to(socketId).emit('private_state', privateFragment);
+        }
+      }
     }
     return player;
   }
@@ -269,14 +283,25 @@ export class RoomManager {
     if (room.players.length === 0) return { success: false, error: 'Aucun joueur dans le salon' };
 
     room.status = 'playing';
+    // C3 — nouvelle partie : on efface le classement de la manche précédente
+    room.finalRanking = null;
+    room.resultLabel = null;
 
+    // C1 — L'état complet (gameState) reste SUR LE SERVEUR uniquement.
+    // La salle reçoit l'état public via game_state_update et chaque joueur
+    // son fragment privé via private_state (voir broadcastGameState).
     const onStateChange = (gameState) => {
       room.gameState = gameState;
-      this.io.to(code).emit('game_state_update', gameState);
+      this.broadcastGameState(room);
     };
 
     const onGameOver = (winnerIdOrColor) => {
       room.status = 'game_over';
+
+      // C3 — Classement final explicite, dérivé du résultat RÉEL du moteur
+      // (jamais de l'ordre d'arrivée des joueurs dans le salon).
+      room.finalRanking = this.buildFinalRanking(room);
+      room.resultLabel = this.buildResultLabel(room);
 
       if (room.settings.enableGages) {
         const sortedPlayers = [...room.players].sort((a, b) => a.score - b.score);
@@ -542,6 +567,9 @@ export class RoomManager {
     room.status = 'lobby';
     room.gameState = null;
     room.activeGage = null;
+    // C3 — plus de classement résiduel d'une partie précédente
+    room.finalRanking = null;
+    room.resultLabel = null;
     for (const p of room.players) {
       if (!p.isBot) p.isReady = false;
     }
@@ -563,7 +591,246 @@ export class RoomManager {
     }
   }
 
+  /**
+   * C3 — Construit le classement final à partir du résultat RÉEL de la partie,
+   * lu dans l'état frais du moteur (getState()), jamais dans l'ordre du tableau
+   * room.players (= ordre d'arrivée dans le salon).
+   *
+   * Chaque jeu possède son propre système de victoire :
+   *  - scores           : quiz, blind_test, draw_and_guess, inter, four_pics, quick_games
+   *  - podium officiel  : scrabble (finalPodium), president (ordre président->trouduc)
+   *  - jetons           : poker (playerChips)
+   *  - statuts de paiement: blackjack (payoutStatus: blackjack > win > push > lose)
+   *  - pions / parcours : ludo (pions rentrés + avance), mini_racing (finishOrder)
+   *  - cartes restantes : card_party/uno et menteur (le vainqueur a vidé sa main)
+   *  - équipe           : werewolf (winnerTeam — pas de vainqueur individuel)
+   *
+   * Égalités : pour les jeux à score, deux joueurs ex æquo partagent le même rang
+   * (classement « competition ranking »). Pour les jeux où LE RÉSULTAT est un
+   * ordre (président, course, statuts...), les rangs restent strictement positionnels.
+   */
+  buildFinalRanking(room) {
+    const engine = room.gameEngine;
+    if (!engine || typeof engine.getState !== 'function') return null;
+    const gs = engine.getState();
+
+    const playerById = new Map(room.players.map((p) => [p.id, p]));
+    const idsInRoom = room.players.map((p) => p.id);
+
+    // Reordonne en plaçant un id donné en tête (vainqueur explicite)
+    const promoteFirst = (ids, winnerId) => {
+      if (!winnerId) return ids;
+      return [winnerId, ...ids.filter((id) => id !== winnerId)];
+    };
+
+    let ordered = []; // [{ id, score }]
+    let tieByScore = true; // égalités de score => rang partagé
+    let winningTeam = null; // werewolf uniquement
+    let teamMap = null; // playerId -> 'villagers' | 'werewolves'
+
+    switch (room.gameId) {
+      case 'scrabble': {
+        if (Array.isArray(gs.finalPodium) && gs.finalPodium.length > 0) {
+          ordered = gs.finalPodium.map((pl) => ({ id: pl.id, score: pl.score || 0 }));
+        }
+        break;
+      }
+
+      case 'quiz':
+      case 'blind_test':
+      case 'draw_and_guess':
+      case 'inter':
+      case 'four_pics':
+      case 'quick_games': {
+        const scores = gs.scores || {};
+        ordered = idsInRoom
+          .map((id) => ({ id, score: Number(scores[id]) || 0 }))
+          .sort((a, b) => b.score - a.score);
+        break;
+      }
+
+      case 'poker': {
+        const chips = gs.playerChips || {};
+        const rows = idsInRoom
+          .map((id) => ({ id, score: Number(chips[id]) || 0 }))
+          .sort((a, b) => b.score - a.score);
+        // Le gagnant de la main est garanti 1er (il a remporté le pot)
+        ordered = gs.winnerId
+          ? [...rows.filter((r) => r.id === gs.winnerId), ...rows.filter((r) => r.id !== gs.winnerId)]
+          : rows;
+        break;
+      }
+
+      case 'president': {
+        tieByScore = false; // le résultat EST l'ordre d'arrivée
+        if (Array.isArray(gs.finishedPlayers) && gs.finishedPlayers.length > 0) {
+          const known = gs.finishedPlayers.map((f) => f.playerId);
+          const missing = idsInRoom.filter((id) => !known.includes(id));
+          ordered = [...known, ...missing].map((id) => ({ id, score: 0 }));
+        }
+        break;
+      }
+
+      case 'blackjack': {
+        tieByScore = false; // le résultat EST le statut de paiement
+        const statusRank = { blackjack: 0, win: 1, push: 2, lose: 3 };
+        ordered = idsInRoom
+          .map((id) => ({ id, score: 0, st: statusRank[gs.playerHands?.[id]?.payoutStatus] ?? 3 }))
+          .sort((a, b) => a.st - b.st)
+          .map(({ id, score }) => ({ id, score }));
+        break;
+      }
+
+      case 'ludo': {
+        tieByScore = false; // vainqueur = premier à avoir rentré ses 4 pions
+        const pawnStrength = (pawn) =>
+          pawn.isFinished ? 1000
+            : pawn.position >= 100 ? 500 + (pawn.position - 100) * 10
+            : pawn.isHome ? 0
+            : pawn.position;
+        ordered = idsInRoom
+          .map((id) => {
+            const color = playerById.get(id)?.color;
+            const pawns = (color && gs.pawns?.[color]) || [];
+            const finished = pawns.filter((pw) => pw.isFinished).length;
+            const strength = pawns.reduce((s, pw) => s + pawnStrength(pw), 0);
+            return { id, score: finished * 25, strength };
+          })
+          .sort((a, b) => b.strength - a.strength)
+          .map(({ id, score }) => ({ id, score }));
+        // Le vrai vainqueur (couleur) est promu 1er
+        const winnerColor = gs.winner;
+        const winnerEntryIdx = ordered.findIndex(
+          (e) => playerById.get(e.id)?.color === winnerColor
+        );
+        if (winnerEntryIdx > 0) {
+          const [w] = ordered.splice(winnerEntryIdx, 1);
+          ordered.unshift(w);
+        }
+        break;
+      }
+
+      case 'mini_racing': {
+        tieByScore = false; // le résultat EST l'ordre de franchissement
+        const finishIds = Array.isArray(gs.finishOrder) ? gs.finishOrder : [];
+        const progressOf = (id) =>
+          Number((gs.players || []).find((r) => r.id === id)?.progress) || 0;
+        const rest = idsInRoom
+          .filter((id) => !finishIds.includes(id))
+          .map((id) => ({ id, progress: progressOf(id) }))
+          .sort((a, b) => b.progress - a.progress)
+          .map((x) => x.id);
+        ordered = [...finishIds.filter((id) => idsInRoom.includes(id)), ...rest]
+          .map((id) => ({ id, score: 0 }));
+        break;
+      }
+
+      case 'card_party':
+      case 'menteur': {
+        tieByScore = false; // le vainqueur est celui qui a vidé sa main
+        const counts = gs.playerCardCounts || {};
+        let ids = idsInRoom
+          .slice()
+          .sort((a, b) => Number(counts[a] ?? 99) - Number(counts[b] ?? 99));
+        ids = promoteFirst(ids, gs.winner);
+        ordered = ids.map((id) => ({ id, score: 0 }));
+        break;
+      }
+
+      case 'werewolf': {
+        tieByScore = false; // victoire d'ÉQUIPE, pas de score
+        const wt = gs.winnerTeam;
+        winningTeam = wt;
+        const teamOfId = (id) =>
+          gs.players?.[id]?.role === 'werewolf' ? 'werewolves' : 'villagers';
+        const isAlive = (id) => !!gs.players?.[id]?.isAlive;
+        const orderGroup = (list) => [
+          ...list.filter((p) => isAlive(p.id)),
+          ...list.filter((p) => !isAlive(p.id)),
+        ];
+        const winners = orderGroup(room.players.filter((p) => wt && teamOfId(p.id) === wt));
+        const losers = orderGroup(room.players.filter((p) => !wt || teamOfId(p.id) !== wt));
+        teamMap = Object.fromEntries(room.players.map((p) => [p.id, teamOfId(p.id)]));
+        ordered = [...winners, ...losers].map((p) => ({ id: p.id, score: 0 }));
+        break;
+      }
+
+      default: {
+        // Repli générique défensif : scores connus puis ordre du salon
+        const scores = gs.scores || {};
+        ordered = idsInRoom.map((id) => ({ id, score: Number(scores[id]) || 0 }));
+        break;
+      }
+    }
+
+    // Sécurité : tout joueur manquant est ajouté en fin de classement
+    for (const id of idsInRoom) {
+      if (!ordered.some((e) => e.id === id)) ordered.push({ id, score: 0 });
+    }
+
+    let lastScoreKey = null;
+    let lastRank = 0;
+
+    const ranking = ordered.map((e, idx) => {
+      const p = playerById.get(e.id);
+      const entryOut = {
+        playerId: e.id,
+        name: p ? p.name : 'Joueur',
+        avatar: p ? p.avatar : '🎮',
+        color: p ? p.color : 'red',
+        score: Number.isFinite(e.score) ? Math.round(e.score) : 0,
+        rank: idx + 1,
+        isWinner: false,
+      };
+      if (tieByScore) {
+        // Ex æquo : même score => même rang (competition ranking)
+        if (lastScoreKey !== null && e.score === lastScoreKey) {
+          entryOut.rank = lastRank;
+        } else {
+          lastRank = idx + 1;
+          lastScoreKey = e.score;
+          entryOut.rank = lastRank;
+        }
+      }
+      if (teamMap && teamMap[e.id]) entryOut.team = teamMap[e.id];
+      return entryOut;
+    });
+
+    // Vainqueur(s) : équipe entière pour werewolf, sinon tous les rangs 1 (ex æquo inclus)
+    for (const e of ranking) {
+      e.isWinner = winningTeam ? e.team === winningTeam : e.rank === 1;
+    }
+
+    return ranking;
+  }
+
+  /**
+   * C3 — Libellé de résultat pour les systèmes de victoire non individuels.
+   */
+  buildResultLabel(room) {
+    const engine = room.gameEngine;
+    if (!engine || typeof engine.getState !== 'function') return null;
+    const gs = engine.getState();
+
+    if (room.gameId === 'werewolf') {
+      if (gs.winnerTeam === 'werewolves') return 'Victoire des Loups-Garous 🐺';
+      if (gs.winnerTeam === 'villagers') return 'Victoire du Village 👨‍🌾';
+    }
+    return null;
+  }
+
   getPublicRoomState(room) {
+    // C1 — Seul l'état PUBLIC du jeu circule dans room_state_update.
+    // L'état complet (room.gameState) ne quitte jamais le serveur.
+    // Les moteurs sans données secrètes (ludo, four_pics, mini_racing) n'exposent
+    // pas getPublicState : leur état complet est déjà public.
+    const publicGameState =
+      room.gameEngine && room.gameState
+        ? typeof room.gameEngine.getPublicState === 'function'
+          ? room.gameEngine.getPublicState()
+          : room.gameState
+        : null;
+
     return {
       code: room.code,
       gameId: room.gameId,
@@ -573,14 +840,49 @@ export class RoomManager {
       settings: room.settings,
       players: room.players,
       spectators: room.spectators,
-      gameState: room.gameState,
+      gameState: publicGameState,
       reactions: room.reactions,
       activeGage: room.activeGage,
       tournamentScores: room.tournamentScores,
+      // C3 — classement final explicite calculé par le serveur au game_over
+      finalRanking: room.finalRanking || null,
+      resultLabel: room.resultLabel || null,
     };
   }
 
   broadcastRoomUpdate(room) {
     this.io.to(room.code).emit('room_state_update', this.getPublicRoomState(room));
+  }
+
+  /**
+   * C1 — Diffusion de l'état de jeu en deux flux :
+   *  1. game_state_update (broadcast salle) : état PUBLIC assaini par le moteur
+   *     (sans mains, rôles, mots secrets, réponses...).
+   *  2. private_state (unicast par socket) : fragment PRIVÉ de chaque joueur
+   *     humain connecté (sa main, son rôle, son mot...).
+   * Les bots n'ont pas de socket et sont ignorés. La TV (socket hôte) ne
+   * reçoit que l'état public.
+   */
+  broadcastGameState(room) {
+    if (!room.gameEngine || !room.gameState) return;
+
+    // Les moteurs sans secrets (ludo, four_pics, mini_racing) n'ont pas
+    // getPublicState : leur état complet est public par nature.
+    const publicState =
+      typeof room.gameEngine.getPublicState === 'function'
+        ? room.gameEngine.getPublicState()
+        : room.gameState;
+
+    this.io.to(room.code).emit('game_state_update', publicState);
+
+    if (typeof room.gameEngine.getPrivateState === 'function') {
+      for (const p of room.players) {
+        if (p.isBot || !p.connected || !p.socketId) continue;
+        const privateFragment = room.gameEngine.getPrivateState(p.id);
+        if (privateFragment) {
+          this.io.to(p.socketId).emit('private_state', privateFragment);
+        }
+      }
+    }
   }
 }

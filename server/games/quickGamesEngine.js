@@ -18,6 +18,8 @@ export class QuickGamesEngine {
     this.miniGameState = {};
     this.roundStatus = 'intro'; // 'intro' | 'active' | 'reveal' | 'finished'
     this.timer = null;
+    this.greenTimer = null; // E2
+    this.transitionTimer = null; // E2
     this.timeRemaining = 10;
     this.winner = null;
 
@@ -105,15 +107,20 @@ export class QuickGamesEngine {
 
     if (this.currentMiniGame === 'reaction_speed') {
       // Random delay 1.5s to 4s before turning green
+      // E2 — timers suivis : greenTimer puis transitionTimer, tous annulables
       const greenDelay = 1500 + Math.random() * 2500;
-      setTimeout(() => {
+      if (this.greenTimer) clearTimeout(this.greenTimer);
+      this.greenTimer = setTimeout(() => {
+        if (this._destroyed) return;
         if (this.roundStatus === 'active') {
           this.miniGameState.isGreen = true;
           this.miniGameState.greenTimestamp = Date.now();
           this.notify();
 
           // End round after 3.5s of green
-          setTimeout(() => {
+          if (this.transitionTimer) clearTimeout(this.transitionTimer);
+          this.transitionTimer = setTimeout(() => {
+            if (this._destroyed) return;
             if (this.roundStatus === 'active') this.finishRound();
           }, 3500);
         }
@@ -194,7 +201,10 @@ export class QuickGamesEngine {
     this.notify();
 
     // 3.5s pause to see scores then next round or game over
-    setTimeout(() => {
+    // E2 — timer suivi : annulé par destroy(), garde anti-zombie
+    if (this.transitionTimer) clearTimeout(this.transitionTimer);
+    this.transitionTimer = setTimeout(() => {
+      if (this._destroyed) return;
       if (this.roundNumber < this.totalRounds) {
         this.roundNumber++;
         this.startRound();
@@ -221,6 +231,27 @@ export class QuickGamesEngine {
     };
   }
 
+  /**
+   * C1 — État PUBLIC : les solutions (correctColorName, correctAnswer) et
+   * greenTimestamp (permettrait un bot de réaction parfaite) ne sont jamais
+   * diffusés. Le serveur calcule lui-même les scores.
+   */
+  getPublicState() {
+    const state = this.getState();
+    if (state.miniGameState) {
+      const { correctColorName, correctAnswer, greenTimestamp, ...safeMini } = state.miniGameState;
+      state.miniGameState = safeMini;
+    }
+    return state;
+  }
+
+  /**
+   * C1 — Aucun fragment privé dans ce jeu.
+   */
+  getPrivateState() {
+    return null;
+  }
+
   notify() {
     if (this.onStateChange) {
       this.onStateChange(this.getState());
@@ -228,6 +259,9 @@ export class QuickGamesEngine {
   }
 
   destroy() {
+    this._destroyed = true; // E2
     if (this.timer) clearInterval(this.timer);
+    if (this.greenTimer) clearTimeout(this.greenTimer);
+    if (this.transitionTimer) clearTimeout(this.transitionTimer);
   }
 }

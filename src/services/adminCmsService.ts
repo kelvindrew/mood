@@ -2,6 +2,9 @@
 // Allows full manual customization of Games Catalog, 4 Images 1 Mot Puzzles, Platform Branding & Settings
 import { GAMES_CATALOG } from '../data/gamesCatalog';
 import { GameCatalogItem } from '../types/game';
+// Import d'un module .js serveur sans déclarations TS : @ts-ignore requis ici
+// (un .d.ts serait la solution longue — hors périmètre qualité minimale).
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import { FOUR_PICS_PUZZLES } from '../../server/games/fourPicsData.js';
 
