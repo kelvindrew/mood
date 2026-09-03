@@ -1,18 +1,27 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, Suspense } from 'react';
 import { useGame } from '../context/GameContext';
 import { TVNavbar } from './components/TVNavbar';
 import { TVHomeView } from './views/TVHomeView';
-import { TVGameDetailView } from './views/TVGameDetailView';
 import { TVLobbyView } from './views/TVLobbyView';
 import { TVGamePlayView } from './views/TVGamePlayView';
-import { TVResultsView } from './views/TVResultsView';
-import { TVCategoriesView } from './views/TVCategoriesView';
-import { TVProfilesView } from './views/TVProfilesView';
-import { TVSettingsView } from './views/TVSettingsView';
-import { TVAdminView } from './views/TVAdminView';
 import { TVRemoteHint } from './components/TVRemoteHint';
 import { TVToast } from './components/TVToast';
 import { SimulatorDrawer } from './components/SimulatorDrawer';
+import { Loader2 } from 'lucide-react';
+
+// Vues secondaires chargées à la demande pour alléger le bundle initial TV
+const TVGameDetailView = React.lazy(() => import('./views/TVGameDetailView').then(m => ({ default: m.TVGameDetailView })));
+const TVResultsView = React.lazy(() => import('./views/TVResultsView').then(m => ({ default: m.TVResultsView })));
+const TVCategoriesView = React.lazy(() => import('./views/TVCategoriesView').then(m => ({ default: m.TVCategoriesView })));
+const TVProfilesView = React.lazy(() => import('./views/TVProfilesView').then(m => ({ default: m.TVProfilesView })));
+const TVSettingsView = React.lazy(() => import('./views/TVSettingsView').then(m => ({ default: m.TVSettingsView })));
+const TVAdminView = React.lazy(() => import('./views/TVAdminView').then(m => ({ default: m.TVAdminView })));
+
+const ViewLoader: React.FC = () => (
+  <div className="flex items-center justify-center min-h-screen bg-[#050A08]">
+    <Loader2 className="w-8 h-8 text-emerald-400 animate-spin" />
+  </div>
+);
 
 export const TVApp: React.FC = () => {
   const { tvView } = useGame();
@@ -62,7 +71,9 @@ export const TVApp: React.FC = () => {
 
       {/* Main View Display */}
       <main className="relative z-10">
-        {renderCurrentView()}
+        <Suspense fallback={<ViewLoader />}>
+          {renderCurrentView()}
+        </Suspense>
       </main>
 
       {/* Animated Floating Reactions and Toast Notifications */}

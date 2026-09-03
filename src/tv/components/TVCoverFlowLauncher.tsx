@@ -142,7 +142,7 @@ export const TVCoverFlowLauncher: React.FC<TVCoverFlowLauncherProps> = ({
                 zIndex,
                 opacity,
               }}
-              className={`coverflow-item absolute w-[300px] sm:w-[330px] md:w-[360px] lg:w-[390px] h-[430px] sm:h-[470px] md:h-[510px] lg:h-[540px] rounded-[32px] overflow-hidden cursor-pointer transition-all duration-300 ${
+              className={`coverflow-item absolute w-[clamp(270px,25vw,380px)] h-[clamp(370px,53vh,510px)] rounded-[32px] overflow-hidden cursor-pointer transition-all duration-300 ${
                 isCenter
                   ? 'border-2 border-white/40 shadow-[0_25px_60px_rgba(0,0,0,0.85),0_0_35px_rgba(255,255,255,0.2)] ring-1 ring-white/30'
                   : 'border border-white/15 shadow-[0_20px_45px_rgba(0,0,0,0.75)] filter brightness-90 hover:brightness-100'
