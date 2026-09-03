@@ -280,7 +280,26 @@ export class RoomManager {
   startGame(code) {
     const room = this.getRoom(code);
     if (!room) return { success: false, error: 'Salon introuvable' };
-    if (room.players.length === 0) return { success: false, error: 'Aucun joueur dans le salon' };
+    if (room.players.length === 0) {
+      // Auto-création d'un joueur hôte pour permettre le lancement immédiat sur PC/TV sans attendre de smartphone
+      const defaultHostPlayer = {
+        id: `p_host_${Date.now()}`,
+        socketId: room.hostId,
+        name: 'Joueur 1 (Hôte)',
+        avatar: '🦊',
+        color: 'red',
+        buzzerSound: 'arcade',
+        isHost: true,
+        isReady: true,
+        isBot: false,
+        score: 0,
+        chips: 1000,
+        isSpectator: false,
+        connected: true,
+      };
+      room.players.push(defaultHostPlayer);
+      this.broadcastRoomUpdate(room);
+    }
 
     room.status = 'playing';
     // C3 — nouvelle partie : on efface le classement de la manche précédente
@@ -390,6 +409,7 @@ export class RoomManager {
 
     room.gameState = room.gameEngine.getState();
     this.broadcastRoomUpdate(room);
+    this.broadcastGameState(room);
     return { success: true };
   }
 
@@ -397,8 +417,11 @@ export class RoomManager {
     const room = this.getRoom(code);
     if (!room || !room.gameEngine) return;
 
-    // Resilient player resolution: by socketId OR by persistent playerId in payload
-    const player = room.players.find(p => p.socketId === socketId || (payload?.playerId && p.id === payload.playerId));
+    // Resilient player resolution: by socketId OR by persistent playerId in payload OR host fallback
+    let player = room.players.find(p => p.socketId === socketId || (payload?.playerId && p.id === payload.playerId));
+    if (!player && (socketId === room.hostId || action.startsWith('four_pics_') || action.startsWith('quick_game_') || action === 'return_to_lobby')) {
+      player = room.players.find(p => p.isHost) || room.players[0];
+    }
     if (!player) return;
 
     // Make sure socket is bound to latest socketId

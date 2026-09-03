@@ -32,6 +32,59 @@ export const FourPicsBoardTV: React.FC = () => {
   const [activeZoomIndex, setActiveZoomIndex] = useState<number | null>(null);
   const [lastStarsAwarded, setLastStarsAwarded] = useState<number>(0);
   const [newMilestone, setNewMilestone] = useState<MilestoneReward | null>(null);
+  const [localComposed, setLocalComposed] = useState<string>('');
+
+  // Handle local TV/PC letter tile clicks
+  const handleTvTileClick = (char: string) => {
+    if (gameState?.roundStatus !== 'guessing') return;
+    audio.playSelect();
+    setLocalComposed((prev) => {
+      const wordLen = gameState?.currentPuzzle?.wordLength || 5;
+      if (prev.length >= wordLen) return prev;
+      const next = prev + char;
+      if (next.length === wordLen) {
+        sendGameAction('four_pics_submit_word', { word: next });
+      }
+      return next;
+    });
+  };
+
+  const handleTvBackspace = () => {
+    audio.playBack();
+    setLocalComposed((prev) => prev.slice(0, -1));
+  };
+
+  useEffect(() => {
+    setLocalComposed('');
+  }, [gameState?.roundNumber, gameState?.currentPuzzle?.id]);
+
+  // Support direct typing on PC keyboard
+  useEffect(() => {
+    if (!gameState || gameState.roundStatus !== 'guessing') return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (showStageSelector || activeZoomIndex !== null) return;
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+
+      if (e.key === 'Backspace') {
+        setLocalComposed((prev) => prev.slice(0, -1));
+      } else if (/^[a-zA-Z]$/.test(e.key)) {
+        const char = e.key.toUpperCase();
+        setLocalComposed((prev) => {
+          const wordLen = gameState.currentPuzzle?.wordLength || 5;
+          if (prev.length >= wordLen) return prev;
+          const next = prev + char;
+          if (next.length === wordLen) {
+            sendGameAction('four_pics_submit_word', { word: next });
+          }
+          return next;
+        });
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [gameState?.roundStatus, gameState?.currentPuzzle?.wordLength, showStageSelector, activeZoomIndex]);
 
   useEffect(() => {
     tvNav.setInitialFocus('button');
@@ -220,25 +273,56 @@ export const FourPicsBoardTV: React.FC = () => {
         </div>
 
         {/* Word Length Mystery Letter Slots */}
-        <div className="mt-5 flex items-center space-x-3">
+        <div className="mt-4 flex items-center space-x-2.5">
           {Array.from({ length: wordLength }).map((_, idx) => {
             const revealedLetter =
               isRevealed && gameState.roundResult ? gameState.roundResult.word[idx] : null;
+            const displayChar = revealedLetter || localComposed[idx] || '';
 
             return (
               <div
                 key={`slot_${idx}`}
-                className={`w-16 h-18 rounded-2xl border-2 flex items-center justify-center font-display font-black text-4xl shadow-2xl transition-all ${
+                className={`w-13 h-15 sm:w-15 sm:h-17 rounded-2xl border-2 flex items-center justify-center font-display font-black text-3xl sm:text-4xl shadow-2xl transition-all ${
                   revealedLetter
                     ? 'bg-gradient-to-tr from-[#FFB800] to-amber-500 border-white text-gray-950 shadow-[0_0_30px_rgba(255,184,0,0.8)] scale-108 animate-bounce'
+                    : displayChar
+                    ? 'bg-gradient-to-tr from-[#E50914] to-[#FF2E63] border-white text-white scale-105 animate-scale-in'
                     : 'bg-[#101420] border-white/20 text-gray-500'
                 }`}
               >
-                {revealedLetter || '_'}
+                {displayChar || '_'}
               </div>
             );
           })}
         </div>
+
+        {/* TV / PC Interactive Clickable Letter Tiles */}
+        {!isRevealed && gameState.scrambledLetters && (
+          <div className="mt-3.5 flex flex-wrap items-center justify-center gap-2 max-w-xl">
+            {gameState.scrambledLetters.map((char, idx) => (
+              <button
+                key={`tv_tile_${idx}`}
+                data-tv-focus
+                tabIndex={0}
+                onClick={() => handleTvTileClick(char)}
+                className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-[#181F33] hover:bg-[#FFB800] hover:text-black border border-white/20 font-display font-black text-lg sm:text-xl text-white shadow-md active:scale-90 transition-all outline-none focus:bg-[#FFB800] focus:text-black focus:scale-110"
+              >
+                {char}
+              </button>
+            ))}
+
+            {localComposed.length > 0 && (
+              <button
+                data-tv-focus
+                tabIndex={0}
+                onClick={handleTvBackspace}
+                className="px-4 h-11 sm:h-12 rounded-xl bg-rose-950/60 hover:bg-rose-600 border border-rose-500/40 text-rose-300 hover:text-white font-bold text-xs uppercase transition-all flex items-center space-x-1 outline-none focus:bg-rose-600 focus:text-white active:scale-95"
+              >
+                <span>Effacer</span>
+              </button>
+            )}
+          </div>
+        )}
 
         {/* Descriptive Hint below word slots */}
         <div className="mt-2 text-center text-xs font-bold text-[#B8C2D8]">
