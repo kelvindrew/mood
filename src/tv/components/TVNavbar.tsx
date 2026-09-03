@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useGame, TVView } from '../../context/GameContext';
-import { useTheme } from '../../context/ThemeContext';
 import {
   Globe,
   ChevronLeft,
@@ -8,13 +7,11 @@ import {
   Sparkles,
   Smartphone,
   Layers,
-  Palette,
 } from 'lucide-react';
 import { audio } from '../../services/audio';
 
 export const TVNavbar: React.FC = () => {
   const { setTvView, isSimulatorOpen, setIsSimulatorOpen, room } = useGame();
-  const { setIsThemePickerOpen, themeDefinition } = useTheme();
   const [time, setTime] = useState<string>('');
 
   useEffect(() => {
@@ -83,12 +80,7 @@ export const TVNavbar: React.FC = () => {
             {room ? `SALON ACTIF #${room.code}` : 'PLAYFLIX SMART TV LAUNCHER'}
           </span>
           <span className="text-gray-500">•</span>
-          <span
-            className="font-mono text-[11px] font-bold"
-            style={{ color: 'var(--theme-secondary, #FBBF24)' }}
-          >
-            {themeDefinition.emoji} {themeDefinition.name.toUpperCase()}
-          </span>
+          <span className="text-[#FBBF24] font-mono text-[11px] font-bold">10 JEUX 3D</span>
         </div>
 
         {/* 3. Right Status & Action Icons */}
@@ -113,20 +105,6 @@ export const TVNavbar: React.FC = () => {
             title="AI Studio (Gemini)"
           >
             <Sparkles className="w-5 h-5 text-[#FBBF24] fill-current drop-shadow" />
-          </button>
-
-          {/* Theme Switcher Button */}
-          <button
-            data-tv-focus
-            tabIndex={0}
-            onClick={() => {
-              audio.playSelect();
-              setIsThemePickerOpen(true);
-            }}
-            className="p-1.5 hover:text-white transition-transform outline-none focus:scale-125 focus:text-[#EC4899] text-white/80"
-            title={`Changer de thème (${themeDefinition.name})`}
-          >
-            <Palette className="w-5 h-5 drop-shadow text-amber-400" />
           </button>
 
           {/* Controller Simulator */}

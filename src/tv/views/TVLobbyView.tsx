@@ -73,9 +73,9 @@ export const TVLobbyView: React.FC = () => {
         <img
           src="https://images.unsplash.com/photo-1511497584788-87676104235f?auto=format&fit=crop&w=1920&q=85"
           alt="Forest Sunlight Background"
-          className="w-full h-full object-cover object-center opacity-25 filter blur-xl scale-110"
+          className="w-full h-full object-cover object-center opacity-30 filter blur-xl scale-110"
         />
-        <div className="absolute inset-0" style={{ backgroundColor: 'var(--theme-bg, #040711)', opacity: 0.92 }} />
+        <div className="absolute inset-0 bg-[#070D0B]/85" />
       </div>
 
       {/* Top Header */}
@@ -305,12 +305,7 @@ export const TVLobbyView: React.FC = () => {
                 data-tv-focus
                 tabIndex={0}
                 onClick={handleStartGame}
-                className="flex items-center space-x-2 px-6 py-2.5 rounded-xl font-display font-black text-sm uppercase tracking-wider transition-all duration-200 outline-none focus:scale-105"
-                style={{
-                  backgroundColor: 'var(--theme-primary, #10B981)',
-                  color: 'var(--theme-primary-text, #FFFFFF)',
-                  boxShadow: 'var(--theme-shadow-btn, 0 4px 14px rgba(16,185,129,0.35))',
-                }}
+                className="flex items-center space-x-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-black font-display font-black text-sm uppercase tracking-wider shadow-[0_0_20px_rgba(16,185,129,0.4)] transition-all duration-200 outline-none focus:scale-105 focus:ring-4 focus:ring-emerald-300"
               >
                 <Play className="w-4 h-4 fill-current" />
                 <span>LANCER LA PARTIE</span>
