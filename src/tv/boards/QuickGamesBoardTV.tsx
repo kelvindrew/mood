@@ -112,6 +112,50 @@ export const QuickGamesBoardTV: React.FC = () => {
           </div>
         )}
 
+        {/* 5. Even or Odd */}
+        {gameState.currentMiniGame === 'even_odd' && gameState.roundStatus === 'active' && (
+          <div className="p-10 rounded-3xl bg-surface-card border-4 border-white/20 text-center space-y-4 shadow-2xl animate-scale-in">
+            <span className="text-xs font-black uppercase text-brand-gold">PAIR OU IMPAIR ?</span>
+            <h2 className="text-8xl font-black font-mono text-emerald-400 tracking-wider">
+              {gameState.miniGameState?.displayNumber}
+            </h2>
+          </div>
+        )}
+
+        {/* 6. Arrow Flash */}
+        {gameState.currentMiniGame === 'direction_swipe' && gameState.roundStatus === 'active' && (
+          <div className="p-10 rounded-3xl bg-surface-card border-4 border-white/20 text-center space-y-4 shadow-2xl animate-scale-in">
+            <span className="text-xs font-black uppercase text-brand-cyan">DIRECTION FLÈCHE</span>
+            <h2 className="text-8xl font-black font-display text-white tracking-widest animate-pulse">
+              {gameState.miniGameState?.arrowLabel?.split(' ')[0] || '⬆️'}
+            </h2>
+          </div>
+        )}
+
+        {/* 7. True or False */}
+        {gameState.currentMiniGame === 'true_false' && gameState.roundStatus === 'active' && (
+          <div className="p-10 max-w-3xl rounded-3xl bg-surface-card border-4 border-white/20 text-center space-y-4 shadow-2xl animate-scale-in">
+            <span className="text-xs font-black uppercase text-amber-400">VRAI OU FAUX ?</span>
+            <h2 className="text-4xl sm:text-5xl font-black font-display text-white leading-tight">
+              « {gameState.miniGameState?.statement} »
+            </h2>
+          </div>
+        )}
+
+        {/* 8. Highest Number */}
+        {gameState.currentMiniGame === 'highest_number' && gameState.roundStatus === 'active' && (
+          <div className="p-10 rounded-3xl bg-surface-card border-4 border-white/20 text-center space-y-4 shadow-2xl animate-scale-in">
+            <span className="text-xs font-black uppercase text-brand-gold">TROUVEZ LE PLUS GRAND NOMBRE</span>
+            <div className="flex items-center justify-center space-x-6 pt-2">
+              {(gameState.miniGameState?.options || []).map((n: number, i: number) => (
+                <div key={i} className="px-6 py-4 rounded-2xl bg-white/10 border border-white/20 font-mono font-black text-4xl text-white">
+                  {n}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Reveal / Round Winner Ticker */}
         {gameState.roundStatus === 'reveal' && (
           <div className="p-6 rounded-3xl bg-surface-card/95 border-2 border-brand-gold shadow-glow-gold text-center space-y-2 animate-scale-in">

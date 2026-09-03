@@ -379,7 +379,7 @@ export class RoomManager {
         break;
       }
       case 'quick_games': {
-        room.gameEngine = new QuickGamesEngine(room.players, onStateChange, onGameOver);
+        room.gameEngine = new QuickGamesEngine(room.players, onStateChange, onGameOver, room.settings);
         break;
       }
       default: {

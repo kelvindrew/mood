@@ -92,18 +92,6 @@ export const QuickGamesController: React.FC = () => {
               </button>
             ))}
           </div>
-        ) : currentMini === 'math_flash' ? (
-          <div className="my-auto grid grid-cols-2 gap-3">
-            {(gameState.miniGameState?.options || []).map((opt: number, i: number) => (
-              <button
-                key={i}
-                onClick={() => handleSelectChoice(opt)}
-                className="py-8 rounded-2xl bg-surface-card border-2 border-white/20 active:bg-brand-red font-mono font-black text-3xl text-white shadow-lg active:scale-95 transition-all"
-              >
-                {opt}
-              </button>
-            ))}
-          </div>
         ) : currentMini === 'tap_rush' ? (
           <div className="my-auto flex flex-col items-center space-y-3">
             <button
@@ -118,6 +106,26 @@ export const QuickGamesController: React.FC = () => {
             <span className="text-sm font-bold text-gray-300">
               Touchez le plus vite possible !
             </span>
+          </div>
+        ) : gameState.miniGameState?.options ? (
+          <div className={`my-auto grid ${gameState.miniGameState.options.length === 2 ? 'grid-cols-2 gap-4' : 'grid-cols-2 gap-3'}`}>
+            {gameState.miniGameState.options.map((opt: string | number, i: number) => {
+              let btnStyle = "bg-surface-card border-white/20 active:bg-brand-red text-white";
+              if (opt === 'PAIR' || opt === 'VRAI') {
+                btnStyle = "bg-emerald-600 border-emerald-400 active:bg-emerald-700 text-white";
+              } else if (opt === 'IMPAIR' || opt === 'FAUX') {
+                btnStyle = "bg-rose-600 border-rose-400 active:bg-rose-700 text-white";
+              }
+              return (
+                <button
+                  key={i}
+                  onClick={() => handleSelectChoice(opt)}
+                  className={`py-8 rounded-2xl border-2 font-display font-black text-2xl shadow-lg active:scale-95 transition-all ${btnStyle}`}
+                >
+                  {opt}
+                </button>
+              );
+            })}
           </div>
         ) : (
           <div className="my-auto p-6 rounded-3xl bg-surface-card text-center text-gray-400">

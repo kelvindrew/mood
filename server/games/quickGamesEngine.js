@@ -1,14 +1,35 @@
 // Quick Games Micro-Party Pack Engine for PLAYFLIX
-// Rapid-fire 30s-2min mini-game tournament: Reflex, Color Match, Math Flash, Tap Rush
+// Rapid-fire 15-match mini-game tournament: Reflex, Color Match, Math Flash, Tap Rush, Even/Odd, Arrow Flash, True/False, High Number
+
+const TRUE_FALSE_STATEMENTS = [
+  { text: 'La Terre tourne autour du Soleil', ans: 'VRAI' },
+  { text: 'Un octogone possède 8 côtés', ans: 'VRAI' },
+  { text: 'Les requins sont des mammifères', ans: 'FAUX' },
+  { text: 'L’eau bout à 100°C au niveau de la mer', ans: 'VRAI' },
+  { text: 'Le cœur humain possède 6 cavités', ans: 'FAUX' },
+  { text: 'Le mont Blanc est situé en Europe', ans: 'VRAI' },
+  { text: 'La Lune est plus grande que la Terre', ans: 'FAUX' },
+  { text: 'Le diamant est le minéral naturel le plus dur', ans: 'VRAI' },
+  { text: 'Une année bissextile compte 366 jours', ans: 'VRAI' },
+  { text: 'Les araignées ont 6 pattes', ans: 'FAUX' },
+  { text: 'L’Australie est plus grande que la Lune en largeur', ans: 'VRAI' },
+  { text: 'Le zéro absolu est à 0°C', ans: 'FAUX' },
+  { text: 'Tokyo est la capitale du Japon', ans: 'VRAI' },
+  { text: 'Un triangle équilatéral a 3 angles de 60°', ans: 'VRAI' },
+  { text: 'L’or a pour symbole chimique Fe', ans: 'FAUX' },
+];
 
 export class QuickGamesEngine {
-  constructor(players, onStateChange, onGameOver) {
+  constructor(players, onStateChange, onGameOver, settings = {}) {
     this.playersList = players.map(p => (typeof p === 'string' ? { id: p, name: p, color: 'red' } : { ...p }));
     this.onStateChange = onStateChange;
     this.onGameOver = onGameOver;
 
     this.roundNumber = 1;
-    this.totalRounds = 4;
+    // Minimum 15 matches garantis par partie
+    const requested = Number(settings?.totalRounds || settings?.roundsCount || settings?.matchesCount || 15);
+    this.totalRounds = Math.max(15, requested);
+
     this.scores = {};
     for (const p of this.playersList) {
       this.scores[p.id] = 0;
@@ -18,8 +39,8 @@ export class QuickGamesEngine {
     this.miniGameState = {};
     this.roundStatus = 'intro'; // 'intro' | 'active' | 'reveal' | 'finished'
     this.timer = null;
-    this.greenTimer = null; // E2
-    this.transitionTimer = null; // E2
+    this.greenTimer = null;
+    this.transitionTimer = null;
     this.timeRemaining = 10;
     this.winner = null;
 
@@ -29,7 +50,17 @@ export class QuickGamesEngine {
   startRound() {
     if (this.timer) clearInterval(this.timer);
 
-    const miniGames = ['reaction_speed', 'color_match', 'math_flash', 'tap_rush'];
+    const miniGames = [
+      'reaction_speed',
+      'color_match',
+      'math_flash',
+      'tap_rush',
+      'even_odd',
+      'direction_swipe',
+      'true_false',
+      'highest_number',
+    ];
+
     const selectedGame = miniGames[(this.roundNumber - 1) % miniGames.length];
     this.currentMiniGame = selectedGame;
     this.roundStatus = 'intro';
@@ -56,9 +87,11 @@ export class QuickGamesEngine {
         title: 'Couleur Piège 🎨',
         instructions: 'Touchez la VRAIE COULEUR du texte (pas ce qui est écrit) !',
         targetWord: displayedWord.name,
-        targetHex: targetColor.hex, // color to match
+        targetHex: targetColor.hex,
         correctColorName: targetColor.name,
+        correctAnswer: targetColor.name,
         options: ['ROUGE', 'BLEU', 'VERT', 'JAUNE'],
+        points: 250,
         answers: {},
       };
     } else if (selectedGame === 'math_flash') {
@@ -74,6 +107,71 @@ export class QuickGamesEngine {
         equation: `${a} + ${b} = ?`,
         correctAnswer: ans,
         options,
+        points: 300,
+        answers: {},
+      };
+    } else if (selectedGame === 'even_odd') {
+      const num = Math.floor(Math.random() * 90) + 10;
+      const ans = num % 2 === 0 ? 'PAIR' : 'IMPAIR';
+
+      this.miniGameState = {
+        title: 'Pair ou Impair 🔢',
+        instructions: 'Ce nombre est-il PAIR ou IMPAIR ?',
+        displayNumber: num,
+        correctAnswer: ans,
+        options: ['PAIR', 'IMPAIR'],
+        points: 250,
+        answers: {},
+      };
+    } else if (selectedGame === 'direction_swipe') {
+      const directions = [
+        { label: '⬆️ HAUT', code: 'HAUT' },
+        { label: '⬇️ BAS', code: 'BAS' },
+        { label: '⬅️ GAUCHE', code: 'GAUCHE' },
+        { label: '➡️ DROITE', code: 'DROITE' },
+      ];
+      const target = directions[Math.floor(Math.random() * directions.length)];
+
+      this.miniGameState = {
+        title: 'Flèche Réflexe 🧭',
+        instructions: 'Quelle direction pointe la flèche sur la TV ?',
+        arrowLabel: target.label,
+        correctAnswer: target.code,
+        options: ['HAUT', 'BAS', 'GAUCHE', 'DROITE'],
+        points: 250,
+        answers: {},
+      };
+    } else if (selectedGame === 'true_false') {
+      const item = TRUE_FALSE_STATEMENTS[Math.floor(Math.random() * TRUE_FALSE_STATEMENTS.length)];
+
+      this.miniGameState = {
+        title: 'Vrai ou Faux Flash ⚡',
+        instructions: 'Cette affirmation est-elle VRAIE ou FAUSSE ?',
+        statement: item.text,
+        correctAnswer: item.ans,
+        options: ['VRAI', 'FAUX'],
+        points: 250,
+        answers: {},
+      };
+    } else if (selectedGame === 'highest_number') {
+      const nums = Array.from(new Set([
+        Math.floor(Math.random() * 80) + 15,
+        Math.floor(Math.random() * 80) + 15,
+        Math.floor(Math.random() * 80) + 15,
+        Math.floor(Math.random() * 80) + 15,
+      ]));
+      while (nums.length < 4) {
+        nums.push(Math.floor(Math.random() * 90) + 10);
+      }
+      const maxVal = Math.max(...nums);
+      const options = [...nums].sort(() => Math.random() - 0.5);
+
+      this.miniGameState = {
+        title: 'Le Plus Grand Nombre 🔝',
+        instructions: 'Touchez le plus grand nombre parmi les 4 !',
+        correctAnswer: maxVal,
+        options,
+        points: 250,
         answers: {},
       };
     } else {
@@ -106,8 +204,6 @@ export class QuickGamesEngine {
     this.roundStatus = 'active';
 
     if (this.currentMiniGame === 'reaction_speed') {
-      // Random delay 1.5s to 4s before turning green
-      // E2 — timers suivis : greenTimer puis transitionTimer, tous annulables
       const greenDelay = 1500 + Math.random() * 2500;
       if (this.greenTimer) clearTimeout(this.greenTimer);
       this.greenTimer = setTimeout(() => {
@@ -117,7 +213,6 @@ export class QuickGamesEngine {
           this.miniGameState.greenTimestamp = Date.now();
           this.notify();
 
-          // End round after 3.5s of green
           if (this.transitionTimer) clearTimeout(this.transitionTimer);
           this.transitionTimer = setTimeout(() => {
             if (this._destroyed) return;
@@ -145,7 +240,6 @@ export class QuickGamesEngine {
 
     if (this.currentMiniGame === 'reaction_speed') {
       if (!this.miniGameState.isGreen) {
-        // False start penalty
         this.scores[playerId] = Math.max(0, (this.scores[playerId] || 0) - 50);
         return;
       }
@@ -160,30 +254,6 @@ export class QuickGamesEngine {
           this.finishRound();
         }
       }
-    } else if (this.currentMiniGame === 'color_match') {
-      if (!this.miniGameState.answers[playerId]) {
-        const isCorrect = payload.choice === this.miniGameState.correctColorName;
-        const pts = isCorrect ? 250 : 0;
-        this.scores[playerId] = (this.scores[playerId] || 0) + pts;
-        this.miniGameState.answers[playerId] = { choice: payload.choice, isCorrect, points: pts };
-        this.notify();
-
-        if (Object.keys(this.miniGameState.answers).length === this.playersList.length) {
-          this.finishRound();
-        }
-      }
-    } else if (this.currentMiniGame === 'math_flash') {
-      if (!this.miniGameState.answers[playerId]) {
-        const isCorrect = Number(payload.choice) === this.miniGameState.correctAnswer;
-        const pts = isCorrect ? 300 : 0;
-        this.scores[playerId] = (this.scores[playerId] || 0) + pts;
-        this.miniGameState.answers[playerId] = { choice: payload.choice, isCorrect, points: pts };
-        this.notify();
-
-        if (Object.keys(this.miniGameState.answers).length === this.playersList.length) {
-          this.finishRound();
-        }
-      }
     } else if (this.currentMiniGame === 'tap_rush') {
       this.miniGameState.taps[playerId] = (this.miniGameState.taps[playerId] || 0) + 1;
       this.notify();
@@ -191,6 +261,20 @@ export class QuickGamesEngine {
       if (this.miniGameState.taps[playerId] >= this.miniGameState.targetTaps) {
         this.scores[playerId] = (this.scores[playerId] || 0) + 400;
         this.finishRound();
+      }
+    } else {
+      // Épreuves à choix (color_match, math_flash, even_odd, direction_swipe, true_false, highest_number)
+      if (!this.miniGameState.answers[playerId]) {
+        const target = this.miniGameState.correctAnswer ?? this.miniGameState.correctColorName;
+        const isCorrect = String(payload.choice).trim().toUpperCase() === String(target).trim().toUpperCase();
+        const pts = isCorrect ? (this.miniGameState.points || 250) : 0;
+        this.scores[playerId] = (this.scores[playerId] || 0) + pts;
+        this.miniGameState.answers[playerId] = { choice: payload.choice, isCorrect, points: pts };
+        this.notify();
+
+        if (Object.keys(this.miniGameState.answers).length === this.playersList.length) {
+          this.finishRound();
+        }
       }
     }
   }
@@ -200,8 +284,6 @@ export class QuickGamesEngine {
     this.roundStatus = 'reveal';
     this.notify();
 
-    // 3.5s pause to see scores then next round or game over
-    // E2 — timer suivi : annulé par destroy(), garde anti-zombie
     if (this.transitionTimer) clearTimeout(this.transitionTimer);
     this.transitionTimer = setTimeout(() => {
       if (this._destroyed) return;
@@ -231,11 +313,6 @@ export class QuickGamesEngine {
     };
   }
 
-  /**
-   * C1 — État PUBLIC : les solutions (correctColorName, correctAnswer) et
-   * greenTimestamp (permettrait un bot de réaction parfaite) ne sont jamais
-   * diffusés. Le serveur calcule lui-même les scores.
-   */
   getPublicState() {
     const state = this.getState();
     if (state.miniGameState) {
@@ -245,9 +322,6 @@ export class QuickGamesEngine {
     return state;
   }
 
-  /**
-   * C1 — Aucun fragment privé dans ce jeu.
-   */
   getPrivateState() {
     return null;
   }
@@ -259,7 +333,7 @@ export class QuickGamesEngine {
   }
 
   destroy() {
-    this._destroyed = true; // E2
+    this._destroyed = true;
     if (this.timer) clearInterval(this.timer);
     if (this.greenTimer) clearTimeout(this.greenTimer);
     if (this.transitionTimer) clearTimeout(this.transitionTimer);
