@@ -180,20 +180,3 @@ html.tv-ui .animate-bounce {
 .scrollbar-none::-webkit-scrollbar {
   display: none;
 }
-
-/* Smart TV High Performance 60 FPS Mode (Hisense VIDAA, WebOS, Tizen) */
-html.tv-perf-mode * {
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-}
-
-html.tv-perf-mode .glass-pill-bar,
-html.tv-perf-mode .glass-forest-card,
-html.tv-perf-mode .bg-surface-card {
-  background-color: rgba(12, 22, 18, 0.96) !important;
-}
-
-html.tv-perf-mode .filter.blur-2xl,
-html.tv-perf-mode .filter.blur-3xl {
-  display: none !important;
-}

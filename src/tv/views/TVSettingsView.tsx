@@ -8,12 +8,6 @@ import { useTvBack } from '../hooks/useTvNav';
 export const TVSettingsView: React.FC = () => {
   const { serverLanIp, setTvView } = useGame();
   const [soundEnabled, setSoundEnabled] = useState(true);
-  const [perfMode, setPerfMode] = useState<boolean>(() => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('playflix_tv_perf_mode') !== 'false';
-    }
-    return true;
-  });
   const [tvPlatform, setTvPlatform] = useState('Hisense VIDAA OS');
   const [resolution, setResolution] = useState('4K Ultra HD (3840x2160)');
 
@@ -32,15 +26,6 @@ export const TVSettingsView: React.FC = () => {
     setSoundEnabled(!muted);
   };
 
-  const handleTogglePerfMode = () => {
-    const next = !perfMode;
-    setPerfMode(next);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('playflix_tv_perf_mode', String(next));
-      document.documentElement.classList.toggle('tv-perf-mode', next);
-    }
-  };
-
   return (
     <div className="min-h-screen pt-24 px-12 pb-24 select-none flex flex-col space-y-8 max-w-5xl">
       <div>
@@ -49,37 +34,6 @@ export const TVSettingsView: React.FC = () => {
       </div>
 
       <div className="space-y-6">
-        {/* Performance TV Mode Card */}
-        <div className="p-6 rounded-3xl bg-surface-card border border-white/15 backdrop-blur-xl shadow-xl flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <div className="w-12 h-12 rounded-2xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center">
-              <Cpu className="w-6 h-6 text-amber-400" />
-            </div>
-            <div>
-              <div className="flex items-center space-x-2">
-                <h3 className="text-lg font-black font-display text-white">Mode Haute Performance TV (60 FPS)</h3>
-                <span className="px-2 py-0.5 rounded text-[10px] font-black bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                  RECOMMANDÉ HISENSE & VIDAA
-                </span>
-              </div>
-              <p className="text-xs text-gray-400">Allège les filtres graphiques complexes pour une fluidité absolue sans latence télécommande</p>
-            </div>
-          </div>
-
-          <button
-            data-tv-focus
-            tabIndex={0}
-            onClick={handleTogglePerfMode}
-            className={`px-6 py-3 rounded-2xl font-black text-xs border transition-all outline-none ${
-              perfMode
-                ? 'bg-emerald-600 text-white border-emerald-500 shadow-glow-emerald'
-                : 'bg-surface-light text-gray-400 border-white/10'
-            }`}
-          >
-            {perfMode ? 'ACTIVÉ (60 FPS)' : 'STANDARD'}
-          </button>
-        </div>
-
         {/* Audio Card */}
         <div className="p-6 rounded-3xl bg-surface-card border border-white/15 backdrop-blur-xl shadow-xl flex items-center justify-between">
           <div className="flex items-center space-x-4">

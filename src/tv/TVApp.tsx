@@ -20,11 +20,8 @@ export const TVApp: React.FC = () => {
   // Couche CSS TV (scaling typographique, perf, focus) — jamais appliquée au mobile
   useEffect(() => {
     document.documentElement.classList.add('tv-ui');
-    const isPerf = localStorage.getItem('playflix_tv_perf_mode') !== 'false';
-    document.documentElement.classList.toggle('tv-perf-mode', isPerf);
     return () => {
       document.documentElement.classList.remove('tv-ui');
-      document.documentElement.classList.remove('tv-perf-mode');
     };
   }, []);
 
