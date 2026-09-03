@@ -5,6 +5,7 @@ import { TVCoverFlowLauncher } from '../components/TVCoverFlowLauncher';
 import { TVFloatingControlBar } from '../components/TVFloatingControlBar';
 import { GameCatalogItem } from '../../types/game';
 import { tvNav } from '../../services/tvNavigation';
+import { handleImageError } from '../../utils/imageFallback';
 
 export const TVHomeView: React.FC = () => {
   const { setSelectedGame, setTvView, createRoom } = useGame();
@@ -48,6 +49,7 @@ export const TVHomeView: React.FC = () => {
           src={activeGame.heroImage || activeGame.coverImage}
           alt=""
           aria-hidden
+          onError={(e) => handleImageError(e, activeGame.title)}
           className="w-full h-full object-cover object-center filter blur-2xl opacity-25 scale-110 transition-opacity duration-700"
         />
         {/* Soft radial vignette */}

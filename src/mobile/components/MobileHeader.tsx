@@ -46,9 +46,14 @@ export const MobileHeader: React.FC = () => {
       <div className="flex items-center space-x-3">
         <div
           data-conn={connectionState}
-          className={`flex items-center space-x-1 px-2 py-0.5 rounded-full text-[10px] font-bold ${badge.wrap}`}
+          className={`flex items-center space-x-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold ${badge.wrap}`}
         >
-          <span className={`w-1.5 h-1.5 rounded-full ${badge.dot} ${badge.ping ? 'animate-ping' : ''}`} />
+          <span className="relative flex h-2 w-2 flex-shrink-0">
+            {badge.ping && (
+              <span className={`animate-ping absolute inline-flex h-full w-full rounded-full ${badge.dot} opacity-75`} />
+            )}
+            <span className={`relative inline-flex rounded-full h-2 w-2 ${badge.dot}`} />
+          </span>
           <span>{badge.label}</span>
         </div>
 

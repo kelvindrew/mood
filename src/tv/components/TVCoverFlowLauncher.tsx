@@ -3,6 +3,7 @@ import { GameCatalogItem } from '../../types/game';
 import { Sparkles, Users, Clock, ChevronLeft, ChevronRight } from 'lucide-react';
 import { audio } from '../../services/audio';
 import { tvNav } from '../../services/tvNavigation';
+import { handleImageError } from '../../utils/imageFallback';
 
 interface TVCoverFlowLauncherProps {
   games: GameCatalogItem[];
@@ -152,6 +153,7 @@ export const TVCoverFlowLauncher: React.FC<TVCoverFlowLauncherProps> = ({
               <img
                 src={game.heroImage || game.coverImage}
                 alt={game.title}
+                onError={(e) => handleImageError(e, game.title)}
                 className="w-full h-full object-cover object-center filter brightness-95 contrast-105"
               />
 

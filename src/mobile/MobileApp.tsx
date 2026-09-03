@@ -18,6 +18,7 @@ import { InterController } from './views/controllers/InterController';
 import { FourPicsController } from './views/controllers/FourPicsController';
 import { MiniRacingController } from './views/controllers/MiniRacingController';
 import { QuickGamesController } from './views/controllers/QuickGamesController';
+import { useWakeLock } from '../hooks/useWakeLock';
 
 interface MobileAppProps {
   isSimulatorMode?: boolean;
@@ -26,6 +27,9 @@ interface MobileAppProps {
 
 export const MobileApp: React.FC<MobileAppProps> = ({ isSimulatorMode = false, defaultRoomCode = '' }) => {
   const { room, mobileView, localPlayer } = useGame();
+
+  // Prevent smartphone screen from going to sleep while connected in a room
+  useWakeLock(Boolean(room && localPlayer));
 
   if (!room || mobileView === 'join' || !localPlayer) {
     return <MobileJoinView defaultRoomCode={defaultRoomCode} />;

@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { audio } from '../../services/audio';
 import { useGame } from '../../context/GameContext';
+import { handleImageError } from '../../utils/imageFallback';
 
 interface TVFloatingControlBarProps {
   activeGame: GameCatalogItem;
@@ -91,6 +92,7 @@ export const TVFloatingControlBar: React.FC<TVFloatingControlBarProps> = ({
               <img
                 src={activeGame.coverImage || activeGame.heroImage}
                 alt={activeGame.title}
+                onError={(e) => handleImageError(e, activeGame.title)}
                 className="w-full h-full object-cover"
               />
             </div>
