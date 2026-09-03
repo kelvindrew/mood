@@ -288,19 +288,41 @@ export class FourPicsEngine {
   }
 
   scheduleNextRound() {
-    if (this.gameMode === 'adventure') {
-      // In adventure mode, wait for player to click Next Stage or auto-advance after 5s
-      return;
-    }
-
     if (this.transitionTimer) clearTimeout(this.transitionTimer);
+    if (this.countdownInterval) clearInterval(this.countdownInterval);
+
+    this.autoAdvanceSeconds = 5;
+    this.notify();
+
+    this.countdownInterval = setInterval(() => {
+      if (this._destroyed) {
+        clearInterval(this.countdownInterval);
+        return;
+      }
+      if (this.autoAdvanceSeconds > 1) {
+        this.autoAdvanceSeconds--;
+        this.notify();
+      } else {
+        clearInterval(this.countdownInterval);
+      }
+    }, 1000);
+
     this.transitionTimer = setTimeout(() => {
-      this.currentRoundIndex++;
-      this.startRound();
-    }, 4500);
+      if (this._destroyed) return;
+      clearInterval(this.countdownInterval);
+      if (this.gameMode === 'adventure') {
+        this.nextAdventureStage();
+      } else {
+        this.currentRoundIndex++;
+        this.startRound();
+      }
+    }, 5000);
   }
 
   nextAdventureStage() {
+    if (this.transitionTimer) clearTimeout(this.transitionTimer);
+    if (this.countdownInterval) clearInterval(this.countdownInterval);
+
     let nextStg = this.currentStageNumber + 1;
     let nextLvl = this.currentLevel;
 
@@ -371,6 +393,7 @@ export class FourPicsEngine {
       scores: this.scores,
       combos: this.combos,
       winner: this.winner,
+      autoAdvanceSeconds: this.autoAdvanceSeconds || 0,
       lastActionLog: this.lastActionLog,
     };
   }
@@ -382,8 +405,10 @@ export class FourPicsEngine {
   }
 
   destroy() {
+    this._destroyed = true;
     if (this.timer) clearInterval(this.timer);
     if (this.botTimer) clearTimeout(this.botTimer);
     if (this.transitionTimer) clearTimeout(this.transitionTimer);
+    if (this.countdownInterval) clearInterval(this.countdownInterval);
   }
 }

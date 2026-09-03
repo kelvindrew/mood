@@ -486,6 +486,7 @@ export interface FourPicsGameState {
   revealedLettersPositions?: Record<string, number[]>;
   removedLettersIndices?: Record<string, number[]>;
   zoomedImageIndex?: number | null;
+  autoAdvanceSeconds?: number;
   winner: string | null;
   lastActionLog: string;
 }

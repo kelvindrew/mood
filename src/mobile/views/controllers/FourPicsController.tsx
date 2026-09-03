@@ -254,10 +254,41 @@ export const FourPicsController: React.FC = () => {
             </div>
           )}
 
-          {isSolvedByMe && (
+          {isSolvedByMe && !isRevealed && (
             <div className="p-2.5 rounded-2xl bg-emerald-950/80 border border-[#10B981] text-[#10B981] text-xs font-black flex items-center justify-center space-x-1.5 animate-scale-in">
               <CheckCircle2 className="w-4 h-4" />
               <span>VOUS AVEZ TROUVÉ LA BONNE RÉPONSE ! 🎉</span>
+            </div>
+          )}
+
+          {isRevealed && (
+            <div className="p-4 rounded-3xl bg-[#101420] border-2 border-brand-gold text-center space-y-3 animate-scale-in shadow-xl">
+              <span className="text-[10px] font-black uppercase tracking-widest text-brand-gold block">
+                {gameState.roundResult?.winnerName ? 'STAGE RÉUSSI !' : 'TEMPS ÉCOULÉ !'}
+              </span>
+              <div className="text-2xl font-display font-black text-white">
+                « {gameState.roundResult?.word} »
+              </div>
+              {gameState.roundResult?.winnerName && (
+                <p className="text-xs font-bold text-emerald-400">
+                  🏆 Trouvé par {gameState.roundResult.winnerName} (+{gameState.roundResult.pointsEarned || 100} pts)
+                </p>
+              )}
+
+              <button
+                onClick={() => {
+                  triggerHaptic(hapticPatterns.tap);
+                  sendGameAction('four_pics_next_stage');
+                }}
+                className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-display font-black text-sm uppercase shadow-lg active:scale-95 transition-all flex items-center justify-center space-x-2"
+              >
+                <span>STAGE SUIVANT ⏩</span>
+                {Boolean(gameState.autoAdvanceSeconds) && (
+                  <span className="px-2 py-0.5 rounded-full bg-black/30 text-[11px] font-mono font-bold">
+                    {gameState.autoAdvanceSeconds}s
+                  </span>
+                )}
+              </button>
             </div>
           )}
         </div>

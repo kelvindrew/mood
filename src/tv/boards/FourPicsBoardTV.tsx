@@ -339,6 +339,22 @@ export const FourPicsBoardTV: React.FC = () => {
               </div>
             )}
 
+            {/* Auto advance progress bar */}
+            {Boolean(gameState.autoAdvanceSeconds) && (
+              <div className="w-full space-y-1.5 px-2">
+                <div className="flex items-center justify-between text-xs font-mono font-bold text-gray-400">
+                  <span>Enchaînement automatique</span>
+                  <span className="text-emerald-400 font-black">{gameState.autoAdvanceSeconds}s</span>
+                </div>
+                <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-gradient-to-r from-emerald-500 to-teal-400 transition-all duration-1000"
+                    style={{ width: `${((gameState.autoAdvanceSeconds || 5) / 5) * 100}%` }}
+                  />
+                </div>
+              </div>
+            )}
+
             {/* Action Buttons: Next Stage or Map */}
             <div className="flex items-center justify-center space-x-3 pt-2">
               <button
@@ -348,7 +364,9 @@ export const FourPicsBoardTV: React.FC = () => {
                 className="flex-1 flex items-center justify-center space-x-2 py-4 rounded-2xl bg-gradient-to-r from-[#10B981] to-[#059669] text-white font-black text-sm uppercase shadow-[0_0_25px_rgba(16,185,129,0.5)] hover:scale-105 focus:scale-105 focus:bg-white focus:text-emerald-900 transition-all outline-none"
               >
                 <Play className="w-5 h-5 fill-current" />
-                <span>STAGE SUIVANT</span>
+                <span>
+                  STAGE SUIVANT {gameState.autoAdvanceSeconds ? `(${gameState.autoAdvanceSeconds}s)` : ''}
+                </span>
               </button>
 
               <button
