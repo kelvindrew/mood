@@ -32,17 +32,32 @@ export const TVHomeView: React.FC = () => {
   const activeGame = games[activeIndex] || games[0];
 
   return (
-    <div className="relative w-full h-screen min-h-screen flex flex-col justify-center items-center select-none bg-[#050A08] overflow-hidden">
-      {/* 1. Full-Bleed Dynamic Ambient Background (VisionOS / Apple Music Style) */}
+    <div
+      className="relative w-full h-screen min-h-screen flex flex-col justify-center items-center select-none theme-bg overflow-hidden transition-colors duration-500"
+      style={{ backgroundColor: 'var(--theme-bg, #040711)' }}
+    >
+      {/* 1. Full-Bleed Dynamic Ambient Background with Theme Lighting */}
       <div className="fixed inset-0 z-0 pointer-events-none transition-all duration-700 overflow-hidden">
         <img
           src={activeGame.heroImage || activeGame.coverImage}
           alt={activeGame.title}
-          className="w-full h-full object-cover object-center filter blur-3xl opacity-30 scale-125 transition-opacity duration-700"
+          className="w-full h-full object-cover object-center filter blur-3xl opacity-25 scale-125 transition-opacity duration-700"
         />
-        {/* Soft radial vignette */}
-        <div className="absolute inset-0 bg-gradient-to-t from-[#050A08] via-[#050A08]/60 to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-b from-[#050A08]/80 via-transparent to-[#050A08]" />
+        {/* Soft theme-aware radial vignette */}
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              'linear-gradient(to top, var(--theme-bg, #040711) 0%, transparent 50%, var(--theme-bg, #040711) 100%)',
+          }}
+        />
+        <div
+          className="absolute inset-0 opacity-20 transition-all duration-700"
+          style={{
+            background:
+              'radial-gradient(circle at 50% 40%, var(--theme-primary, #00F2FE) 0%, transparent 60%)',
+          }}
+        />
       </div>
 
       {/* 2. Centerpiece 3D Perspective Cover Flow Launcher (VisionOS Style) */}

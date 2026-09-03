@@ -41,10 +41,10 @@ export const TVNavbar: React.FC = () => {
             data-tv-focus
             tabIndex={0}
             onClick={() => handleNav('home')}
-            className="flex items-center space-x-2 text-white hover:text-[#34D399] transition-transform active:scale-95 outline-none focus:scale-115 focus:text-[#34D399]"
+            className="flex items-center space-x-2 text-white transition-transform active:scale-95 outline-none focus:scale-115"
             title="Accueil"
           >
-            <Globe className="w-5 h-5 text-[#34D399] drop-shadow" />
+            <Globe className="w-5 h-5 drop-shadow" style={{ color: 'var(--theme-primary, #00F2FE)' }} />
             <span className="font-display font-black text-sm tracking-wider uppercase text-white drop-shadow">
               PLAYFLIX AI
             </span>
@@ -55,7 +55,7 @@ export const TVNavbar: React.FC = () => {
               data-tv-focus
               tabIndex={0}
               onClick={() => handleNav('home')}
-              className="p-1 hover:text-white transition-transform outline-none focus:scale-125 focus:text-[#FBBF24]"
+              className="p-1 hover:text-white transition-transform outline-none focus:scale-125"
               title="Précédent"
             >
               <ChevronLeft className="w-5 h-5 drop-shadow" />
@@ -65,7 +65,7 @@ export const TVNavbar: React.FC = () => {
               data-tv-focus
               tabIndex={0}
               onClick={() => handleNav('categories')}
-              className="p-1 hover:text-white transition-transform outline-none focus:scale-125 focus:text-[#FBBF24]"
+              className="p-1 hover:text-white transition-transform outline-none focus:scale-125"
               title="Suivant"
             >
               <ChevronRight className="w-5 h-5 drop-shadow" />
@@ -75,12 +75,20 @@ export const TVNavbar: React.FC = () => {
 
         {/* 2. Center Text Title Display */}
         <div className="flex items-center space-x-2 text-xs text-gray-200 drop-shadow">
-          <span className="w-2 h-2 rounded-full bg-[#10B981] animate-pulse" />
+          <span
+            className="w-2 h-2 rounded-full animate-pulse"
+            style={{ backgroundColor: 'var(--theme-accent, #10B981)' }}
+          />
           <span className="font-display font-black text-white tracking-widest text-xs uppercase drop-shadow-md">
             {room ? `SALON ACTIF #${room.code}` : 'PLAYFLIX SMART TV LAUNCHER'}
           </span>
           <span className="text-gray-500">•</span>
-          <span className="text-[#FBBF24] font-mono text-[11px] font-bold">10 JEUX 3D</span>
+          <span
+            className="font-mono text-[11px] font-bold"
+            style={{ color: 'var(--theme-secondary, #FBBF24)' }}
+          >
+            {themeDefinition.emoji} {themeDefinition.name.toUpperCase()}
+          </span>
         </div>
 
         {/* 3. Right Status & Action Icons */}

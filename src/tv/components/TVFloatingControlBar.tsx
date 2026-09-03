@@ -42,15 +42,16 @@ export const TVFloatingControlBar: React.FC<TVFloatingControlBarProps> = ({
         style={{ gap: 'clamp(16px, 2.6vw, 48px)' }}
       >
         {/* 1. Left Navigation Controls (Pure Icons) */}
-        <div className="flex items-center space-x-4">
+        {/* 1. Left Navigation Controls (Sleek, Proportional & Theme-Styled) */}
+        <div className="flex items-center space-x-2.5">
           <button
             data-tv-focus
             tabIndex={0}
             onClick={onPrev}
-            className="text-white/70 hover:text-white p-2 transition-transform active:scale-90 outline-none focus:scale-125 focus:text-[#FBBF24]"
+            className="text-white/70 hover:text-white p-1.5 transition-transform active:scale-90 outline-none focus:scale-125 focus:text-[var(--theme-primary)]"
             title="Précédent"
           >
-            <SkipBack className="w-6 h-6 fill-current drop-shadow-md" />
+            <SkipBack className="w-5 h-5 fill-current drop-shadow-md" />
           </button>
 
           <button
@@ -60,20 +61,26 @@ export const TVFloatingControlBar: React.FC<TVFloatingControlBarProps> = ({
               audio.playSelect();
               onPlay(activeGame);
             }}
-            className="w-13 h-13 rounded-full bg-white text-black flex items-center justify-center shadow-[0_0_35px_rgba(255,255,255,0.9)] transition-all hover:scale-110 active:scale-95 outline-none focus:scale-125 focus:ring-4 focus:ring-[#10B981]"
+            className="flex items-center space-x-1.5 px-5 py-2.5 rounded-full font-display font-black text-xs uppercase tracking-wider transition-all hover:scale-105 active:scale-95 outline-none focus:scale-115 focus:ring-2 focus:ring-white"
+            style={{
+              backgroundColor: 'var(--theme-primary, #00F2FE)',
+              color: 'var(--theme-primary-text, #040711)',
+              boxShadow: 'var(--theme-shadow-btn, 0 4px 14px rgba(0,242,254,0.35))',
+            }}
             title="Lancer le Salon"
           >
-            <Play className="w-6 h-6 fill-current ml-0.5" />
+            <Play className="w-3.5 h-3.5 fill-current" />
+            <span>JOUER</span>
           </button>
 
           <button
             data-tv-focus
             tabIndex={0}
             onClick={onNext}
-            className="text-white/70 hover:text-white p-2 transition-transform active:scale-90 outline-none focus:scale-125 focus:text-[#FBBF24]"
+            className="text-white/70 hover:text-white p-1.5 transition-transform active:scale-90 outline-none focus:scale-125 focus:text-[var(--theme-primary)]"
             title="Suivant"
           >
-            <SkipForward className="w-6 h-6 fill-current drop-shadow-md" />
+            <SkipForward className="w-5 h-5 fill-current drop-shadow-md" />
           </button>
         </div>
 

@@ -71,19 +71,19 @@ export const TVCoverFlowLauncher: React.FC<TVCoverFlowLauncherProps> = ({
       {/* Navigation Arrow Left */}
       <button
         onClick={handlePrev}
-        className="absolute left-6 lg:left-12 z-40 w-14 h-14 rounded-full glass-pill-bar text-white/70 hover:text-white hover:scale-110 active:scale-95 flex items-center justify-center transition-all shadow-2xl"
+        className="absolute left-4 lg:left-8 z-40 w-10 h-10 rounded-full glass-pill-bar text-white/70 hover:text-white hover:scale-110 active:scale-95 flex items-center justify-center transition-all shadow-xl border border-white/10"
         title="Jeu Précédent"
       >
-        <ChevronLeft className="w-8 h-8" />
+        <ChevronLeft className="w-5 h-5" />
       </button>
 
       {/* Navigation Arrow Right */}
       <button
         onClick={handleNext}
-        className="absolute right-6 lg:right-12 z-40 w-14 h-14 rounded-full glass-pill-bar text-white/70 hover:text-white hover:scale-110 active:scale-95 flex items-center justify-center transition-all shadow-2xl"
+        className="absolute right-4 lg:right-8 z-40 w-10 h-10 rounded-full glass-pill-bar text-white/70 hover:text-white hover:scale-110 active:scale-95 flex items-center justify-center transition-all shadow-xl border border-white/10"
         title="Jeu Suivant"
       >
-        <ChevronRight className="w-8 h-8" />
+        <ChevronRight className="w-5 h-5" />
       </button>
 
       {/* 3D Perspective Cover Flow Stage */}

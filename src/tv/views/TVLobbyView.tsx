@@ -73,9 +73,9 @@ export const TVLobbyView: React.FC = () => {
         <img
           src="https://images.unsplash.com/photo-1511497584788-87676104235f?auto=format&fit=crop&w=1920&q=85"
           alt="Forest Sunlight Background"
-          className="w-full h-full object-cover object-center opacity-30 filter blur-xl scale-110"
+          className="w-full h-full object-cover object-center opacity-25 filter blur-xl scale-110"
         />
-        <div className="absolute inset-0 bg-[#070D0B]/85" />
+        <div className="absolute inset-0" style={{ backgroundColor: 'var(--theme-bg, #040711)', opacity: 0.92 }} />
       </div>
 
       {/* Top Header */}
@@ -300,15 +300,19 @@ export const TVLobbyView: React.FC = () => {
               </span>
             </div>
 
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-3">
               <button
                 data-tv-focus
                 tabIndex={0}
                 onClick={handleStartGame}
-                className="flex items-center space-x-3 px-10 py-4 rounded-2xl bg-gradient-to-r from-[#10B981] via-[#059669] to-[#F59E0B] text-white font-black text-xl shadow-[0_0_35px_rgba(16,185,129,0.6)] transition-all duration-200 outline-none
-                           focus:scale-110 focus:bg-white focus:text-[#064E3B] focus:ring-4 focus:ring-[#FBBF24] focus:shadow-[0_0_40px_rgba(251,191,36,0.85)]"
+                className="flex items-center space-x-2 px-6 py-2.5 rounded-xl font-display font-black text-sm uppercase tracking-wider transition-all duration-200 outline-none focus:scale-105"
+                style={{
+                  backgroundColor: 'var(--theme-primary, #10B981)',
+                  color: 'var(--theme-primary-text, #FFFFFF)',
+                  boxShadow: 'var(--theme-shadow-btn, 0 4px 14px rgba(16,185,129,0.35))',
+                }}
               >
-                <Play className="w-6 h-6 fill-current" />
+                <Play className="w-4 h-4 fill-current" />
                 <span>LANCER LA PARTIE</span>
               </button>
             </div>
