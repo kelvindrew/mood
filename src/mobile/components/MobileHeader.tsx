@@ -1,6 +1,7 @@
 import React from 'react';
 import { useGame, ConnectionState } from '../../context/GameContext';
-import { Volume2, VolumeX, User } from 'lucide-react';
+import { useTheme } from '../../context/ThemeContext';
+import { Volume2, VolumeX, User, Palette } from 'lucide-react';
 import { audio } from '../../services/audio';
 
 // E9 — badge reflétant l'état RÉEL de la liaison Socket.IO
@@ -13,6 +14,7 @@ const BADGE: Record<ConnectionState, { label: string; wrap: string; dot: string;
 
 export const MobileHeader: React.FC = () => {
   const { room, localPlayer, selectedGame, connectionState } = useGame();
+  const { setIsThemePickerOpen, themeDefinition } = useTheme();
   const [muted, setMuted] = React.useState(false);
   const badge = BADGE[connectionState];
 
@@ -56,6 +58,17 @@ export const MobileHeader: React.FC = () => {
           </span>
           <span>{badge.label}</span>
         </div>
+
+        <button
+          onClick={() => {
+            audio.playSelect();
+            setIsThemePickerOpen(true);
+          }}
+          className="p-1.5 rounded-lg bg-surface-light text-amber-400 hover:text-white"
+          title={`Thème : ${themeDefinition.name}`}
+        >
+          <Palette className="w-4 h-4" />
+        </button>
 
         <button
           onClick={toggleSound}

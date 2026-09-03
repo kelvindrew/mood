@@ -7,15 +7,15 @@ export default {
   theme: {
     extend: {
       colors: {
-        background: '#07090E',
+        background: 'var(--theme-bg, #07090E)',
         surface: {
-          DEFAULT: '#101420',
-          light: '#171D2E',
-          dark: '#06080C',
-          card: '#121726',
-          glass: 'rgba(18, 23, 38, 0.75)',
+          DEFAULT: 'var(--theme-surface, #101420)',
+          light: 'var(--theme-surface-hover, #171D2E)',
+          dark: 'var(--theme-bg, #06080C)',
+          card: 'var(--theme-surface-card, #121726)',
+          glass: 'var(--theme-surface-glass, rgba(18, 23, 38, 0.75))',
           overlay: 'rgba(7, 9, 14, 0.85)',
-          border: 'rgba(255, 255, 255, 0.1)',
+          border: 'var(--theme-border, rgba(255, 255, 255, 0.1))',
         },
         brand: {
           red: '#E50914',
@@ -35,8 +35,8 @@ export default {
         }
       },
       fontFamily: {
-        sans: ['"Plus Jakarta Sans"', '"Inter"', 'system-ui', 'sans-serif'],
-        display: ['"Space Grotesk"', '"Outfit"', 'sans-serif'],
+        sans: ['var(--theme-font-body, "Plus Jakarta Sans")', '"Inter"', 'system-ui', 'sans-serif'],
+        display: ['var(--theme-font-display, "Space Grotesk")', '"Outfit"', 'sans-serif'],
       },
       boxShadow: {
         'glow-red': '0 0 30px -4px rgba(229, 9, 20, 0.65)',
