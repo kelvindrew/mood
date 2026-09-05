@@ -15,177 +15,2125 @@ export interface FourPicsPuzzleItem {
 }
 
 export const DEDICATED_STAGES: FourPicsPuzzleItem[] = [
-  // NIVEAU 1 — TRÈS FACILE
   {
-    id: 'lvl_1_stg_1',
-    level: 1,
-    stageNumber: 1,
-    word: 'CHAT',
-    category: 'Animaux de Compagnie',
-    difficultyLabel: 'Très Facile',
-    hint: 'Félin domestique à moustaches qui ronronne',
-    validationScore: 99,
-    tags: ['animal', 'compagnon', 'ronronner'],
-    images: [
-      'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?auto=format&fit=crop&w=600&q=80',
-      'https://images.unsplash.com/photo-1543852786-1cf6624b9987?auto=format&fit=crop&w=600&q=80',
-      'https://images.unsplash.com/photo-1533738363-b7f9aef128ce?auto=format&fit=crop&w=600&q=80',
-      'https://images.unsplash.com/photo-1573865526739-10659fec78a5?auto=format&fit=crop&w=600&q=80',
+    "id": "lvl_1_stg_1",
+    "level": 1,
+    "stageNumber": 1,
+    "word": "CHAT",
+    "category": "Animaux de Compagnie",
+    "difficultyLabel": "Très Facile",
+    "hint": "Félin domestique à moustaches qui ronronne",
+    "validationScore": 99,
+    "tags": [
+      "animal",
+      "compagnon",
+      "ronronner"
     ],
+    "images": [
+      "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1543852786-1cf6624b9987?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1533738363-b7f9aef128ce?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1573865526739-10659fec78a5?auto=format&fit=crop&w=600&q=80"
+    ]
   },
   {
-    id: 'lvl_1_stg_2',
-    level: 1,
-    stageNumber: 2,
-    word: 'EAU',
-    category: 'Éléments & Nature',
-    difficultyLabel: 'Très Facile',
-    hint: 'Liquide vital, incolore et rafraîchissant',
-    validationScore: 99,
-    tags: ['liquide', 'source', 'vie', 'nature'],
-    images: [
-      'https://images.unsplash.com/photo-1548839140-29a749e1bc4e?auto=format&fit=crop&w=600&q=80',
-      'https://images.unsplash.com/photo-1432405972618-c60b0225b8f9?auto=format&fit=crop&w=600&q=80',
-      'https://images.unsplash.com/photo-1518837695005-2083093ee35b?auto=format&fit=crop&w=600&q=80',
-      'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=600&q=80',
+    "id": "lvl_1_stg_2",
+    "level": 1,
+    "stageNumber": 2,
+    "word": "EAU",
+    "category": "Éléments & Nature",
+    "difficultyLabel": "Très Facile",
+    "hint": "Liquide vital, incolore et rafraîchissant",
+    "validationScore": 99,
+    "tags": [
+      "liquide",
+      "source",
+      "vie",
+      "nature"
     ],
+    "images": [
+      "https://images.unsplash.com/photo-1548839140-29a749e1bc4e?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1432405972618-c60b0225b8f9?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1518837695005-2083093ee35b?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=600&q=80"
+    ]
   },
   {
-    id: 'lvl_1_stg_3',
-    level: 1,
-    stageNumber: 3,
-    word: 'FEU',
-    category: 'Éléments & Énergie',
-    difficultyLabel: 'Très Facile',
-    hint: 'Flammes chaudes, crépitantes et lumineuses',
-    validationScore: 99,
-    tags: ['flamme', 'chaleur', 'element'],
-    images: [
-      'https://images.unsplash.com/photo-1527489377706-5bf97e608852?auto=format&fit=crop&w=600&q=80',
-      'https://images.unsplash.com/photo-1517411032315-54ef2cb783bb?auto=format&fit=crop&w=600&q=80',
-      'https://images.unsplash.com/photo-1493246507139-91e8fad9978e?auto=format&fit=crop&w=600&q=80',
-      'https://images.unsplash.com/photo-1473448912268-2022ce9509d8?auto=format&fit=crop&w=600&q=80',
+    "id": "lvl_1_stg_3",
+    "level": 1,
+    "stageNumber": 3,
+    "word": "FEU",
+    "category": "Éléments & Énergie",
+    "difficultyLabel": "Très Facile",
+    "hint": "Flammes chaudes, crépitantes et lumineuses",
+    "validationScore": 99,
+    "tags": [
+      "flamme",
+      "chaleur",
+      "element"
     ],
+    "images": [
+      "https://images.unsplash.com/photo-1527489377706-5bf97e608852?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1517411032315-54ef2cb783bb?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1493246507139-91e8fad9978e?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1473448912268-2022ce9509d8?auto=format&fit=crop&w=600&q=80"
+    ]
   },
   {
-    id: 'lvl_1_stg_4',
-    level: 1,
-    stageNumber: 4,
-    word: 'POMME',
-    category: 'Nourriture & Fruits',
-    difficultyLabel: 'Très Facile',
-    hint: 'Fruit rond croquant, rouge ou vert',
-    validationScore: 99,
-    tags: ['fruit', 'arbre', 'nourriture'],
-    images: [
-      'https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?auto=format&fit=crop&w=600&q=80',
-      'https://images.unsplash.com/photo-1570913149827-d2ac84ab3f9a?auto=format&fit=crop&w=600&q=80',
-      'https://images.unsplash.com/photo-1568702846914-96b305d2aaeb?auto=format&fit=crop&w=600&q=80',
-      'https://images.unsplash.com/photo-1576179635662-9d1983e97e1e?auto=format&fit=crop&w=600&q=80',
+    "id": "lvl_1_stg_4",
+    "level": 1,
+    "stageNumber": 4,
+    "word": "POMME",
+    "category": "Nourriture & Fruits",
+    "difficultyLabel": "Très Facile",
+    "hint": "Fruit rond croquant, rouge ou vert",
+    "validationScore": 99,
+    "tags": [
+      "fruit",
+      "arbre",
+      "nourriture"
     ],
+    "images": [
+      "https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1570913149827-d2ac84ab3f9a?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1568702846914-96b305d2aaeb?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1576179635662-9d1983e97e1e?auto=format&fit=crop&w=600&q=80"
+    ]
   },
   {
-    id: 'lvl_1_stg_5',
-    level: 1,
-    stageNumber: 5,
-    word: 'PAIN',
-    category: 'Alimentation & Boulangerie',
-    difficultyLabel: 'Très Facile',
-    hint: 'Aliment de base cuit à base de farine et levure',
-    validationScore: 99,
-    tags: ['boulangerie', 'farine', 'croûte'],
-    images: [
-      'https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=600&q=80',
-      'https://images.unsplash.com/photo-1589367920969-ab8e050bbb04?auto=format&fit=crop&w=600&q=80',
-      'https://images.unsplash.com/photo-1549931319-a545dcf3bc73?auto=format&fit=crop&w=600&q=80',
-      'https://images.unsplash.com/photo-1517433670267-08bbd4be890f?auto=format&fit=crop&w=600&q=80',
+    "id": "lvl_1_stg_5",
+    "level": 1,
+    "stageNumber": 5,
+    "word": "PAIN",
+    "category": "Alimentation & Boulangerie",
+    "difficultyLabel": "Très Facile",
+    "hint": "Aliment de base cuit à base de farine et levure",
+    "validationScore": 99,
+    "tags": [
+      "boulangerie",
+      "farine",
+      "croûte"
     ],
+    "images": [
+      "https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1589367920969-ab8e050bbb04?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1549931319-a545dcf3bc73?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1517433670267-08bbd4be890f?auto=format&fit=crop&w=600&q=80"
+    ]
   },
   {
-    id: 'lvl_1_stg_6',
-    level: 1,
-    stageNumber: 6,
-    word: 'ROSE',
-    category: 'Fleurs & Couleurs',
-    difficultyLabel: 'Très Facile',
-    hint: 'Fleur parfumée à épines ou couleur douce',
-    validationScore: 98,
-    tags: ['fleur', 'couleur', 'amour'],
-    images: [
-      'https://images.unsplash.com/photo-1518895949257-7621c3c786d7?auto=format&fit=crop&w=600&q=80',
-      'https://images.unsplash.com/photo-1559563458-527698bf5295?auto=format&fit=crop&w=600&q=80',
-      'https://images.unsplash.com/photo-1490750967868-88aa4486c946?auto=format&fit=crop&w=600&q=80',
-      'https://images.unsplash.com/photo-1508615039623-a25605d2b022?auto=format&fit=crop&w=600&q=80',
+    "id": "lvl_1_stg_6",
+    "level": 1,
+    "stageNumber": 6,
+    "word": "ROSE",
+    "category": "Fleurs & Couleurs",
+    "difficultyLabel": "Très Facile",
+    "hint": "Fleur parfumée à épines ou couleur douce",
+    "validationScore": 98,
+    "tags": [
+      "fleur",
+      "couleur",
+      "amour"
     ],
+    "images": [
+      "https://images.unsplash.com/photo-1518895949257-7621c3c786d7?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1559563458-527698bf5295?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1490750967868-88aa4486c946?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1508615039623-a25605d2b022?auto=format&fit=crop&w=600&q=80"
+    ]
   },
   {
-    id: 'lvl_1_stg_7',
-    level: 1,
-    stageNumber: 7,
-    word: 'LION',
-    category: 'Animaux & Savane',
-    difficultyLabel: 'Très Facile',
-    hint: 'Fier félin à crinière, surnommé roi des animaux',
-    validationScore: 99,
-    tags: ['animal', 'savane', 'roi', 'criniere'],
-    images: [
-      'https://images.unsplash.com/photo-1534188753412-3e26d0d618d6?auto=format&fit=crop&w=600&q=80',
-      'https://images.unsplash.com/photo-1546182990-dffeafbe841d?auto=format&fit=crop&w=600&q=80',
-      'https://images.unsplash.com/photo-1614027164847-1b28cfe1df60?auto=format&fit=crop&w=600&q=80',
-      'https://images.unsplash.com/photo-1516426122078-c23e76319801?auto=format&fit=crop&w=600&q=80',
+    "id": "lvl_1_stg_7",
+    "level": 1,
+    "stageNumber": 7,
+    "word": "LION",
+    "category": "Animaux & Savane",
+    "difficultyLabel": "Très Facile",
+    "hint": "Fier félin à crinière, surnommé roi des animaux",
+    "validationScore": 99,
+    "tags": [
+      "animal",
+      "savane",
+      "roi",
+      "criniere"
     ],
+    "images": [
+      "https://images.unsplash.com/photo-1534188753412-3e26d0d618d6?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1546182990-dffeafbe841d?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1614027164847-1b28cfe1df60?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1516426122078-c23e76319801?auto=format&fit=crop&w=600&q=80"
+    ]
   },
   {
-    id: 'lvl_1_stg_8',
-    level: 1,
-    stageNumber: 8,
-    word: 'CAFE',
-    category: 'Boisson & Pause',
-    difficultyLabel: 'Très Facile',
-    hint: 'Boisson chaude torréfiée du matin',
-    validationScore: 99,
-    tags: ['boisson', 'matin', 'grains'],
-    images: [
-      'https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=600&q=80',
-      'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=600&q=80',
-      'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?auto=format&fit=crop&w=600&q=80',
-      'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=600&q=80',
+    "id": "lvl_1_stg_8",
+    "level": 1,
+    "stageNumber": 8,
+    "word": "CAFE",
+    "category": "Boisson & Pause",
+    "difficultyLabel": "Très Facile",
+    "hint": "Boisson chaude torréfiée du matin",
+    "validationScore": 99,
+    "tags": [
+      "boisson",
+      "matin",
+      "grains"
     ],
+    "images": [
+      "https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=600&q=80"
+    ]
   },
   {
-    id: 'lvl_1_stg_9',
-    level: 1,
-    stageNumber: 9,
-    word: 'MAIN',
-    category: 'Corps Humain',
-    difficultyLabel: 'Très Facile',
-    hint: 'Membre supérieur doté de cinq doigts',
-    validationScore: 99,
-    tags: ['corps', 'doigts', 'toucher'],
-    images: [
-      'https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=600&q=80',
-      'https://images.unsplash.com/photo-1582213782179-e0d53f98f2ca?auto=format&fit=crop&w=600&q=80',
-      'https://images.unsplash.com/photo-1516542076529-1ea3854896f2?auto=format&fit=crop&w=600&q=80',
-      'https://images.unsplash.com/photo-1512496015851-a90fb38ba796?auto=format&fit=crop&w=600&q=80',
+    "id": "lvl_1_stg_9",
+    "level": 1,
+    "stageNumber": 9,
+    "word": "MAIN",
+    "category": "Corps Humain",
+    "difficultyLabel": "Très Facile",
+    "hint": "Membre supérieur doté de cinq doigts",
+    "validationScore": 99,
+    "tags": [
+      "corps",
+      "doigts",
+      "toucher"
     ],
+    "images": [
+      "https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1582213782179-e0d53f98f2ca?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1516542076529-1ea3854896f2?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1512496015851-a90fb38ba796?auto=format&fit=crop&w=600&q=80"
+    ]
   },
   {
-    id: 'lvl_1_stg_10',
-    level: 1,
-    stageNumber: 10,
-    word: 'LUNE',
-    category: 'Espace & Nuit',
-    difficultyLabel: 'Très Facile',
-    hint: 'Satellite naturel de la Terre illuminant la nuit',
-    validationScore: 99,
-    tags: ['nuit', 'espace', 'satellite'],
-    images: [
-      'https://images.unsplash.com/photo-1532693322450-2cb5c511067d?auto=format&fit=crop&w=600&q=80',
-      'https://images.unsplash.com/photo-1522030299830-16b8d3d049fe?auto=format&fit=crop&w=600&q=80',
-      'https://images.unsplash.com/photo-1506703719100-a0f3a48c0f86?auto=format&fit=crop&w=600&q=80',
-      'https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=600&q=80',
+    "id": "lvl_1_stg_10",
+    "level": 1,
+    "stageNumber": 10,
+    "word": "LUNE",
+    "category": "Espace & Nuit",
+    "difficultyLabel": "Très Facile",
+    "hint": "Satellite naturel de la Terre illuminant la nuit",
+    "validationScore": 99,
+    "tags": [
+      "nuit",
+      "espace",
+      "satellite"
     ],
+    "images": [
+      "https://images.unsplash.com/photo-1532693322450-2cb5c511067d?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1522030299830-16b8d3d049fe?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1506703719100-a0f3a48c0f86?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=600&q=80"
+    ]
   },
+  {
+    "id": "lvl_2_stg_1",
+    "level": 2,
+    "stageNumber": 1,
+    "word": "PLAGE",
+    "category": "Nature & Vacances",
+    "difficultyLabel": "Facile",
+    "hint": "Étendue de sable en bordure d’eau ou de mer",
+    "validationScore": 99,
+    "tags": [
+      "mer",
+      "sable",
+      "vacances"
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1519046904884-53103b34b206?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1506929562872-bb421503ef21?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1510414842594-a61c69b5ae57?auto=format&fit=crop&w=600&q=80"
+    ]
+  },
+  {
+    "id": "lvl_2_stg_2",
+    "level": 2,
+    "stageNumber": 2,
+    "word": "LIVRE",
+    "category": "Culture & Savoir",
+    "difficultyLabel": "Facile",
+    "hint": "Recueil de pages imprimées reliées pour lire",
+    "validationScore": 99,
+    "tags": [
+      "lecture",
+      "roman",
+      "bibliotheque"
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1457369804613-52c61a468e7d?auto=format&fit=crop&w=600&q=80"
+    ]
+  },
+  {
+    "id": "lvl_2_stg_3",
+    "level": 2,
+    "stageNumber": 3,
+    "word": "AVION",
+    "category": "Transports & Voyage",
+    "difficultyLabel": "Facile",
+    "hint": "Appareil volant traversant le ciel à haute altitude",
+    "validationScore": 98,
+    "tags": [
+      "vol",
+      "ciel",
+      "aeroport"
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1506015391300-4802dc74de2e?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1520437358207-323b43b50729?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?auto=format&fit=crop&w=600&q=80"
+    ]
+  },
+  {
+    "id": "lvl_2_stg_4",
+    "level": 2,
+    "stageNumber": 4,
+    "word": "BALLON",
+    "category": "Jeux & Fêtes",
+    "difficultyLabel": "Facile",
+    "hint": "Objet sphérique gonflé d’air pour jouer ou décorer",
+    "validationScore": 98,
+    "tags": [
+      "fete",
+      "sport",
+      "gonflable"
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1546519638-68e109498ffc?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1507034589631-9433cc6bc453?auto=format&fit=crop&w=600&q=80"
+    ]
+  },
+  {
+    "id": "lvl_2_stg_5",
+    "level": 2,
+    "stageNumber": 5,
+    "word": "LAMPE",
+    "category": "Maison & Décoration",
+    "difficultyLabel": "Facile",
+    "hint": "Appareil électrique produisant de la lumière",
+    "validationScore": 98,
+    "tags": [
+      "lumiere",
+      "ampoule",
+      "maison"
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1507473885765-e6ed057f782c?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1513506003901-1e6a229e2d15?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1540932239986-30128078f3c5?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1517991104123-1d56a6e81ed9?auto=format&fit=crop&w=600&q=80"
+    ]
+  },
+  {
+    "id": "lvl_2_stg_6",
+    "level": 2,
+    "stageNumber": 6,
+    "word": "ARBRE",
+    "category": "Nature & Flore",
+    "difficultyLabel": "Facile",
+    "hint": "Végétal ligneux majestueux au tronc solide",
+    "validationScore": 99,
+    "tags": [
+      "foret",
+      "nature",
+      "feuilles"
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1473448912268-2022ce9509d8?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=600&q=80"
+    ]
+  },
+  {
+    "id": "lvl_2_stg_7",
+    "level": 2,
+    "stageNumber": 7,
+    "word": "PORT",
+    "category": "Voyage & Mer",
+    "difficultyLabel": "Facile",
+    "hint": "Lieu d’amarrage abrité pour navires ou connexion informatique",
+    "validationScore": 99,
+    "tags": [
+      "mer",
+      "bateau",
+      "quai",
+      "usb"
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1518241353330-0f7941c2d9b5?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1506477331477-33d5d8b3dc85?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1588508065123-287b28e013da?auto=format&fit=crop&w=600&q=80"
+    ]
+  },
+  {
+    "id": "lvl_2_stg_8",
+    "level": 2,
+    "stageNumber": 8,
+    "word": "PONT",
+    "category": "Architecture & Liens",
+    "difficultyLabel": "Facile",
+    "hint": "Structure reliant deux rives au-dessus du vide",
+    "validationScore": 99,
+    "tags": [
+      "construction",
+      "fleuve",
+      "route",
+      "traversee"
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1477959858617-67f30bc75b82?auto=format&fit=crop&w=600&q=80"
+    ]
+  },
+  {
+    "id": "lvl_2_stg_9",
+    "level": 2,
+    "stageNumber": 9,
+    "word": "ETOILE",
+    "category": "Ciel & Célébrité",
+    "difficultyLabel": "Facile",
+    "hint": "Astre scintillant dans l’espace ou forme à 5 branches",
+    "validationScore": 99,
+    "tags": [
+      "espace",
+      "ciel",
+      "scintillement",
+      "mer"
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1506703719100-a0f3a48c0f86?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1532693322450-2cb5c511067d?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=600&q=80"
+    ]
+  },
+  {
+    "id": "lvl_2_stg_10",
+    "level": 2,
+    "stageNumber": 10,
+    "word": "NEIGE",
+    "category": "Hiver & Climat",
+    "difficultyLabel": "Facile",
+    "hint": "Précipitations d’eau gelée en flocons blancs",
+    "validationScore": 99,
+    "tags": [
+      "hiver",
+      "froid",
+      "montagne",
+      "flocon"
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1491557345352-5929e343eb89?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1483921020237-2ff51e8e4b22?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1457269449834-928af64c604d?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1517299321929-30a70a8b5cb7?auto=format&fit=crop&w=600&q=80"
+    ]
+  },
+  {
+    "id": "lvl_3_stg_1",
+    "level": 3,
+    "stageNumber": 1,
+    "word": "VOLCAN",
+    "category": "Géologie & Terre",
+    "difficultyLabel": "Normal",
+    "hint": "Montagne magmatique crachant lave et cendres",
+    "validationScore": 98,
+    "tags": [
+      "lave",
+      "cratere",
+      "magma"
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1508873696983-2df5293cb32f?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=600&q=80"
+    ]
+  },
+  {
+    "id": "lvl_3_stg_2",
+    "level": 3,
+    "stageNumber": 2,
+    "word": "BATEAU",
+    "category": "Navigation & Marine",
+    "difficultyLabel": "Normal",
+    "hint": "Embarcation flottante propulsée par voiles ou moteur",
+    "validationScore": 98,
+    "tags": [
+      "mer",
+      "voile",
+      "port"
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1500930287596-c1ecaa373bb2?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1506477331477-33d5d8b3dc85?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1518241353330-0f7941c2d9b5?auto=format&fit=crop&w=600&q=80"
+    ]
+  },
+  {
+    "id": "lvl_3_stg_3",
+    "level": 3,
+    "stageNumber": 3,
+    "word": "MUSIQUE",
+    "category": "Arts & Émotions",
+    "difficultyLabel": "Normal",
+    "hint": "Art des sons harmonieux, instruments et mélodies",
+    "validationScore": 99,
+    "tags": [
+      "son",
+      "guitare",
+      "concert"
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1511379938547-c1f69419868d?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&w=600&q=80"
+    ]
+  },
+  {
+    "id": "lvl_3_stg_4",
+    "level": 3,
+    "stageNumber": 4,
+    "word": "MIROIR",
+    "category": "Objets & Optique",
+    "difficultyLabel": "Normal",
+    "hint": "Surface réfléchissante renvoyant son image",
+    "validationScore": 98,
+    "tags": [
+      "reflet",
+      "verre",
+      "cadre"
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1513519245088-0e12902e5a38?auto=format&fit=crop&w=600&q=80"
+    ]
+  },
+  {
+    "id": "lvl_3_stg_5",
+    "level": 3,
+    "stageNumber": 5,
+    "word": "HORLOGE",
+    "category": "Temps & Mécanique",
+    "difficultyLabel": "Normal",
+    "hint": "Appareil qui indique et mesure les heures",
+    "validationScore": 98,
+    "tags": [
+      "temps",
+      "aiguille",
+      "minutes"
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1508057198894-247b23fe5ade?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1563861826100-9cb868fdbe1c?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=600&q=80"
+    ]
+  },
+  {
+    "id": "lvl_3_stg_6",
+    "level": 3,
+    "stageNumber": 6,
+    "word": "FLEUR",
+    "category": "Flore & Senteurs",
+    "difficultyLabel": "Normal",
+    "hint": "Partie colorée et parfumée des plantes à pétales",
+    "validationScore": 99,
+    "tags": [
+      "jardin",
+      "petales",
+      "nature",
+      "printemps"
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1490750967868-88aa4486c946?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1508615039623-a25605d2b022?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1559563458-527698bf5295?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1518895949257-7621c3c786d7?auto=format&fit=crop&w=600&q=80"
+    ]
+  },
+  {
+    "id": "lvl_3_stg_7",
+    "level": 3,
+    "stageNumber": 7,
+    "word": "TRAIN",
+    "category": "Transports & Rails",
+    "difficultyLabel": "Normal",
+    "hint": "Convoi ferroviaire de wagons roulant sur des rails",
+    "validationScore": 99,
+    "tags": [
+      "rail",
+      "gare",
+      "voyage",
+      "locomotive"
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1474487548417-781cb71495f3?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1532105956626-9569c03602f6?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1506015391300-4802dc74de2e?auto=format&fit=crop&w=600&q=80"
+    ]
+  },
+  {
+    "id": "lvl_3_stg_8",
+    "level": 3,
+    "stageNumber": 8,
+    "word": "JARDIN",
+    "category": "Espaces Verts & Loisirs",
+    "difficultyLabel": "Normal",
+    "hint": "Terrain aménagé où l’on cultive fleurs et légumes",
+    "validationScore": 99,
+    "tags": [
+      "verdure",
+      "plantes",
+      "potager",
+      "repos"
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1558904541-efa8c4a52d31?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1513836279014-a89f7a76ae86?auto=format&fit=crop&w=600&q=80"
+    ]
+  },
+  {
+    "id": "lvl_3_stg_9",
+    "level": 3,
+    "stageNumber": 9,
+    "word": "CHATEAU",
+    "category": "Histoire & Patrimoine",
+    "difficultyLabel": "Normal",
+    "hint": "Demeure seigneuriale fortifiée aux hautes tours",
+    "validationScore": 99,
+    "tags": [
+      "medieval",
+      "forteresse",
+      "pierre",
+      "roi"
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1524397076532-9d32d0b57e75?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1533158307587-828f0a76ef46?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1508873696983-2df5293cb32f?auto=format&fit=crop&w=600&q=80"
+    ]
+  },
+  {
+    "id": "lvl_3_stg_10",
+    "level": 3,
+    "stageNumber": 10,
+    "word": "ORANGE",
+    "category": "Agrumes & Teintes",
+    "difficultyLabel": "Normal",
+    "hint": "Fruit juteux vitaminé ou couleur entre jaune et rouge",
+    "validationScore": 99,
+    "tags": [
+      "fruit",
+      "vitamine",
+      "couleur",
+      "soleil"
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1611080626919-7cf5a9dbab5b?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1582979512210-99b6a53386f9?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1557800636-894a64c1696f?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1509722747041-616f39b57569?auto=format&fit=crop&w=600&q=80"
+    ]
+  },
+  {
+    "id": "lvl_4_stg_1",
+    "level": 4,
+    "stageNumber": 1,
+    "word": "FLEUVE",
+    "category": "Géographie & Eau",
+    "difficultyLabel": "Intermédiaire",
+    "hint": "Grand cours d’eau qui se jette dans la mer",
+    "validationScore": 98,
+    "tags": [
+      "eau",
+      "nature",
+      "courant"
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1426604966848-d7adac402bff?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=600&q=80"
+    ]
+  },
+  {
+    "id": "lvl_4_stg_2",
+    "level": 4,
+    "stageNumber": 2,
+    "word": "LUMIERE",
+    "category": "Physique & Vision",
+    "difficultyLabel": "Intermédiaire",
+    "hint": "Rayonnement visible qui permet de voir",
+    "validationScore": 98,
+    "tags": [
+      "soleil",
+      "eclairage",
+      "rayon"
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1509228468518-180dd4864904?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1507473885765-e6ed057f782c?auto=format&fit=crop&w=600&q=80"
+    ]
+  },
+  {
+    "id": "lvl_4_stg_3",
+    "level": 4,
+    "stageNumber": 3,
+    "word": "COURONNE",
+    "category": "Royauté & Symboles",
+    "difficultyLabel": "Intermédiaire",
+    "hint": "Ornement circulaire pour monarque ou célébration",
+    "validationScore": 98,
+    "tags": [
+      "roi",
+      "or",
+      "fleurs",
+      "dents"
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1513151233558-d860c5398176?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?auto=format&fit=crop&w=600&q=80"
+    ]
+  },
+  {
+    "id": "lvl_4_stg_4",
+    "level": 4,
+    "stageNumber": 4,
+    "word": "DESERT",
+    "category": "Paysages & Climat",
+    "difficultyLabel": "Intermédiaire",
+    "hint": "Vaste région aride couverte de sable ou de pierres",
+    "validationScore": 99,
+    "tags": [
+      "sable",
+      "dunes",
+      "chaleur"
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1473580044384-7ba9967e16a0?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=600&q=80"
+    ]
+  },
+  {
+    "id": "lvl_4_stg_5",
+    "level": 4,
+    "stageNumber": 5,
+    "word": "GLACE",
+    "category": "Froid & Reflets",
+    "difficultyLabel": "Intermédiaire",
+    "hint": "Eau à l’état solide congelé, dessert frais ou miroir",
+    "validationScore": 99,
+    "tags": [
+      "froid",
+      "hiver",
+      "dessert",
+      "miroir"
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1483921020237-2ff51e8e4b22?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1501443762994-82bd5dace89a?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1491557345352-5929e343eb89?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1518837695005-2083093ee35b?auto=format&fit=crop&w=600&q=80"
+    ]
+  },
+  {
+    "id": "lvl_4_stg_6",
+    "level": 4,
+    "stageNumber": 6,
+    "word": "VOILE",
+    "category": "Navigation & Mystère",
+    "difficultyLabel": "Intermédiaire",
+    "hint": "Tissu captant le vent marin ou masquant un visage",
+    "validationScore": 99,
+    "tags": [
+      "bateau",
+      "vent",
+      "tissu",
+      "secret"
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1500930287596-c1ecaa373bb2?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1506477331477-33d5d8b3dc85?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1518241353330-0f7941c2d9b5?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=600&q=80"
+    ]
+  },
+  {
+    "id": "lvl_4_stg_7",
+    "level": 4,
+    "stageNumber": 7,
+    "word": "PLANETE",
+    "category": "Astronomie & Cosmos",
+    "difficultyLabel": "Intermédiaire",
+    "hint": "Corps céleste en orbite autour d’une étoile",
+    "validationScore": 99,
+    "tags": [
+      "espace",
+      "terre",
+      "galaxie",
+      "orbite"
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1506703719100-a0f3a48c0f86?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1532693322450-2cb5c511067d?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=600&q=80"
+    ]
+  },
+  {
+    "id": "lvl_4_stg_8",
+    "level": 4,
+    "stageNumber": 8,
+    "word": "TEMPETE",
+    "category": "Météo & Force",
+    "difficultyLabel": "Intermédiaire",
+    "hint": "Perturbation atmosphérique violente avec pluie et vent",
+    "validationScore": 99,
+    "tags": [
+      "orage",
+      "vent",
+      "eclair",
+      "mer"
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1527489377706-5bf97e608852?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1517411032315-54ef2cb783bb?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1493246507139-91e8fad9978e?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1473448912268-2022ce9509d8?auto=format&fit=crop&w=600&q=80"
+    ]
+  },
+  {
+    "id": "lvl_4_stg_9",
+    "level": 4,
+    "stageNumber": 9,
+    "word": "SECRET",
+    "category": "Mystère & Confidences",
+    "difficultyLabel": "Intermédiaire",
+    "hint": "Information gardée cachée et réservée à des initiés",
+    "validationScore": 99,
+    "tags": [
+      "mystere",
+      "cadenas",
+      "silence",
+      "cle"
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1558655146-d09347e92766?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1508873696983-2df5293cb32f?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1518895949257-7621c3c786d7?auto=format&fit=crop&w=600&q=80"
+    ]
+  },
+  {
+    "id": "lvl_4_stg_10",
+    "level": 4,
+    "stageNumber": 10,
+    "word": "ENIGME",
+    "category": "Réflexion & Casse-tête",
+    "difficultyLabel": "Intermédiaire",
+    "hint": "Jeu d’esprit dont la solution demande de la sagacité",
+    "validationScore": 99,
+    "tags": [
+      "reflexion",
+      "puzzle",
+      "mystere",
+      "question"
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1582213782179-e0d53f98f2ca?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=600&q=80"
+    ]
+  },
+  {
+    "id": "lvl_5_stg_1",
+    "level": 5,
+    "stageNumber": 1,
+    "word": "TAMBOUR",
+    "category": "Musique & Rythme",
+    "difficultyLabel": "Difficile",
+    "hint": "Instrument de percussion à membrane tendue ou cylindre",
+    "validationScore": 98,
+    "tags": [
+      "musique",
+      "rythme",
+      "percussion"
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1519892300165-cb5542fb47c7?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1543791107-f6590855c452?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1520523839898-507124cd537a?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=600&q=80"
+    ]
+  },
+  {
+    "id": "lvl_5_stg_2",
+    "level": 5,
+    "stageNumber": 2,
+    "word": "MASQUE",
+    "category": "Culture & Mystère",
+    "difficultyLabel": "Difficile",
+    "hint": "Couvre-visage pour rite, fête de carnaval ou protection",
+    "validationScore": 98,
+    "tags": [
+      "visage",
+      "theatre",
+      "fete"
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1509248961158-e54f6934749c?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1584634731339-252c581abfc5?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1576085898323-218337e3e43c?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?auto=format&fit=crop&w=600&q=80"
+    ]
+  },
+  {
+    "id": "lvl_5_stg_3",
+    "level": 5,
+    "stageNumber": 3,
+    "word": "VOYAGE",
+    "category": "Aventure & Découverte",
+    "difficultyLabel": "Difficile",
+    "hint": "Périple et exploration vers des contrées lointaines",
+    "validationScore": 98,
+    "tags": [
+      "depart",
+      "valise",
+      "decouverte"
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1503220317375-aaad61436b1b?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1530521954074-e64f6810b32d?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?auto=format&fit=crop&w=600&q=80"
+    ]
+  },
+  {
+    "id": "lvl_5_stg_4",
+    "level": 5,
+    "stageNumber": 4,
+    "word": "SILENCE",
+    "category": "Atmosphère & Esprit",
+    "difficultyLabel": "Difficile",
+    "hint": "Absence totale de bruit et sérénité absolue",
+    "validationScore": 97,
+    "tags": [
+      "calme",
+      "chut",
+      "zen"
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=600&q=80"
+    ]
+  },
+  {
+    "id": "lvl_5_stg_5",
+    "level": 5,
+    "stageNumber": 5,
+    "word": "REFLET",
+    "category": "Optique & Miroirs",
+    "difficultyLabel": "Difficile",
+    "hint": "Image renvoyée par une surface polie ou une nappe d’eau",
+    "validationScore": 98,
+    "tags": [
+      "miroir",
+      "eau",
+      "image"
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1513519245088-0e12902e5a38?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=600&q=80"
+    ]
+  },
+  {
+    "id": "lvl_5_stg_6",
+    "level": 5,
+    "stageNumber": 6,
+    "word": "MYSTERE",
+    "category": "Secret & Énigme",
+    "difficultyLabel": "Difficile",
+    "hint": "Chose cachée, inexplicable ou secret qui intrigue",
+    "validationScore": 97,
+    "tags": [
+      "enigme",
+      "secret",
+      "brume"
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1509248961158-e54f6934749c?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1457369804613-52c61a468e7d?auto=format&fit=crop&w=600&q=80"
+    ]
+  },
+  {
+    "id": "lvl_5_stg_7",
+    "level": 5,
+    "stageNumber": 7,
+    "word": "COMBAT",
+    "category": "Action & Affrontement",
+    "difficultyLabel": "Difficile",
+    "hint": "Lutte armée, duel sportif ou affrontement d’idées",
+    "validationScore": 98,
+    "tags": [
+      "lutte",
+      "duel",
+      "arene"
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1517438476312-10d79c077509?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1549719386-74dfcbf7dbed?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1517466787929-bc90951d0974?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1508873696983-2df5293cb32f?auto=format&fit=crop&w=600&q=80"
+    ]
+  },
+  {
+    "id": "lvl_5_stg_8",
+    "level": 5,
+    "stageNumber": 8,
+    "word": "PARFUM",
+    "category": "Sensations & Odeurs",
+    "difficultyLabel": "Difficile",
+    "hint": "Fragrance agréable, odeur suave dans un flacon",
+    "validationScore": 98,
+    "tags": [
+      "odeur",
+      "fleur",
+      "flacon"
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1523293182086-7651a899d37f?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1588405748880-12d1d2a59f75?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1547887537-6158d64c35b3?auto=format&fit=crop&w=600&q=80"
+    ]
+  },
+  {
+    "id": "lvl_5_stg_9",
+    "level": 5,
+    "stageNumber": 9,
+    "word": "ENERGIE",
+    "category": "Physique & Puissance",
+    "difficultyLabel": "Difficile",
+    "hint": "Force motrice, électricité ou dynamisme vital",
+    "validationScore": 98,
+    "tags": [
+      "force",
+      "eclair",
+      "moteur"
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1509228468518-180dd4864904?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1461896836934-ffe607ba8211?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1508873696983-2df5293cb32f?auto=format&fit=crop&w=600&q=80"
+    ]
+  },
+  {
+    "id": "lvl_5_stg_10",
+    "level": 5,
+    "stageNumber": 10,
+    "word": "RACINE",
+    "category": "Botanique & Origine",
+    "difficultyLabel": "Difficile",
+    "hint": "Partie souterraine des plantes ou base originelle",
+    "validationScore": 98,
+    "tags": [
+      "arbre",
+      "plante",
+      "origine"
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1473448912268-2022ce9509d8?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=600&q=80"
+    ]
+  },
+  {
+    "id": "lvl_6_stg_1",
+    "level": 6,
+    "stageNumber": 1,
+    "word": "COURANT",
+    "category": "Physique & Mouvement",
+    "difficultyLabel": "Très Difficile",
+    "hint": "Flux continu d’électricité, d’eau ou ce qui est banal",
+    "validationScore": 97,
+    "tags": [
+      "electricite",
+      "flux",
+      "eau"
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1432405972618-c60b0225b8f9?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1461896836934-ffe607ba8211?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=600&q=80"
+    ]
+  },
+  {
+    "id": "lvl_6_stg_2",
+    "level": 6,
+    "stageNumber": 2,
+    "word": "SOURCE",
+    "category": "Origine & Information",
+    "difficultyLabel": "Très Difficile",
+    "hint": "Origine d’un ruisseau, d’un texte ou de données",
+    "validationScore": 97,
+    "tags": [
+      "eau",
+      "code",
+      "information"
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1432405972618-c60b0225b8f9?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1585829365295-ab7cd400c167?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1509228468518-180dd4864904?auto=format&fit=crop&w=600&q=80"
+    ]
+  },
+  {
+    "id": "lvl_6_stg_3",
+    "level": 6,
+    "stageNumber": 3,
+    "word": "TRESOR",
+    "category": "Richesses & Mythes",
+    "difficultyLabel": "Très Difficile",
+    "hint": "Amas d’or, de joyaux ou choses inestimables cachées",
+    "validationScore": 98,
+    "tags": [
+      "or",
+      "pirate",
+      "coffre"
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1610375461246-83df859d849d?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1569074187119-c87815b476da?auto=format&fit=crop&w=600&q=80"
+    ]
+  },
+  {
+    "id": "lvl_6_stg_4",
+    "level": 6,
+    "stageNumber": 4,
+    "word": "CHAINE",
+    "category": "Liens & Réseaux",
+    "difficultyLabel": "Très Difficile",
+    "hint": "Suite de maillons d’acier, massif montagneux ou canal TV",
+    "validationScore": 97,
+    "tags": [
+      "acier",
+      "maillon",
+      "montagne"
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?auto=format&fit=crop&w=600&q=80"
+    ]
+  },
+  {
+    "id": "lvl_6_stg_5",
+    "level": 6,
+    "stageNumber": 5,
+    "word": "SIGNAL",
+    "category": "Communication & Ondes",
+    "difficultyLabel": "Très Difficile",
+    "hint": "Signe perceptible transmettant un ordre ou un avertissement",
+    "validationScore": 97,
+    "tags": [
+      "antenne",
+      "feu",
+      "onde"
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1508873696983-2df5293cb32f?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=600&q=80"
+    ]
+  },
+  {
+    "id": "lvl_6_stg_6",
+    "level": 6,
+    "stageNumber": 6,
+    "word": "DESTIN",
+    "category": "Philosophie & Temps",
+    "difficultyLabel": "Très Difficile",
+    "hint": "Force qui détermine à l’avance l’avenir d’une vie",
+    "validationScore": 97,
+    "tags": [
+      "avenir",
+      "etoiles",
+      "route"
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1506703719100-a0f3a48c0f86?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1508057198894-247b23fe5ade?auto=format&fit=crop&w=600&q=80"
+    ]
+  },
+  {
+    "id": "lvl_6_stg_7",
+    "level": 6,
+    "stageNumber": 7,
+    "word": "ECLIPSE",
+    "category": "Astronomie & Ciel",
+    "difficultyLabel": "Très Difficile",
+    "hint": "Occultation d’un astre par le passage d’un autre",
+    "validationScore": 98,
+    "tags": [
+      "lune",
+      "soleil",
+      "ombre"
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1532693322450-2cb5c511067d?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1506703719100-a0f3a48c0f86?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=600&q=80"
+    ]
+  },
+  {
+    "id": "lvl_6_stg_8",
+    "level": 6,
+    "stageNumber": 8,
+    "word": "GRAVITE",
+    "category": "Physique & Solennel",
+    "difficultyLabel": "Très Difficile",
+    "hint": "Force attirant les corps vers le bas ou sérieux imposant",
+    "validationScore": 97,
+    "tags": [
+      "force",
+      "chute",
+      "masse"
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=600&q=80"
+    ]
+  },
+  {
+    "id": "lvl_6_stg_9",
+    "level": 6,
+    "stageNumber": 9,
+    "word": "LABYRINTHE",
+    "category": "Énigmes & Espaces",
+    "difficultyLabel": "Très Difficile",
+    "hint": "Enchevêtrement de voies conçu pour perdre son chemin",
+    "validationScore": 97,
+    "tags": [
+      "dedale",
+      "perdu",
+      "chemins"
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1507413245164-6160d8298b31?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=600&q=80"
+    ]
+  },
+  {
+    "id": "lvl_6_stg_10",
+    "level": 6,
+    "stageNumber": 10,
+    "word": "FRONTIERE",
+    "category": "Géographie & Limites",
+    "difficultyLabel": "Très Difficile",
+    "hint": "Ligne démarquant le passage entre deux pays ou territoires",
+    "validationScore": 97,
+    "tags": [
+      "limite",
+      "douane",
+      "carte"
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=600&q=80"
+    ]
+  },
+  {
+    "id": "lvl_7_stg_1",
+    "level": 7,
+    "stageNumber": 1,
+    "word": "VOL",
+    "category": "Action & Polysémie",
+    "difficultyLabel": "Expert",
+    "hint": "Déplacement dans les airs ou soustraction frauduleuse",
+    "validationScore": 96,
+    "tags": [
+      "air",
+      "avion",
+      "larcin"
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1444464666168-49d633b86797?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1563245372-f21724e3856d?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1508739773434-c26b3d09e071?auto=format&fit=crop&w=600&q=80"
+    ]
+  },
+  {
+    "id": "lvl_7_stg_2",
+    "level": 7,
+    "stageNumber": 2,
+    "word": "TEMPS",
+    "category": "Météo & Chronologie",
+    "difficultyLabel": "Expert",
+    "hint": "Heure qui s’écoule ou état atmosphérique du ciel",
+    "validationScore": 97,
+    "tags": [
+      "chronometre",
+      "meteo",
+      "horloge"
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1508057198894-247b23fe5ade?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1534088568595-a066f410bcda?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=600&q=80"
+    ]
+  },
+  {
+    "id": "lvl_7_stg_3",
+    "level": 7,
+    "stageNumber": 3,
+    "word": "NOTE",
+    "category": "Musique & Écrit",
+    "difficultyLabel": "Expert",
+    "hint": "Signe musical, aide-mémoire manuscrit ou appréciation",
+    "validationScore": 96,
+    "tags": [
+      "musique",
+      "memo",
+      "ecrit"
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1511379938547-c1f69419868d?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1457369804613-52c61a468e7d?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=600&q=80"
+    ]
+  },
+  {
+    "id": "lvl_7_stg_4",
+    "level": 7,
+    "stageNumber": 4,
+    "word": "POINT",
+    "category": "Ponctuation & Cible",
+    "difficultyLabel": "Expert",
+    "hint": "Signe typographique, centre de cible ou couture",
+    "validationScore": 97,
+    "tags": [
+      "cible",
+      "signe",
+      "couture"
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1508873696983-2df5293cb32f?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1432405972618-c60b0225b8f9?auto=format&fit=crop&w=600&q=80"
+    ]
+  },
+  {
+    "id": "lvl_7_stg_5",
+    "level": 7,
+    "stageNumber": 5,
+    "word": "CADRE",
+    "category": "Arts & Entreprise",
+    "difficultyLabel": "Expert",
+    "hint": "Bordure enserrant un tableau ou dirigeant salarié",
+    "validationScore": 97,
+    "tags": [
+      "peinture",
+      "bordure",
+      "emploi"
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1582213782179-e0d53f98f2ca?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=600&q=80"
+    ]
+  },
+  {
+    "id": "lvl_7_stg_6",
+    "level": 7,
+    "stageNumber": 6,
+    "word": "MIRAGE",
+    "category": "Illusions & Optique",
+    "difficultyLabel": "Expert",
+    "hint": "Illusion optique due à la chaleur dans le désert",
+    "validationScore": 97,
+    "tags": [
+      "desert",
+      "illusion",
+      "chaleur"
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1473580044384-7ba9967e16a0?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=600&q=80"
+    ]
+  },
+  {
+    "id": "lvl_7_stg_7",
+    "level": 7,
+    "stageNumber": 7,
+    "word": "SYMBOLE",
+    "category": "Idées & Représentation",
+    "difficultyLabel": "Expert",
+    "hint": "Signe concret évoquant une idée ou valeur invisible",
+    "validationScore": 97,
+    "tags": [
+      "signe",
+      "paix",
+      "embleme"
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1506703719100-a0f3a48c0f86?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1509248961158-e54f6934749c?auto=format&fit=crop&w=600&q=80"
+    ]
+  },
+  {
+    "id": "lvl_7_stg_8",
+    "level": 7,
+    "stageNumber": 8,
+    "word": "CHIMERE",
+    "category": "Mythes & Imagination",
+    "difficultyLabel": "Expert",
+    "hint": "Monstre fabuleux mythologique ou illusion inaccessible",
+    "validationScore": 96,
+    "tags": [
+      "monstre",
+      "reve",
+      "gargouille"
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1509248961158-e54f6934749c?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=600&q=80"
+    ]
+  },
+  {
+    "id": "lvl_7_stg_9",
+    "level": 7,
+    "stageNumber": 9,
+    "word": "INSTINCT",
+    "category": "Biologie & Comportement",
+    "difficultyLabel": "Expert",
+    "hint": "Pulsion innée poussant à agir sans réflexion préalable",
+    "validationScore": 97,
+    "tags": [
+      "sauvage",
+      "survie",
+      "predateur"
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1534188753412-3e26d0d618d6?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1546182990-dffeafbe841d?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1516426122078-c23e76319801?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?auto=format&fit=crop&w=600&q=80"
+    ]
+  },
+  {
+    "id": "lvl_7_stg_10",
+    "level": 7,
+    "stageNumber": 10,
+    "word": "CYCLE",
+    "category": "Nature & Répétition",
+    "difficultyLabel": "Expert",
+    "hint": "Enchaînement de phénomènes revenant dans le même ordre",
+    "validationScore": 97,
+    "tags": [
+      "saisons",
+      "lune",
+      "roue"
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1532693322450-2cb5c511067d?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1518837695005-2083093ee35b?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1508057198894-247b23fe5ade?auto=format&fit=crop&w=600&q=80"
+    ]
+  },
+  {
+    "id": "lvl_8_stg_1",
+    "level": 8,
+    "stageNumber": 1,
+    "word": "ONDE",
+    "category": "Physique & Vibrations",
+    "difficultyLabel": "Maître",
+    "hint": "Propagation d’une oscillation dans l’eau, l’air ou le vide",
+    "validationScore": 96,
+    "tags": [
+      "signal",
+      "eau",
+      "frequence"
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1518837695005-2083093ee35b?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=600&q=80"
+    ]
+  },
+  {
+    "id": "lvl_8_stg_2",
+    "level": 8,
+    "stageNumber": 2,
+    "word": "LIEN",
+    "category": "Relations & Réseau",
+    "difficultyLabel": "Maître",
+    "hint": "Ce qui attache, unit ou connecte deux entités",
+    "validationScore": 96,
+    "tags": [
+      "noeud",
+      "relation",
+      "connexion"
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1582213782179-e0d53f98f2ca?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=600&q=80"
+    ]
+  },
+  {
+    "id": "lvl_8_stg_3",
+    "level": 8,
+    "stageNumber": 3,
+    "word": "BOUTON",
+    "category": "Vêtements & Botanique",
+    "difficultyLabel": "Maître",
+    "hint": "Bourgeon de fleur, interrupteur d’appareil ou attache",
+    "validationScore": 96,
+    "tags": [
+      "fleur",
+      "interrupteur",
+      "chemise"
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1518895949257-7621c3c786d7?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1513506003901-1e6a229e2d15?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1588405748880-12d1d2a59f75?auto=format&fit=crop&w=600&q=80"
+    ]
+  },
+  {
+    "id": "lvl_8_stg_4",
+    "level": 8,
+    "stageNumber": 4,
+    "word": "PASSE",
+    "category": "Mouvements & Temps",
+    "difficultyLabel": "Maître",
+    "hint": "Action de transmettre le ballon ou ce qui est révolu",
+    "validationScore": 96,
+    "tags": [
+      "sport",
+      "passeport",
+      "histoire"
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1530521954074-e64f6810b32d?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1457369804613-52c61a468e7d?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1546519638-68e109498ffc?auto=format&fit=crop&w=600&q=80"
+    ]
+  },
+  {
+    "id": "lvl_8_stg_5",
+    "level": 8,
+    "stageNumber": 5,
+    "word": "EQUILIBRE",
+    "category": "Physique & Harmonie",
+    "difficultyLabel": "Maître",
+    "hint": "État stable où des forces contraires s’annulent",
+    "validationScore": 97,
+    "tags": [
+      "funambule",
+      "balance",
+      "zen"
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1512496015851-a90fb38ba796?auto=format&fit=crop&w=600&q=80"
+    ]
+  },
+  {
+    "id": "lvl_8_stg_6",
+    "level": 8,
+    "stageNumber": 6,
+    "word": "ILLUSION",
+    "category": "Perception & Magie",
+    "difficultyLabel": "Maître",
+    "hint": "Erreur des sens faisant paraître réelle une fiction",
+    "validationScore": 97,
+    "tags": [
+      "magie",
+      "mirage",
+      "optique"
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=600&q=80"
+    ]
+  },
+  {
+    "id": "lvl_8_stg_7",
+    "level": 8,
+    "stageNumber": 7,
+    "word": "METAMORPHOSE",
+    "category": "Transformation & Vie",
+    "difficultyLabel": "Maître",
+    "hint": "Changement complet de forme et d’état chez un être",
+    "validationScore": 97,
+    "tags": [
+      "papillon",
+      "chenille",
+      "mutation"
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1490750967868-88aa4486c946?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=600&q=80"
+    ]
+  },
+  {
+    "id": "lvl_8_stg_8",
+    "level": 8,
+    "stageNumber": 8,
+    "word": "SPECTRE",
+    "category": "Optique & Apparition",
+    "difficultyLabel": "Maître",
+    "hint": "Décomposition des couleurs d’un rayonnement ou revenant",
+    "validationScore": 96,
+    "tags": [
+      "prisme",
+      "arcenciel",
+      "fantome"
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1509228468518-180dd4864904?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1509248961158-e54f6934749c?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=600&q=80"
+    ]
+  },
+  {
+    "id": "lvl_8_stg_9",
+    "level": 8,
+    "stageNumber": 9,
+    "word": "PARADOXE",
+    "category": "Logique & Réflexion",
+    "difficultyLabel": "Maître",
+    "hint": "Proposition qui heurte la logique ou opinion commune",
+    "validationScore": 96,
+    "tags": [
+      "logique",
+      "enigme",
+      "escher"
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1508057198894-247b23fe5ade?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=600&q=80"
+    ]
+  },
+  {
+    "id": "lvl_8_stg_10",
+    "level": 8,
+    "stageNumber": 10,
+    "word": "ALCHIMIE",
+    "category": "Sciences Anciennes & Or",
+    "difficultyLabel": "Maître",
+    "hint": "Science médiévale visant la transmutation en or",
+    "validationScore": 97,
+    "tags": [
+      "or",
+      "elixir",
+      "creuset"
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1610375461246-83df859d849d?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1527489377706-5bf97e608852?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1569074187119-c87815b476da?auto=format&fit=crop&w=600&q=80"
+    ]
+  },
+  {
+    "id": "lvl_9_stg_1",
+    "level": 9,
+    "stageNumber": 1,
+    "word": "RESEAU",
+    "category": "Technologie & Connexion",
+    "difficultyLabel": "Extrême",
+    "hint": "Ensemble interconnecté de lignes, de câbles ou d’humains",
+    "validationScore": 97,
+    "tags": [
+      "internet",
+      "connexion",
+      "systeme"
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1508873696983-2df5293cb32f?auto=format&fit=crop&w=600&q=80"
+    ]
+  },
+  {
+    "id": "lvl_9_stg_2",
+    "level": 9,
+    "stageNumber": 2,
+    "word": "MEMOIRE",
+    "category": "Psychologie & Informatique",
+    "difficultyLabel": "Extrême",
+    "hint": "Faculté de se souvenir ou composant de stockage",
+    "validationScore": 97,
+    "tags": [
+      "souvenir",
+      "cerveau",
+      "puce"
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1507413245164-6160d8298b31?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1457369804613-52c61a468e7d?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=600&q=80"
+    ]
+  },
+  {
+    "id": "lvl_9_stg_3",
+    "level": 9,
+    "stageNumber": 3,
+    "word": "ORIGINE",
+    "category": "Genèse & Début",
+    "difficultyLabel": "Extrême",
+    "hint": "Point de départ, cause première ou naissance de toute chose",
+    "validationScore": 98,
+    "tags": [
+      "bigbang",
+      "graine",
+      "source"
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1432405972618-c60b0225b8f9?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1506703719100-a0f3a48c0f86?auto=format&fit=crop&w=600&q=80"
+    ]
+  },
+  {
+    "id": "lvl_9_stg_4",
+    "level": 9,
+    "stageNumber": 4,
+    "word": "INFINI",
+    "category": "Philosophie & Mathématiques",
+    "difficultyLabel": "Extrême",
+    "hint": "Ce qui n’a ni commencement, ni fin, ni limite mesurable",
+    "validationScore": 98,
+    "tags": [
+      "univers",
+      "espace",
+      "huit"
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1506703719100-a0f3a48c0f86?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=600&q=80"
+    ]
+  },
+  {
+    "id": "lvl_9_stg_5",
+    "level": 9,
+    "stageNumber": 5,
+    "word": "DIMENSION",
+    "category": "Espace & Géométrie",
+    "difficultyLabel": "Extrême",
+    "hint": "Grandeur mesurable d’un volume ou niveau de réalité",
+    "validationScore": 97,
+    "tags": [
+      "volume",
+      "3d",
+      "espace"
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1508873696983-2df5293cb32f?auto=format&fit=crop&w=600&q=80"
+    ]
+  },
+  {
+    "id": "lvl_9_stg_6",
+    "level": 9,
+    "stageNumber": 6,
+    "word": "ETERNITE",
+    "category": "Cosmos & Temps",
+    "difficultyLabel": "Extrême",
+    "hint": "Durée qui n’aura jamais de fin dans l’univers",
+    "validationScore": 98,
+    "tags": [
+      "temps",
+      "diamant",
+      "pyramide"
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1506703719100-a0f3a48c0f86?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=600&q=80"
+    ]
+  },
+  {
+    "id": "lvl_9_stg_7",
+    "level": 9,
+    "stageNumber": 7,
+    "word": "REVOLUTION",
+    "category": "Mouvement & Histoire",
+    "difficultyLabel": "Extrême",
+    "hint": "Rotation complète d’un astre ou grand soulèvement historique",
+    "validationScore": 98,
+    "tags": [
+      "astre",
+      "changement",
+      "rotation"
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1582213782179-e0d53f98f2ca?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1508057198894-247b23fe5ade?auto=format&fit=crop&w=600&q=80"
+    ]
+  },
+  {
+    "id": "lvl_9_stg_8",
+    "level": 9,
+    "stageNumber": 8,
+    "word": "CREATION",
+    "category": "Art & Univers",
+    "difficultyLabel": "Extrême",
+    "hint": "Action de donner naissance à une œuvre ou un monde",
+    "validationScore": 98,
+    "tags": [
+      "art",
+      "peinture",
+      "genese"
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=600&q=80"
+    ]
+  },
+  {
+    "id": "lvl_9_stg_9",
+    "level": 9,
+    "stageNumber": 9,
+    "word": "CONSCIENCE",
+    "category": "Pensée & Esprit",
+    "difficultyLabel": "Extrême",
+    "hint": "Faculté de se connaître soi-même et de juger ses actes",
+    "validationScore": 98,
+    "tags": [
+      "cerveau",
+      "esprit",
+      "regard"
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1507413245164-6160d8298b31?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1506703719100-a0f3a48c0f86?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1457369804613-52c61a468e7d?auto=format&fit=crop&w=600&q=80"
+    ]
+  },
+  {
+    "id": "lvl_9_stg_10",
+    "level": 9,
+    "stageNumber": 10,
+    "word": "HORIZON",
+    "category": "Cosmos & Poésie",
+    "difficultyLabel": "Extrême",
+    "hint": "Ligne circulaire où le ciel et la terre semblent se joindre",
+    "validationScore": 98,
+    "tags": [
+      "ciel",
+      "mer",
+      "infini",
+      "lumiere"
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=600&q=80"
+    ]
+  },
+  {
+    "id": "lvl_10_stg_1",
+    "level": 10,
+    "stageNumber": 1,
+    "word": "EXISTENCE",
+    "category": "Philosophie & Vie",
+    "difficultyLabel": "Légendaire",
+    "hint": "Fait d’avoir une réalité concrète et vivante dans le monde",
+    "validationScore": 99,
+    "tags": [
+      "vie",
+      "etre",
+      "realite"
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1518837695005-2083093ee35b?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1506703719100-a0f3a48c0f86?auto=format&fit=crop&w=600&q=80"
+    ]
+  },
+  {
+    "id": "lvl_10_stg_2",
+    "level": 10,
+    "stageNumber": 2,
+    "word": "COSMOS",
+    "category": "Astronomie & Univers",
+    "difficultyLabel": "Légendaire",
+    "hint": "L’univers entier envisagé comme un ensemble ordonné et infini",
+    "validationScore": 99,
+    "tags": [
+      "espace",
+      "galaxie",
+      "etoiles"
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1506703719100-a0f3a48c0f86?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1532693322450-2cb5c511067d?auto=format&fit=crop&w=600&q=80"
+    ]
+  },
+  {
+    "id": "lvl_10_stg_3",
+    "level": 10,
+    "stageNumber": 3,
+    "word": "ABSOLU",
+    "category": "Philosophie & Perfection",
+    "difficultyLabel": "Légendaire",
+    "hint": "Ce qui ne dépend de rien d’autre et atteint la perfection",
+    "validationScore": 98,
+    "tags": [
+      "parfait",
+      "pur",
+      "complet"
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1509228468518-180dd4864904?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1610375461246-83df859d849d?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=600&q=80"
+    ]
+  },
+  {
+    "id": "lvl_10_stg_4",
+    "level": 10,
+    "stageNumber": 4,
+    "word": "DESTINEE",
+    "category": "Mythes & Avenir",
+    "difficultyLabel": "Légendaire",
+    "hint": "Trajectoire inéluctable que trace la vie pour un individu",
+    "validationScore": 98,
+    "tags": [
+      "futur",
+      "prophétie",
+      "guide"
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1506703719100-a0f3a48c0f86?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1457369804613-52c61a468e7d?auto=format&fit=crop&w=600&q=80"
+    ]
+  },
+  {
+    "id": "lvl_10_stg_5",
+    "level": 10,
+    "stageNumber": 5,
+    "word": "TRANSMISSION",
+    "category": "Savoir & Passage",
+    "difficultyLabel": "Légendaire",
+    "hint": "Passage d’un savoir, d’une énergie ou d’un relais d’âge en âge",
+    "validationScore": 98,
+    "tags": [
+      "relais",
+      "savoir",
+      "heritage"
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1582213782179-e0d53f98f2ca?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?auto=format&fit=crop&w=600&q=80"
+    ]
+  },
+  {
+    "id": "lvl_10_stg_6",
+    "level": 10,
+    "stageNumber": 6,
+    "word": "MYTHOLOGIE",
+    "category": "Légendes & Dieux",
+    "difficultyLabel": "Légendaire",
+    "hint": "Récits sacrés et panthéon des dieux antiques",
+    "validationScore": 98,
+    "tags": [
+      "dieux",
+      "temple",
+      "antiquite"
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1509248961158-e54f6934749c?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=600&q=80"
+    ]
+  },
+  {
+    "id": "lvl_10_stg_7",
+    "level": 10,
+    "stageNumber": 7,
+    "word": "SOUVERAIN",
+    "category": "Puissance & Trône",
+    "difficultyLabel": "Légendaire",
+    "hint": "Détenteur suprême de l’autorité sans supérieur hiérarchique",
+    "validationScore": 98,
+    "tags": [
+      "roi",
+      "trone",
+      "aigle"
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1534188753412-3e26d0d618d6?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1569074187119-c87815b476da?auto=format&fit=crop&w=600&q=80"
+    ]
+  },
+  {
+    "id": "lvl_10_stg_8",
+    "level": 10,
+    "stageNumber": 8,
+    "word": "UNIVERSEL",
+    "category": "Monde & Totalité",
+    "difficultyLabel": "Légendaire",
+    "hint": "Ce qui s’étend à l’ensemble de l’humanité et du cosmos",
+    "validationScore": 98,
+    "tags": [
+      "monde",
+      "terre",
+      "global"
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1506703719100-a0f3a48c0f86?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1582213782179-e0d53f98f2ca?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=600&q=80"
+    ]
+  },
+  {
+    "id": "lvl_10_stg_9",
+    "level": 10,
+    "stageNumber": 9,
+    "word": "QUINTESSENCE",
+    "category": "Pureté & Sommet",
+    "difficultyLabel": "Légendaire",
+    "hint": "Ce qu’il y a de plus raffiné, pur et parfait en une chose",
+    "validationScore": 99,
+    "tags": [
+      "pur",
+      "elixir",
+      "diamant"
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1610375461246-83df859d849d?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1518837695005-2083093ee35b?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=600&q=80"
+    ]
+  },
+  {
+    "id": "lvl_10_stg_10",
+    "level": 10,
+    "stageNumber": 10,
+    "word": "LUMINESCENCE",
+    "category": "Lumière Froide & Magie",
+    "difficultyLabel": "Légendaire",
+    "hint": "Émission de lumière mystérieuse sans élever la température",
+    "validationScore": 99,
+    "tags": [
+      "aurore",
+      "meduse",
+      "lueur"
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1509228468518-180dd4864904?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1506703719100-a0f3a48c0f86?auto=format&fit=crop&w=600&q=80"
+    ]
+  }
 ];
 
 export function build1000StagesFrontend(): FourPicsPuzzleItem[] {

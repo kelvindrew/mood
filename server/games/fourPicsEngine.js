@@ -201,7 +201,12 @@ export class FourPicsEngine {
       this.combos[playerId] = (this.combos[playerId] || 0) + 1;
       const comboMultiplier = this.combos[playerId] >= 3 ? 1.5 : 1;
 
-      const totalEarned = Math.round((basePoints + speedBonus) * comboMultiplier);
+      // Dynamic Level multiplier: Higher levels yield significantly larger rewards
+      // Level 1: 1.0x (100-130 pts) | Level 5: 2.0x (200-260 pts) | Level 10: 3.25x (325-422 pts)
+      const currentLevelNum = this.currentPuzzle.level || this.currentLevel || 1;
+      const levelMultiplier = 1 + (currentLevelNum - 1) * 0.25;
+
+      const totalEarned = Math.round((basePoints + speedBonus) * comboMultiplier * levelMultiplier);
       this.scores[playerId] = (this.scores[playerId] || 0) + totalEarned;
 
       this.lastActionLog = `🎉 ${player.name} a trouvé "${targetWord}" (+${totalEarned} pts, ⭐⭐⭐ x${stars}) !`;

@@ -465,6 +465,9 @@ export interface FourPicsRoundResult {
 export interface FourPicsGameState {
   roundNumber: number;
   totalRounds: number;
+  gameMode?: string;
+  currentLevel?: number;
+  currentStageNumber?: number;
   currentPuzzle: {
     id: string;
     level?: number;

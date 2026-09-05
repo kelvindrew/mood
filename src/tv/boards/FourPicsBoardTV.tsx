@@ -23,6 +23,7 @@ import { playSoundFX } from '../../engine/PlaySoundFX';
 import { fourPicsProgress, MilestoneReward } from '../../services/fourPicsProgressService';
 import { FourPicsStageSelectorTV } from '../views/FourPicsStageSelectorTV';
 import { tvNav } from '../../services/tvNavigation';
+import { LEVEL_DEFINITIONS } from '../../types/fourPicsConstants';
 
 export const FourPicsBoardTV: React.FC = () => {
   const { room, returnToLobby, sendGameAction } = useGame();
@@ -168,6 +169,9 @@ export const FourPicsBoardTV: React.FC = () => {
   const isGameOver = gameState.roundStatus === 'game_over';
 
   const globalStats = fourPicsProgress.getGlobalStats();
+  const currentLvl = puzzle.level || gameState.currentLevel || 1;
+  const levelDef = LEVEL_DEFINITIONS.find((d) => d.level === currentLvl) || LEVEL_DEFINITIONS[0];
+  const levelMultiplier = (1 + (currentLvl - 1) * 0.25).toFixed(2);
 
   // Sorted leaderboard
   const sortedPlayers = [...(room?.players || [])].sort((a, b) => {
@@ -217,8 +221,27 @@ export const FourPicsBoardTV: React.FC = () => {
             <span>Niveau 1</span>
           </button>
 
-          <div className="px-3.5 py-1.5 rounded-full bg-gradient-to-r from-emerald-500 to-teal-400 text-black text-xs font-black uppercase tracking-wider shadow-md">
-            NIVEAU {puzzle.level || 1} • STAGE {puzzle.stageNumber || gameState.roundNumber}/100
+          <div
+            className="px-3.5 py-1.5 rounded-full text-xs font-black uppercase tracking-wider shadow-md flex items-center space-x-1.5"
+            style={{
+              background:
+                currentLvl >= 9
+                  ? 'linear-gradient(135deg, #A855F7, #EC4899, #EAB308)'
+                  : currentLvl >= 7
+                  ? 'linear-gradient(135deg, #EF4444, #F97316)'
+                  : currentLvl >= 5
+                  ? 'linear-gradient(135deg, #F97316, #FBBF24)'
+                  : 'linear-gradient(135deg, #10B981, #2DD4BF)',
+              color: currentLvl >= 7 ? '#FFFFFF' : '#000000',
+            }}
+          >
+            <span>NIV. {currentLvl} • {levelDef.badge}</span>
+            <span className="opacity-80 text-[10px]">STAGE {puzzle.stageNumber || gameState.roundNumber}/100</span>
+          </div>
+
+          <div className="px-2.5 py-1 rounded-xl bg-amber-500/20 border border-amber-400/40 text-xs font-black text-amber-300 flex items-center space-x-1">
+            <Zap className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+            <span>x{levelMultiplier} PTS</span>
           </div>
 
           <div className="px-3 py-1.5 rounded-xl bg-[#121622] border border-white/10 text-xs font-bold text-gray-300">
@@ -293,16 +316,23 @@ export const FourPicsBoardTV: React.FC = () => {
         </div>
 
         {/* Word Length Mystery Letter Slots */}
-        <div className="mt-3.5 flex items-center space-x-2">
+        <div className="mt-3.5 flex items-center justify-center flex-wrap gap-1.5 sm:gap-2 max-w-2xl px-2">
           {Array.from({ length: wordLength }).map((_, idx) => {
             const revealedLetter =
               isRevealed && gameState.roundResult ? gameState.roundResult.word[idx] : null;
             const displayChar = revealedLetter || localComposed[idx] || '';
 
+            const slotSizeClass =
+              wordLength > 10
+                ? 'w-9 h-11 sm:w-11 sm:h-13 text-xl sm:text-2xl'
+                : wordLength > 7
+                ? 'w-10 h-12 sm:w-12 sm:h-15 text-2xl sm:text-3xl'
+                : 'w-12 h-14 sm:w-14 sm:h-16 text-2xl sm:text-3xl';
+
             return (
               <div
                 key={`slot_${idx}`}
-                className={`w-12 h-14 sm:w-14 sm:h-16 rounded-xl border-2 flex items-center justify-center font-display font-black text-2xl sm:text-3xl shadow-xl transition-all ${
+                className={`${slotSizeClass} rounded-xl border-2 flex items-center justify-center font-display font-black shadow-xl transition-all ${
                   revealedLetter
                     ? 'bg-gradient-to-tr from-emerald-500 to-teal-400 border-white text-black shadow-[0_0_25px_rgba(16,185,129,0.8)] scale-105 animate-bounce'
                     : displayChar

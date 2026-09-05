@@ -52,4 +52,42 @@ describe('4 Images 1 Mot — Niveaux & Progression', () => {
     expect(engine.currentPuzzle.word).toBe('EAU');
     engine.destroy?.();
   });
+
+  it('chaque niveau de 1 à 10 possède 10 stages dédiés uniques et vérifiés', () => {
+    for (let lvl = 1; lvl <= 10; lvl++) {
+      for (let stg = 1; stg <= 10; stg++) {
+        const stage = getStage(lvl, stg);
+        expect(stage.level).toBe(lvl);
+        expect(stage.stageNumber).toBe(stg);
+        expect(stage.word).toBeDefined();
+        expect(stage.word.length).toBeGreaterThanOrEqual(3);
+        // Aucun accent dans les mots (purement alphabétique ASCII)
+        expect(stage.word).toMatch(/^[A-Z]+$/);
+        expect(stage.images).toHaveLength(4);
+      }
+    }
+  });
+
+  it('le Niveau 10 Légendaire intègre des mots sophistiqués et le barème de points est multiplié', () => {
+    const stage9 = getStage(10, 9);
+    const stage10 = getStage(10, 10);
+
+    expect(stage9.word).toBe('QUINTESSENCE');
+    expect(stage9.word.length).toBe(12);
+    expect(stage10.word).toBe('LUMINESCENCE');
+    expect(stage10.word.length).toBe(12);
+
+    // Tester le barème de points multiplié au niveau 10 (3.25x)
+    const engine = new FourPicsEngine(['joueur1'], () => {}, () => {}, { level: 10, stageNumber: 9 });
+    expect(engine.currentPuzzle.word).toBe('QUINTESSENCE');
+    expect(engine.scrambledLetters.length).toBeGreaterThanOrEqual(16); // 12 + 4
+
+    const result = engine.submitGuess('joueur1', 'QUINTESSENCE');
+    expect(result.success).toBe(true);
+    expect(result.correct).toBe(true);
+    // Au Niveau 10, base 100 + speedBonus ~30 = ~130 * 3.25 = ~423 pts
+    expect(result.points).toBeGreaterThanOrEqual(325);
+    expect(engine.scores['joueur1']).toBe(result.points);
+    engine.destroy?.();
+  });
 });

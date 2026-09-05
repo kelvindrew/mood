@@ -18,7 +18,9 @@ import {
   ZoomIn,
   X,
   Play,
+  Zap,
 } from 'lucide-react';
+import { LEVEL_DEFINITIONS } from '../../../types/fourPicsConstants';
 
 interface LetterTile {
   id: string;
@@ -162,6 +164,10 @@ export const FourPicsController: React.FC = () => {
     sendGameAction('four_pics_hint_remove');
   };
 
+  const currentLvl = currentPuzzle.level || gameState.currentLevel || 1;
+  const levelDef = LEVEL_DEFINITIONS.find((d) => d.level === currentLvl) || LEVEL_DEFINITIONS[0];
+  const levelMultiplier = (1 + (currentLvl - 1) * 0.25).toFixed(2);
+
   return (
     <div className="min-h-screen flex flex-col justify-between bg-[#07090E] text-white select-none relative overflow-hidden">
       <MobileHeader />
@@ -170,11 +176,30 @@ export const FourPicsController: React.FC = () => {
         {/* 1. Header: Level & Score */}
         <div className="flex items-center justify-between p-2.5 rounded-xl bg-[#121622] border border-white/10 shadow-sm">
           <div>
-            <span className="text-[10px] font-black uppercase text-emerald-400 tracking-wider block">
-              {currentPuzzle.category}
-            </span>
+            <div className="flex items-center space-x-1.5 mb-0.5">
+              <span
+                className="px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider"
+                style={{
+                  background:
+                    currentLvl >= 9
+                      ? 'linear-gradient(135deg, #A855F7, #EC4899, #EAB308)'
+                      : currentLvl >= 7
+                      ? 'linear-gradient(135deg, #EF4444, #F97316)'
+                      : currentLvl >= 5
+                      ? 'linear-gradient(135deg, #F97316, #FBBF24)'
+                      : 'linear-gradient(135deg, #10B981, #2DD4BF)',
+                  color: currentLvl >= 7 ? '#FFFFFF' : '#000000',
+                }}
+              >
+                NIV. {currentLvl} • {levelDef.badge}
+              </span>
+              <span className="px-1.5 py-0.5 rounded-md bg-amber-500/20 text-amber-300 text-[9px] font-black flex items-center space-x-0.5">
+                <Zap className="w-2.5 h-2.5 fill-amber-400 text-amber-400" />
+                <span>x{levelMultiplier}</span>
+              </span>
+            </div>
             <span className="text-xs font-bold text-gray-300">
-              Niveau {currentPuzzle.level || 1} • Stage {currentPuzzle.stageNumber || 1}/100
+              Stage {currentPuzzle.stageNumber || 1}/100 • {currentPuzzle.category}
             </span>
           </div>
 
@@ -213,15 +238,22 @@ export const FourPicsController: React.FC = () => {
 
         {/* 3. Word Mystery Slots (Composed Letters) */}
         <div className="space-y-1.5 text-center">
-          <div className="flex items-center justify-center space-x-1.5">
+          <div className="flex items-center justify-center flex-wrap gap-1 max-w-full px-1">
             {Array.from({ length: wordLength }).map((_, idx) => {
               const char = composedWord[idx] || '';
+
+              const slotSizeClass =
+                wordLength > 10
+                  ? 'w-7 h-9 text-xs'
+                  : wordLength > 8
+                  ? 'w-8 h-10 text-sm'
+                  : 'w-10 h-12 text-lg';
 
               return (
                 <button
                   key={`slot_${idx}`}
                   onClick={() => handleRemovePlacedSlot(idx)}
-                  className={`w-10 h-12 rounded-xl border-2 font-display font-black text-lg flex items-center justify-center transition-all shadow-md ${
+                  className={`${slotSizeClass} rounded-xl border-2 font-display font-black flex items-center justify-center transition-all shadow-md ${
                     char
                       ? 'bg-gradient-to-tr from-emerald-500 to-teal-400 border-white text-black scale-105 animate-scale-in'
                       : 'bg-[#101420] border-white/20 text-gray-500'
@@ -281,7 +313,7 @@ export const FourPicsController: React.FC = () => {
 
         {/* 4. Tactile Keyboard Grid */}
         <div className="space-y-1.5">
-          <div className="grid grid-cols-6 gap-1.5">
+          <div className={`grid ${letterTiles.length > 12 ? 'grid-cols-7 sm:grid-cols-8' : 'grid-cols-6'} gap-1.5`}>
             {letterTiles.map((tile) => {
               if (tile.isRemoved) {
                 return (
