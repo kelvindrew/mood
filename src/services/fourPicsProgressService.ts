@@ -315,6 +315,11 @@ class FourPicsProgressService {
     this.state.totalStars = stars;
     this.state.totalScore = score;
   }
+
+  public resetProgress(): void {
+    this.state = this.getDefaultState();
+    this.saveState();
+  }
 }
 
 export const fourPicsProgress = new FourPicsProgressService();

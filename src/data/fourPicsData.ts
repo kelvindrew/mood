@@ -1,190 +1,223 @@
-export interface FourPicsPuzzle {
+// 4 Images 1 Mot — Frontend Database & Catalog Synchronization
+import { LEVEL_DEFINITIONS } from '../types/fourPicsConstants';
+
+export interface FourPicsPuzzleItem {
   id: string;
-  word: string; // Target uppercase French word (without accents)
+  level: number;
+  stageNumber: number;
+  word: string;
   category: string;
-  difficulty: 'facile' | 'moyen' | 'difficile';
+  difficultyLabel: string;
+  hint: string;
+  validationScore: number;
+  tags: string[];
   images: [string, string, string, string];
 }
 
-export const FOUR_PICS_PUZZLES: FourPicsPuzzle[] = [
+export const DEDICATED_STAGES: FourPicsPuzzleItem[] = [
+  // NIVEAU 1 — TRÈS FACILE
   {
-    id: 'p1',
-    word: 'PLAGE',
-    category: 'Nature & Vacances',
-    difficulty: 'facile',
+    id: 'lvl_1_stg_1',
+    level: 1,
+    stageNumber: 1,
+    word: 'CHAT',
+    category: 'Animaux de Compagnie',
+    difficultyLabel: 'Très Facile',
+    hint: 'Félin domestique à moustaches qui ronronne',
+    validationScore: 99,
+    tags: ['animal', 'compagnon', 'ronronner'],
     images: [
-      'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=600&q=80', // Mer & sable
-      'https://images.unsplash.com/photo-1519046904884-53103b34b206?auto=format&fit=crop&w=600&q=80', // Transats & parasol
-      'https://images.unsplash.com/photo-1506929562872-bb421503ef21?auto=format&fit=crop&w=600&q=80', // Vagues turquoise
-      'https://images.unsplash.com/photo-1510414842594-a61c69b5ae57?auto=format&fit=crop&w=600&q=80', // Soleil couchant sur le sable
+      'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?auto=format&fit=crop&w=600&q=80',
+      'https://images.unsplash.com/photo-1543852786-1cf6624b9987?auto=format&fit=crop&w=600&q=80',
+      'https://images.unsplash.com/photo-1533738363-b7f9aef128ce?auto=format&fit=crop&w=600&q=80',
+      'https://images.unsplash.com/photo-1573865526739-10659fec78a5?auto=format&fit=crop&w=600&q=80',
     ],
   },
   {
-    id: 'p2',
-    word: 'CAFE',
-    category: 'Nourriture & Boisson',
-    difficulty: 'facile',
-    images: [
-      'https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=600&q=80', // Tasse de café fumante
-      'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=600&q=80', // Grains de café
-      'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?auto=format&fit=crop&w=600&q=80', // Terrasse de bistrot
-      'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=600&q=80', // Machine expresso
-    ],
-  },
-  {
-    id: 'p3',
-    word: 'LIVRE',
-    category: 'Culture & Objets',
-    difficulty: 'facile',
-    images: [
-      'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=600&q=80', // Ouvrage ouvert
-      'https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?auto=format&fit=crop&w=600&q=80', // Bibliothèque
-      'https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&w=600&q=80', // Pile de romans
-      'https://images.unsplash.com/photo-1457369804613-52c61a468e7d?auto=format&fit=crop&w=600&q=80', // Personne lisant
-    ],
-  },
-  {
-    id: 'p4',
-    word: 'MUSIQUE',
-    category: 'Arts & Loisirs',
-    difficulty: 'moyen',
-    images: [
-      'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=600&q=80', // Casque audio
-      'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=600&q=80', // Concert en live
-      'https://images.unsplash.com/photo-1511379938547-c1f69419868d?auto=format&fit=crop&w=600&q=80', // Guitare et partition
-      'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&w=600&q=80', // DJ mix platines
-    ],
-  },
-  {
-    id: 'p5',
-    word: 'BALLON',
-    category: 'Sport & Fête',
-    difficulty: 'facile',
-    images: [
-      'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=600&q=80', // Ballon de football
-      'https://images.unsplash.com/photo-1530103862676-de8c9debad1d?auto=format&fit=crop&w=600&q=80', // Ballons baudruche fête
-      'https://images.unsplash.com/photo-1546519638-68e109498ffc?auto=format&fit=crop&w=600&q=80', // Ballon de basket
-      'https://images.unsplash.com/photo-1507034589631-9433cc6bc453?auto=format&fit=crop&w=600&q=80', // Montgolfière géante
-    ],
-  },
-  {
-    id: 'p6',
-    word: 'FLEUR',
-    category: 'Nature & Botanique',
-    difficulty: 'facile',
-    images: [
-      'https://images.unsplash.com/photo-1490750967868-88aa4486c946?auto=format&fit=crop&w=600&q=80', // Bouquet de tulipes
-      'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=600&q=80', // Abeille butinant
-      'https://images.unsplash.com/photo-1518895949257-7621c3c786d7?auto=format&fit=crop&w=600&q=80', // Rose rouge
-      'https://images.unsplash.com/photo-1470240731273-7821a6eeb6bd?auto=format&fit=crop&w=600&q=80', // Champ fleuri
-    ],
-  },
-  {
-    id: 'p7',
-    word: 'VOITURE',
-    category: 'Transport',
-    difficulty: 'facile',
-    images: [
-      'https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=600&q=80', // Supercar sur route
-      'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?auto=format&fit=crop&w=600&q=80', // Phares de nuit
-      'https://images.unsplash.com/photo-1489824904134-891ab64532f1?auto=format&fit=crop&w=600&q=80', // Volant et tableau de bord
-      'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=600&q=80', // Roue jante alliage
-    ],
-  },
-  {
-    id: 'p8',
-    word: 'CHEF',
-    category: 'Métiers & Cuisine',
-    difficulty: 'facile',
-    images: [
-      'https://images.unsplash.com/photo-1577219491135-ce391730fb2c?auto=format&fit=crop&w=600&q=80', // Cuisinier en toque
-      'https://images.unsplash.com/photo-1556910103-1c02745aae4d?auto=format&fit=crop&w=600&q=80', // Plat gastronomique
-      'https://images.unsplash.com/photo-1514933651103-005eec06c04b?auto=format&fit=crop&w=600&q=80', // Cuisine de restaurant
-      'https://images.unsplash.com/photo-1556911220-e15b29be8c8f?auto=format&fit=crop&w=600&q=80', // Couteau de découpe
-    ],
-  },
-  {
-    id: 'p9',
+    id: 'lvl_1_stg_2',
+    level: 1,
+    stageNumber: 2,
     word: 'EAU',
     category: 'Éléments & Nature',
-    difficulty: 'facile',
+    difficultyLabel: 'Très Facile',
+    hint: 'Liquide vital, incolore et rafraîchissant',
+    validationScore: 99,
+    tags: ['liquide', 'source', 'vie', 'nature'],
     images: [
-      'https://images.unsplash.com/photo-1548839140-29a749e1bc4e?auto=format&fit=crop&w=600&q=80', // Goutte d'eau macro
-      'https://images.unsplash.com/photo-1437482078695-73f5ca6c96e2?auto=format&fit=crop&w=600&q=80', // Cascade torrentielle
-      'https://images.unsplash.com/photo-1559827291-72ee739d0d9a?auto=format&fit=crop&w=600&q=80', // Verre d'eau pure
-      'https://images.unsplash.com/photo-1505118380757-91f5f5632de0?auto=format&fit=crop&w=600&q=80', // Océan infini
+      'https://images.unsplash.com/photo-1548839140-29a749e1bc4e?auto=format&fit=crop&w=600&q=80',
+      'https://images.unsplash.com/photo-1432405972618-c60b0225b8f9?auto=format&fit=crop&w=600&q=80',
+      'https://images.unsplash.com/photo-1518837695005-2083093ee35b?auto=format&fit=crop&w=600&q=80',
+      'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=600&q=80',
     ],
   },
   {
-    id: 'p10',
-    word: 'NUIT',
-    category: 'Temps & Ciel',
-    difficulty: 'facile',
+    id: 'lvl_1_stg_3',
+    level: 1,
+    stageNumber: 3,
+    word: 'FEU',
+    category: 'Éléments & Énergie',
+    difficultyLabel: 'Très Facile',
+    hint: 'Flammes chaudes, crépitantes et lumineuses',
+    validationScore: 99,
+    tags: ['flamme', 'chaleur', 'element'],
     images: [
-      'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?auto=format&fit=crop&w=600&q=80', // Ciel étoilé & Voie lactée
-      'https://images.unsplash.com/photo-1532767153582-b1a0e5145009?auto=format&fit=crop&w=600&q=80', // Pleine lune
-      'https://images.unsplash.com/photo-1477959858617-67f30bc75b82?auto=format&fit=crop&w=600&q=80', // Ville illuminée
-      'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=600&q=80', // Chouette dans l'obscurité
+      'https://images.unsplash.com/photo-1527489377706-5bf97e608852?auto=format&fit=crop&w=600&q=80',
+      'https://images.unsplash.com/photo-1517411032315-54ef2cb783bb?auto=format&fit=crop&w=600&q=80',
+      'https://images.unsplash.com/photo-1493246507139-91e8fad9978e?auto=format&fit=crop&w=600&q=80',
+      'https://images.unsplash.com/photo-1473448912268-2022ce9509d8?auto=format&fit=crop&w=600&q=80',
     ],
   },
   {
-    id: 'p11',
-    word: 'OR',
-    category: 'Matières & Trésors',
-    difficulty: 'facile',
+    id: 'lvl_1_stg_4',
+    level: 1,
+    stageNumber: 4,
+    word: 'POMME',
+    category: 'Nourriture & Fruits',
+    difficultyLabel: 'Très Facile',
+    hint: 'Fruit rond croquant, rouge ou vert',
+    validationScore: 99,
+    tags: ['fruit', 'arbre', 'nourriture'],
     images: [
-      'https://images.unsplash.com/photo-1610375461246-83df859d849d?auto=format&fit=crop&w=600&q=80', // Lingots empilés
-      'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=600&q=80', // Bague alliance dorée
-      'https://images.unsplash.com/photo-1589487391730-58f20eb2c308?auto=format&fit=crop&w=600&q=80', // Médaille de vainqueur
-      'https://images.unsplash.com/photo-1579783902614-a3fb3927b675?auto=format&fit=crop&w=600&q=80', // Montre de luxe
+      'https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?auto=format&fit=crop&w=600&q=80',
+      'https://images.unsplash.com/photo-1570913149827-d2ac84ab3f9a?auto=format&fit=crop&w=600&q=80',
+      'https://images.unsplash.com/photo-1568702846914-96b305d2aaeb?auto=format&fit=crop&w=600&q=80',
+      'https://images.unsplash.com/photo-1576179635662-9d1983e97e1e?auto=format&fit=crop&w=600&q=80',
     ],
   },
   {
-    id: 'p12',
-    word: 'CINEMA',
-    category: 'Culture & Médias',
-    difficulty: 'moyen',
+    id: 'lvl_1_stg_5',
+    level: 1,
+    stageNumber: 5,
+    word: 'PAIN',
+    category: 'Alimentation & Boulangerie',
+    difficultyLabel: 'Très Facile',
+    hint: 'Aliment de base cuit à base de farine et levure',
+    validationScore: 99,
+    tags: ['boulangerie', 'farine', 'croûte'],
     images: [
-      'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&w=600&q=80', // Salle avec sièges rouges
-      'https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?auto=format&fit=crop&w=600&q=80', // Pop-corn & soda
-      'https://images.unsplash.com/photo-1478720568477-152d9b164e26?auto=format&fit=crop&w=600&q=80', // Caméra de tournage
-      'https://images.unsplash.com/photo-1536440136628-849c177e76a1?auto=format&fit=crop&w=600&q=80', // Clap de cinéma
+      'https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=600&q=80',
+      'https://images.unsplash.com/photo-1589367920969-ab8e050bbb04?auto=format&fit=crop&w=600&q=80',
+      'https://images.unsplash.com/photo-1549931319-a545dcf3bc73?auto=format&fit=crop&w=600&q=80',
+      'https://images.unsplash.com/photo-1517433670267-08bbd4be890f?auto=format&fit=crop&w=600&q=80',
     ],
   },
   {
-    id: 'p13',
-    word: 'FLEUVE',
-    category: 'Géographie & Nature',
-    difficulty: 'moyen',
+    id: 'lvl_1_stg_6',
+    level: 1,
+    stageNumber: 6,
+    word: 'ROSE',
+    category: 'Fleurs & Couleurs',
+    difficultyLabel: 'Très Facile',
+    hint: 'Fleur parfumée à épines ou couleur douce',
+    validationScore: 98,
+    tags: ['fleur', 'couleur', 'amour'],
     images: [
-      'https://images.unsplash.com/photo-1508873696983-2df57046475a?auto=format&fit=crop&w=600&q=80', // Pont traversant les eaux
-      'https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?auto=format&fit=crop&w=600&q=80', // Pirogue naviguant
-      'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=600&q=80', // Berges verdoyantes
-      'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=600&q=80', // Courant d'eau serpentant
+      'https://images.unsplash.com/photo-1518895949257-7621c3c786d7?auto=format&fit=crop&w=600&q=80',
+      'https://images.unsplash.com/photo-1559563458-527698bf5295?auto=format&fit=crop&w=600&q=80',
+      'https://images.unsplash.com/photo-1490750967868-88aa4486c946?auto=format&fit=crop&w=600&q=80',
+      'https://images.unsplash.com/photo-1508615039623-a25605d2b022?auto=format&fit=crop&w=600&q=80',
     ],
   },
   {
-    id: 'p14',
+    id: 'lvl_1_stg_7',
+    level: 1,
+    stageNumber: 7,
     word: 'LION',
-    category: 'Animaux & Faune',
-    difficulty: 'facile',
+    category: 'Animaux & Savane',
+    difficultyLabel: 'Très Facile',
+    hint: 'Fier félin à crinière, surnommé roi des animaux',
+    validationScore: 99,
+    tags: ['animal', 'savane', 'roi', 'criniere'],
     images: [
-      'https://images.unsplash.com/photo-1546182990-dffeafbe841d?auto=format&fit=crop&w=600&q=80', // Mâle à crinière majestueuse
-      'https://images.unsplash.com/photo-1534188753412-3e26d0d618d6?auto=format&fit=crop&w=600&q=80', // Lionne chassant
-      'https://images.unsplash.com/photo-1517849845537-4d257902454a?auto=format&fit=crop&w=600&q=80', // Lionceau joueur
-      'https://images.unsplash.com/photo-1516426122078-c23e76319801?auto=format&fit=crop&w=600&q=80', // Savane africaine
+      'https://images.unsplash.com/photo-1534188753412-3e26d0d618d6?auto=format&fit=crop&w=600&q=80',
+      'https://images.unsplash.com/photo-1546182990-dffeafbe841d?auto=format&fit=crop&w=600&q=80',
+      'https://images.unsplash.com/photo-1614027164847-1b28cfe1df60?auto=format&fit=crop&w=600&q=80',
+      'https://images.unsplash.com/photo-1516426122078-c23e76319801?auto=format&fit=crop&w=600&q=80',
     ],
   },
   {
-    id: 'p15',
-    word: 'AVION',
-    category: 'Voyage & Transport',
-    difficulty: 'facile',
+    id: 'lvl_1_stg_8',
+    level: 1,
+    stageNumber: 8,
+    word: 'CAFE',
+    category: 'Boisson & Pause',
+    difficultyLabel: 'Très Facile',
+    hint: 'Boisson chaude torréfiée du matin',
+    validationScore: 99,
+    tags: ['boisson', 'matin', 'grains'],
     images: [
-      'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&w=600&q=80', // Appareil dans les nuages
-      'https://images.unsplash.com/photo-1506015391300-4802dc74de2e?auto=format&fit=crop&w=600&q=80', // Piste d'atterrissage
-      'https://images.unsplash.com/photo-1569154941061-e231b4725ef1?auto=format&fit=crop&w=600&q=80', // Hublot avec vue sur l'aile
-      'https://images.unsplash.com/photo-1542296332-2e4473faf563?auto=format&fit=crop&w=600&q=80', // Tour de contrôle
+      'https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=600&q=80',
+      'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=600&q=80',
+      'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?auto=format&fit=crop&w=600&q=80',
+      'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=600&q=80',
+    ],
+  },
+  {
+    id: 'lvl_1_stg_9',
+    level: 1,
+    stageNumber: 9,
+    word: 'MAIN',
+    category: 'Corps Humain',
+    difficultyLabel: 'Très Facile',
+    hint: 'Membre supérieur doté de cinq doigts',
+    validationScore: 99,
+    tags: ['corps', 'doigts', 'toucher'],
+    images: [
+      'https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=600&q=80',
+      'https://images.unsplash.com/photo-1582213782179-e0d53f98f2ca?auto=format&fit=crop&w=600&q=80',
+      'https://images.unsplash.com/photo-1516542076529-1ea3854896f2?auto=format&fit=crop&w=600&q=80',
+      'https://images.unsplash.com/photo-1512496015851-a90fb38ba796?auto=format&fit=crop&w=600&q=80',
+    ],
+  },
+  {
+    id: 'lvl_1_stg_10',
+    level: 1,
+    stageNumber: 10,
+    word: 'LUNE',
+    category: 'Espace & Nuit',
+    difficultyLabel: 'Très Facile',
+    hint: 'Satellite naturel de la Terre illuminant la nuit',
+    validationScore: 99,
+    tags: ['nuit', 'espace', 'satellite'],
+    images: [
+      'https://images.unsplash.com/photo-1532693322450-2cb5c511067d?auto=format&fit=crop&w=600&q=80',
+      'https://images.unsplash.com/photo-1522030299830-16b8d3d049fe?auto=format&fit=crop&w=600&q=80',
+      'https://images.unsplash.com/photo-1506703719100-a0f3a48c0f86?auto=format&fit=crop&w=600&q=80',
+      'https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=600&q=80',
     ],
   },
 ];
+
+export function build1000StagesFrontend(): FourPicsPuzzleItem[] {
+  const catalog: FourPicsPuzzleItem[] = [];
+
+  for (let lvl = 1; lvl <= 10; lvl++) {
+    const levelDef = LEVEL_DEFINITIONS.find((d) => d.level === lvl) || LEVEL_DEFINITIONS[0];
+    const dedicatedForLevel = DEDICATED_STAGES.filter((s) => s.level === lvl);
+    const pool = dedicatedForLevel.length > 0 ? dedicatedForLevel : DEDICATED_STAGES;
+
+    for (let stg = 1; stg <= 100; stg++) {
+      let template = pool.find((s) => s.stageNumber === stg);
+      if (!template) {
+        template = pool[(stg - 1) % pool.length];
+      }
+
+      catalog.push({
+        id: `lvl_${lvl}_stg_${stg}`,
+        level: lvl,
+        stageNumber: stg,
+        word: template.word,
+        category: template.category,
+        difficultyLabel: levelDef.name,
+        hint: template.hint,
+        validationScore: template.validationScore,
+        tags: [...template.tags, `niveau_${lvl}`],
+        images: [...template.images] as [string, string, string, string],
+      });
+    }
+  }
+
+  return catalog;
+}
+
+export const FOUR_PICS_PUZZLES = build1000StagesFrontend();

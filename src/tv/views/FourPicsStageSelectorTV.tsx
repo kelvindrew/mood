@@ -18,6 +18,7 @@ import {
   Award,
   Sparkles,
   Zap,
+  RotateCcw,
 } from 'lucide-react';
 import { audio } from '../../services/audio';
 import { playSoundFX } from '../../engine/PlaySoundFX';
@@ -38,8 +39,9 @@ export const FourPicsStageSelectorTV: React.FC<FourPicsStageSelectorTVProps> = (
   const [progress, setProgress] = useState<FourPicsProgressState>(fourPicsProgress.getState());
   const [selectedLevel, setSelectedLevel] = useState<number>(progress.unlockedLevel || 1);
   const [stagePage, setStagePage] = useState<number>(0); // 0 = stages 1-50, 1 = stages 51-100
+  const [confirmReset, setConfirmReset] = useState<boolean>(false);
 
-  // M5 — Back télécommande = retour au plateau (prop onBack existant)
+  // M5 — Back télécommande = retour au plateau
   useTvBack(onBack);
 
   useEffect(() => {
@@ -69,13 +71,28 @@ export const FourPicsStageSelectorTV: React.FC<FourPicsStageSelectorTVProps> = (
     onSelectStage(selectedLevel, stageNum);
   };
 
+  const handleStartFromBeginning = () => {
+    audio.playSelect();
+    onSelectStage(1, 1);
+  };
+
+  const handleResetProgress = () => {
+    audio.playSelect();
+    fourPicsProgress.resetProgress();
+    setProgress(fourPicsProgress.getState());
+    setSelectedLevel(1);
+    setStagePage(0);
+    setConfirmReset(false);
+    onSelectStage(1, 1);
+  };
+
   const stagesToDisplay = Array.from({ length: 50 }, (_, i) => stagePage * 50 + i + 1);
 
   return (
-    <div className="relative min-h-screen bg-[#07090E] text-white px-[5vw] py-5 flex flex-col justify-between select-none">
-      {/* 1. Header: Back button, Title & Global 1,000 Stages Progress */}
-      <header className="flex items-center justify-between border-b border-white/10 pb-4">
-        <div className="flex items-center space-x-4">
+    <div className="relative min-h-screen bg-[#07090E] text-white px-[4vw] py-4 flex flex-col justify-between select-none">
+      {/* 1. Header: Back button, Title, Global Stats & Action Buttons */}
+      <header className="flex items-center justify-between border-b border-white/10 pb-3">
+        <div className="flex items-center space-x-3">
           <button
             data-tv-focus
             tabIndex={0}
@@ -83,41 +100,50 @@ export const FourPicsStageSelectorTV: React.FC<FourPicsStageSelectorTVProps> = (
               audio.playBack();
               onBack();
             }}
-            className="flex items-center space-x-2 px-5 py-3 rounded-2xl bg-[#101420] border-2 border-white/15 hover:bg-white hover:text-black focus:bg-white focus:text-black transition-all outline-none"
+            className="flex items-center space-x-1.5 px-4 py-2.5 rounded-xl bg-[#101420] border border-white/15 hover:bg-white hover:text-black focus:bg-white focus:text-black transition-all outline-none"
           >
-            <ArrowLeft className="w-5 h-5" />
+            <ArrowLeft className="w-4 h-4" />
             <span className="font-black text-xs uppercase">Retour</span>
           </button>
 
           <div>
             <div className="flex items-center space-x-2">
-              <span className="px-3 py-0.5 rounded-full bg-gradient-to-r from-[#E50914] to-[#FF2E63] text-white text-[10px] font-black uppercase tracking-wider shadow-md">
-                AVENTURE 1 000 STAGES
+              <span className="px-2.5 py-0.5 rounded-full bg-gradient-to-r from-emerald-500 to-teal-400 text-black text-[10px] font-black uppercase tracking-wider shadow-sm">
+                4 IMAGES 1 MOT • CAMPAGNE
               </span>
-              <span className="text-xs font-bold text-[#FFB800]">
-                ⭐ {globalStats.totalStars} / {globalStats.maxStars} ÉTOILES
+              <span className="text-xs font-bold text-amber-400">
+                ⭐ {globalStats.totalStars} ÉTOILES • {globalStats.totalCompleted}/1 000 STAGES
               </span>
             </div>
-            <h1 className="text-3xl font-black font-display text-white tracking-tight mt-0.5">
-              4 Images 1 Mot • Choix du Stage
+            <h1 className="text-2xl font-black font-display text-white tracking-tight mt-0.5">
+              Carte & Progression des Niveaux
             </h1>
           </div>
         </div>
 
-        {/* Right side: Global Progress Bar & Random Mode CTA */}
-        <div className="flex items-center space-x-6">
-          <div className="flex flex-col items-end">
-            <div className="flex items-center space-x-2 text-xs font-black">
-              <span className="text-[#B8C2D8]">PROGRESSION GLOBALE :</span>
-              <span className="text-[#10B981] font-mono">{globalStats.totalCompleted} / 1 000 ({globalStats.percent}%)</span>
-            </div>
-            <div className="w-56 h-3.5 rounded-full bg-[#181F33] overflow-hidden mt-1 border border-white/15 shadow-inner">
-              <div
-                className="h-full bg-gradient-to-r from-[#E50914] via-[#FFB800] to-[#10B981] transition-all duration-500 rounded-full"
-                style={{ width: `${Math.min(100, Math.max(2, parseFloat(globalStats.percent)))}%` }}
-              />
-            </div>
-          </div>
+        {/* Right side: Quick Action Buttons */}
+        <div className="flex items-center space-x-3">
+          <button
+            data-tv-focus
+            tabIndex={0}
+            onClick={handleStartFromBeginning}
+            className="flex items-center space-x-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-400 text-black font-display font-black text-xs uppercase tracking-wider shadow-[0_0_20px_rgba(16,185,129,0.4)] hover:scale-105 active:scale-95 transition-all outline-none focus:ring-2 focus:ring-white"
+            title="Reprendre au tout premier niveau"
+          >
+            <Play className="w-4 h-4 fill-current" />
+            <span>DÉBUTER AU NIVEAU 1</span>
+          </button>
+
+          <button
+            data-tv-focus
+            tabIndex={0}
+            onClick={() => setConfirmReset(true)}
+            className="flex items-center space-x-1.5 px-3 py-2.5 rounded-xl bg-rose-950/40 border border-rose-500/30 text-rose-300 hover:bg-rose-600 hover:text-white font-bold text-xs uppercase transition-all outline-none"
+            title="Réinitialiser tous les niveaux à zéro"
+          >
+            <RotateCcw className="w-3.5 h-3.5" />
+            <span>RÉINITIALISER</span>
+          </button>
 
           <button
             data-tv-focus
@@ -126,18 +152,18 @@ export const FourPicsStageSelectorTV: React.FC<FourPicsStageSelectorTVProps> = (
               audio.playSelect();
               onStartRandomMode();
             }}
-            className="flex items-center space-x-2 px-6 py-3.5 rounded-2xl bg-[#181F33] border-2 border-[#00F2FE]/50 text-[#00F2FE] hover:bg-[#00F2FE] hover:text-black focus:bg-[#00F2FE] focus:text-black font-black text-xs shadow-lg transition-all outline-none"
+            className="flex items-center space-x-1.5 px-3.5 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 text-white font-bold text-xs uppercase transition-all outline-none"
           >
-            <Zap className="w-4 h-4" />
-            <span>MODE ALÉATOIRE</span>
+            <Zap className="w-3.5 h-3.5 text-amber-400" />
+            <span>ALÉATOIRE</span>
           </button>
         </div>
       </header>
 
-      {/* 2. Main Content: Left Level Picker (1-10) + Right 100 Stages Grid */}
-      <main className="grid grid-cols-12 gap-6 my-auto py-4">
+      {/* 2. Main Content: Left Level Picker (1-10) + Right 50 Stages Grid */}
+      <main className="grid grid-cols-12 gap-5 my-auto py-3">
         {/* Left Column: 10 Levels Carousel / List */}
-        <div className="col-span-4 flex flex-col space-y-2.5 overflow-y-auto max-h-[68vh] pr-2">
+        <div className="col-span-4 flex flex-col space-y-2 overflow-y-auto max-h-[66vh] pr-2">
           {LEVEL_DEFINITIONS.map((def: LevelDefinition) => {
             const isUnlocked = def.level <= progress.unlockedLevel;
             const isSelected = def.level === selectedLevel;
@@ -150,40 +176,40 @@ export const FourPicsStageSelectorTV: React.FC<FourPicsStageSelectorTVProps> = (
                 tabIndex={0}
                 disabled={!isUnlocked}
                 onClick={() => handleLevelClick(def.level)}
-                className={`p-3.5 rounded-2xl border-2 transition-all flex items-center justify-between text-left outline-none ${
+                className={`p-3 rounded-xl border transition-all flex items-center justify-between text-left outline-none ${
                   isSelected
-                    ? 'bg-[#181F33] border-[#FFB800] shadow-[0_0_25px_rgba(255,184,0,0.4)] scale-102'
+                    ? 'bg-[#181F33] border-amber-400 shadow-[0_0_20px_rgba(251,191,36,0.3)] scale-102 ring-2 ring-amber-400/40'
                     : isUnlocked
-                    ? 'bg-[#101420] border-white/15 hover:border-white/40 focus:border-white'
+                    ? 'bg-[#101420] border-white/10 hover:border-white/30 focus:border-white'
                     : 'bg-[#07090E]/60 border-white/5 opacity-40 cursor-not-allowed'
                 }`}
               >
                 <div className="flex items-center space-x-3">
                   <div
-                    className="w-10 h-10 rounded-xl flex items-center justify-center font-black font-mono text-base border shadow-md"
+                    className="w-9 h-9 rounded-lg flex items-center justify-center font-black font-mono text-sm border shadow-sm"
                     style={{ backgroundColor: `${def.color}25`, borderColor: def.color, color: def.color }}
                   >
-                    {isUnlocked ? def.level : <Lock className="w-4 h-4 text-gray-500" />}
+                    {isUnlocked ? def.level : <Lock className="w-3.5 h-3.5 text-gray-500" />}
                   </div>
 
                   <div>
-                    <div className="flex items-center space-x-2">
-                      <h3 className="font-black text-sm text-white">NIVEAU {def.level}</h3>
+                    <div className="flex items-center space-x-1.5">
+                      <h3 className="font-black text-xs text-white">NIVEAU {def.level}</h3>
                       <span
-                        className="px-2 py-0.2 rounded text-[9px] font-black uppercase"
+                        className="px-1.5 py-0.2 rounded text-[9px] font-black uppercase"
                         style={{ backgroundColor: `${def.color}30`, color: def.color }}
                       >
                         {def.name}
                       </span>
                     </div>
-                    <span className="text-[11px] text-[#B8C2D8] font-bold">
+                    <span className="text-[10px] text-gray-400 font-medium">
                       {isUnlocked ? `${lvlStat.completedCount}/100 Stages • ⭐ ${lvlStat.starsCount}` : 'Terminez le niveau précédent'}
                     </span>
                   </div>
                 </div>
 
                 {isUnlocked && (
-                  <span className="font-mono font-black text-xs text-[#10B981]">
+                  <span className="font-mono font-black text-xs text-emerald-400">
                     {lvlStat.percent}%
                   </span>
                 )}
@@ -192,96 +218,90 @@ export const FourPicsStageSelectorTV: React.FC<FourPicsStageSelectorTVProps> = (
           })}
         </div>
 
-        {/* Right Column: 100 Stages Interactive Grid (50 per page) */}
-        <div className="col-span-8 flex flex-col justify-between p-6 rounded-3xl bg-[#101420] border-2 border-white/15 shadow-2xl">
+        {/* Right Column: 100 Stages Interactive Grid */}
+        <div className="col-span-8 flex flex-col justify-between p-5 rounded-2xl bg-[#101420] border border-white/15 shadow-xl">
           <div>
             {/* Level Title & Pagination */}
-            <div className="flex items-center justify-between border-b border-white/10 pb-3 mb-4">
+            <div className="flex items-center justify-between border-b border-white/10 pb-2.5 mb-3">
               <div>
+                <span className="text-[10px] font-black uppercase tracking-widest text-emerald-400">
+                  NIVEAU {selectedLevel} SUR 10
+                </span>
                 <h2 className="text-xl font-black font-display text-white">
-                  NIVEAU {selectedLevel} : {LEVEL_DEFINITIONS[selectedLevel - 1]?.name.toUpperCase()} (100 STAGES)
+                  Stages {stagePage * 50 + 1} à {stagePage * 50 + 50}
                 </h2>
-                <div className="flex items-center space-x-4 text-xs font-bold text-[#B8C2D8] mt-0.5">
-                  <span>Complétés : {levelStats.completedCount}/100</span>
-                  <span>⭐ {levelStats.starsCount}/300 étoiles</span>
-                  <span>⭐⭐⭐ {levelStats.threeStarsCount}</span>
-                </div>
               </div>
 
-              {/* Page Selector (Stages 1-50 vs 51-100) */}
+              {/* Pagination toggle (Stages 1-50 / 51-100) */}
               <div className="flex items-center space-x-2">
                 <button
                   data-tv-focus
                   tabIndex={0}
-                  onClick={() => {
-                    playSoundFX.playHop();
-                    setStagePage(0);
-                  }}
-                  className={`px-4 py-2 rounded-xl text-xs font-black border transition-all outline-none ${
+                  onClick={() => setStagePage(0)}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-black transition-all ${
                     stagePage === 0
-                      ? 'bg-[#E50914] text-white border-white shadow-md'
-                      : 'bg-[#181F33] text-gray-300 border-white/15 hover:text-white'
+                      ? 'bg-white text-black shadow-md'
+                      : 'bg-white/10 text-gray-300 hover:text-white'
                   }`}
                 >
-                  Stages 1 — 50
+                  Stages 1-50
                 </button>
                 <button
                   data-tv-focus
                   tabIndex={0}
-                  onClick={() => {
-                    playSoundFX.playHop();
-                    setStagePage(1);
-                  }}
-                  className={`px-4 py-2 rounded-xl text-xs font-black border transition-all outline-none ${
+                  onClick={() => setStagePage(1)}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-black transition-all ${
                     stagePage === 1
-                      ? 'bg-[#E50914] text-white border-white shadow-md'
-                      : 'bg-[#181F33] text-gray-300 border-white/15 hover:text-white'
+                      ? 'bg-white text-black shadow-md'
+                      : 'bg-white/10 text-gray-300 hover:text-white'
                   }`}
                 >
-                  Stages 51 — 100
+                  Stages 51-100
                 </button>
               </div>
             </div>
 
             {/* 50 Stages Grid (10 columns x 5 rows) */}
-            <div className="grid grid-cols-10 gap-2.5">
+            <div className="grid grid-cols-10 gap-2">
               {stagesToDisplay.map((stageNum) => {
                 const isUnlocked = fourPicsProgress.isStageUnlocked(selectedLevel, stageNum);
-                const stageProg = fourPicsProgress.getStageProgress(selectedLevel, stageNum);
+                const stgProg = fourPicsProgress.getStageProgress(selectedLevel, stageNum);
+                const isCurrent =
+                  selectedLevel === progress.unlockedLevel && stageNum === progress.unlockedStage;
 
                 return (
                   <button
-                    key={`stage_btn_${stageNum}`}
+                    key={`stg_btn_${selectedLevel}_${stageNum}`}
                     data-tv-focus
                     tabIndex={0}
                     disabled={!isUnlocked}
                     onClick={() => handleStageClick(stageNum)}
-                    className={`aspect-square rounded-2xl border-2 flex flex-col items-center justify-center p-1 transition-all outline-none ${
-                      stageProg.completed
-                        ? 'bg-emerald-950/40 border-[#10B981] text-white hover:scale-110 focus:scale-110 focus:bg-white focus:text-black shadow-[0_0_15px_rgba(16,185,129,0.3)]'
+                    className={`h-13 rounded-xl border flex flex-col items-center justify-center transition-all relative outline-none ${
+                      isCurrent
+                        ? 'bg-gradient-to-tr from-emerald-500 to-teal-400 border-white text-black font-black shadow-[0_0_20px_rgba(16,185,129,0.7)] scale-105 animate-pulse'
+                        : stgProg.completed
+                        ? 'bg-[#181F33] border-amber-400/70 text-white hover:scale-105'
                         : isUnlocked
-                        ? 'bg-[#181F33] border-white/20 text-white hover:scale-110 hover:border-[#FFB800] focus:scale-110 focus:bg-white focus:text-black shadow-md'
-                        : 'bg-[#07090E]/60 border-white/5 text-gray-600 cursor-not-allowed opacity-30'
+                        ? 'bg-[#121726] border-white/20 text-gray-300 hover:border-white hover:text-white'
+                        : 'bg-[#0A0D14] border-white/5 text-gray-600 opacity-40 cursor-not-allowed'
                     }`}
                   >
-                    {isUnlocked ? (
-                      <>
-                        <span className="font-mono font-black text-xs leading-none">{stageNum}</span>
-                        <div className="flex items-center space-x-0.5 mt-1">
-                          {stageProg.stars > 0 ? (
-                            Array.from({ length: stageProg.stars }).map((_, sIdx) => (
-                              <Star
-                                key={`star_${sIdx}`}
-                                className="w-2.5 h-2.5 fill-[#FFB800] text-[#FFB800]"
-                              />
-                            ))
-                          ) : (
-                            <span className="w-1.5 h-1.5 rounded-full bg-white/20" />
-                          )}
-                        </div>
-                      </>
-                    ) : (
-                      <Lock className="w-3.5 h-3.5 text-gray-600" />
+                    <span className="font-mono font-black text-xs leading-none">
+                      {isUnlocked ? stageNum : <Lock className="w-3 h-3 text-gray-600" />}
+                    </span>
+
+                    {/* Golden Stars display */}
+                    {stgProg.completed && (
+                      <div className="flex items-center space-x-0.5 mt-0.5">
+                        {Array.from({ length: 3 }).map((_, sIdx) => (
+                          <Star
+                            key={`star_${stageNum}_${sIdx}`}
+                            className={`w-2.5 h-2.5 ${
+                              sIdx < stgProg.stars ? 'fill-amber-400 text-amber-400' : 'text-gray-600'
+                            }`}
+                          />
+                        ))}
+                      </div>
                     )}
                   </button>
                 );
@@ -289,16 +309,48 @@ export const FourPicsStageSelectorTV: React.FC<FourPicsStageSelectorTVProps> = (
             </div>
           </div>
 
-          {/* Bottom Milestone Callout */}
-          <div className="flex items-center justify-between pt-4 border-t border-white/10 mt-3 text-xs font-bold text-[#B8C2D8]">
-            <div className="flex items-center space-x-2">
-              <Trophy className="w-4 h-4 text-[#FFB800]" />
-              <span>Récompense aux 100 stages : Médaille & Thème Exclusif Débloqué !</span>
-            </div>
-            <span className="text-[#00F2FE]">Sélectionnez un stage pour lancer</span>
+          {/* Level Summary Footer */}
+          <div className="pt-2 border-t border-white/10 flex items-center justify-between text-xs text-gray-400 font-bold">
+            <span>
+              Complétion du niveau : <strong className="text-white">{levelStats.completedCount}/100</strong>
+            </span>
+            <span className="text-amber-400 font-mono font-black">
+              ⭐ {levelStats.starsCount} / 300 étoiles
+            </span>
           </div>
         </div>
       </main>
+
+      {/* Confirmation Modal for Resetting Progress */}
+      {confirmReset && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md select-none">
+          <div className="max-w-md w-full p-6 rounded-2xl bg-[#101420] border border-rose-500/40 text-center space-y-4 shadow-2xl">
+            <div className="w-12 h-12 rounded-full bg-rose-500/20 text-rose-400 flex items-center justify-center mx-auto">
+              <RotateCcw className="w-6 h-6" />
+            </div>
+            <h3 className="text-lg font-black font-display text-white">
+              Réinitialiser la progression ?
+            </h3>
+            <p className="text-xs text-gray-300">
+              Voulez-vous réinitialiser tous les niveaux à zéro et recommencer l'aventure 4 Images 1 Mot depuis le Niveau 1, Stage 1 ?
+            </p>
+            <div className="flex items-center justify-center space-x-3 pt-2">
+              <button
+                onClick={() => setConfirmReset(false)}
+                className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs"
+              >
+                Annuler
+              </button>
+              <button
+                onClick={handleResetProgress}
+                className="px-5 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-black text-xs uppercase shadow-lg"
+              >
+                Confirmer le Reset
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

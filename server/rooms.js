@@ -390,7 +390,7 @@ export class RoomManager {
         break;
       }
       case 'four_pics': {
-        room.gameEngine = new FourPicsEngine(room.players, onStateChange, onGameOver);
+        room.gameEngine = new FourPicsEngine(room.players, onStateChange, onGameOver, room.settings);
         break;
       }
       case 'mini_racing': {
@@ -541,6 +541,11 @@ export class RoomManager {
       case 'four_pics_next_stage':
         if (room.gameId === 'four_pics' && room.gameEngine) {
           room.gameEngine.nextAdventureStage();
+        }
+        break;
+      case 'four_pics_reset_adventure':
+        if (room.gameId === 'four_pics' && room.gameEngine) {
+          room.gameEngine.loadStage(1, 1);
         }
         break;
       case 'four_pics_rematch':

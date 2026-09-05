@@ -17,6 +17,7 @@ import {
   Flame,
   ZoomIn,
   X,
+  Play,
 } from 'lucide-react';
 
 interface LetterTile {
@@ -33,11 +34,10 @@ export const FourPicsController: React.FC = () => {
   const [letterTiles, setLetterTiles] = useState<LetterTile[]>([]);
   const [selectedLetterIds, setSelectedLetterIds] = useState<string[]>([]);
   const [feedbackError, setFeedbackError] = useState<string>('');
-  const [feedbackSuccess, setFeedbackSuccess] = useState<boolean>(false);
   const [inspectImageIndex, setInspectImageIndex] = useState<number | null>(null);
 
   const currentPuzzle = gameState?.currentPuzzle;
-  const wordLength = currentPuzzle?.wordLength || 5;
+  const wordLength = currentPuzzle?.wordLength || 4;
 
   // Initialize or reset letter pool when round changes
   useEffect(() => {
@@ -54,7 +54,6 @@ export const FourPicsController: React.FC = () => {
       setLetterTiles(tiles);
       setSelectedLetterIds([]);
       setFeedbackError('');
-      setFeedbackSuccess(false);
     }
   }, [gameState?.roundNumber, gameState?.currentPuzzle?.id]);
 
@@ -143,22 +142,8 @@ export const FourPicsController: React.FC = () => {
 
   const submitWord = (wordToSubmit: string) => {
     if (wordToSubmit.length !== wordLength) return;
-
+    setFeedbackError('');
     sendGameAction('four_pics_guess', { word: wordToSubmit });
-
-    // Client-side quick check
-    if (wordToSubmit.toUpperCase() === currentPuzzle.hint) {
-      setFeedbackSuccess(true);
-      triggerHaptic(hapticPatterns.success);
-      playSoundFX.playDiceSixBonus();
-    } else {
-      setTimeout(() => {
-        if (!isSolvedByMe) {
-          setFeedbackError('Ce n’est pas le bon mot. Réessayez !');
-          triggerHaptic(hapticPatterns.error);
-        }
-      }, 300);
-    }
   };
 
   // Hint 1: Reveal a letter (-30 pts)
@@ -181,54 +166,54 @@ export const FourPicsController: React.FC = () => {
     <div className="min-h-screen flex flex-col justify-between bg-[#07090E] text-white select-none relative overflow-hidden">
       <MobileHeader />
 
-      <main className="p-4 flex-1 flex flex-col justify-between space-y-3 relative z-10">
-        {/* 1. Header: Category & Score & Combo */}
-        <div className="flex items-center justify-between p-3 rounded-2xl bg-[#101420] border border-white/15 shadow-md">
+      <main className="p-3.5 flex-1 flex flex-col justify-between space-y-2.5 relative z-10">
+        {/* 1. Header: Level & Score */}
+        <div className="flex items-center justify-between p-2.5 rounded-xl bg-[#121622] border border-white/10 shadow-sm">
           <div>
-            <span className="text-[10px] font-black uppercase text-[#00F2FE] tracking-wider block">
+            <span className="text-[10px] font-black uppercase text-emerald-400 tracking-wider block">
               {currentPuzzle.category}
             </span>
             <span className="text-xs font-bold text-gray-300">
-              Niveau {currentPuzzle.difficulty}/10 • {currentPuzzle.difficultyLabel}
+              Niveau {currentPuzzle.level || 1} • Stage {currentPuzzle.stageNumber || 1}/100
             </span>
           </div>
 
-          <div className="flex items-center space-x-3 text-right">
+          <div className="flex items-center space-x-2.5 text-right">
             {myCombo >= 2 && (
-              <div className="px-2 py-1 rounded-xl bg-gradient-to-r from-red-600 to-amber-500 text-white font-black text-xs shadow-md flex items-center space-x-1 animate-pulse">
-                <Flame className="w-3.5 h-3.5" />
+              <div className="px-1.5 py-0.5 rounded-lg bg-gradient-to-r from-amber-500 to-red-500 text-black font-black text-xs shadow-sm flex items-center space-x-0.5 animate-pulse">
+                <Flame className="w-3 h-3" />
                 <span>x{myCombo}</span>
               </div>
             )}
             <div>
-              <span className="text-[9px] font-black uppercase text-gray-400 block">VOTRE SCORE</span>
-              <span className="text-sm font-mono font-black text-[#FFB800]">{myScore} PTS</span>
+              <span className="text-[8px] font-black uppercase text-gray-400 block">VOTRE SCORE</span>
+              <span className="text-sm font-mono font-black text-amber-400">{myScore} PTS</span>
             </div>
           </div>
         </div>
 
         {/* 2. 4 Mini Thumbnails Preview with Click-to-Zoom */}
-        <div className="grid grid-cols-4 gap-2">
+        <div className="grid grid-cols-4 gap-1.5">
           {currentPuzzle.images.map((img, i) => (
             <div
               key={`thumb_${i}`}
               onClick={() => setInspectImageIndex(i)}
-              className="relative aspect-square rounded-2xl overflow-hidden bg-[#101420] border-2 border-white/20 shadow-md cursor-pointer group"
+              className="relative aspect-square rounded-xl overflow-hidden bg-[#101420] border border-white/20 shadow-sm cursor-pointer group"
             >
               <img src={img} alt={`Indice ${i + 1}`} className="w-full h-full object-cover" />
-              <span className="absolute top-1 left-1 px-1.5 py-0.5 rounded-md bg-black/70 text-[9px] font-mono font-bold text-[#FFB800]">
+              <span className="absolute top-1 left-1 px-1 py-0.2 rounded bg-black/70 text-[8px] font-mono font-bold text-amber-400">
                 #{i + 1}
               </span>
               <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
-                <ZoomIn className="w-4 h-4 text-white" />
+                <ZoomIn className="w-3.5 h-3.5 text-white" />
               </div>
             </div>
           ))}
         </div>
 
         {/* 3. Word Mystery Slots (Composed Letters) */}
-        <div className="space-y-2 text-center">
-          <div className="flex items-center justify-center space-x-2">
+        <div className="space-y-1.5 text-center">
+          <div className="flex items-center justify-center space-x-1.5">
             {Array.from({ length: wordLength }).map((_, idx) => {
               const char = composedWord[idx] || '';
 
@@ -236,9 +221,9 @@ export const FourPicsController: React.FC = () => {
                 <button
                   key={`slot_${idx}`}
                   onClick={() => handleRemovePlacedSlot(idx)}
-                  className={`w-11 h-13 rounded-2xl border-2 font-display font-black text-xl flex items-center justify-center transition-all shadow-md ${
+                  className={`w-10 h-12 rounded-xl border-2 font-display font-black text-lg flex items-center justify-center transition-all shadow-md ${
                     char
-                      ? 'bg-gradient-to-tr from-[#E50914] to-[#FF2E63] border-white text-white scale-105 animate-scale-in'
+                      ? 'bg-gradient-to-tr from-emerald-500 to-teal-400 border-white text-black scale-105 animate-scale-in'
                       : 'bg-[#101420] border-white/20 text-gray-500'
                   }`}
                 >
@@ -255,18 +240,18 @@ export const FourPicsController: React.FC = () => {
           )}
 
           {isSolvedByMe && !isRevealed && (
-            <div className="p-2.5 rounded-2xl bg-emerald-950/80 border border-[#10B981] text-[#10B981] text-xs font-black flex items-center justify-center space-x-1.5 animate-scale-in">
+            <div className="p-2 rounded-xl bg-emerald-950/80 border border-emerald-400 text-emerald-400 text-xs font-black flex items-center justify-center space-x-1 animate-scale-in">
               <CheckCircle2 className="w-4 h-4" />
-              <span>VOUS AVEZ TROUVÉ LA BONNE RÉPONSE ! 🎉</span>
+              <span>BRAVO ! VOUS AVEZ TROUVÉ ! 🎉</span>
             </div>
           )}
 
           {isRevealed && (
-            <div className="p-4 rounded-3xl bg-[#101420] border-2 border-brand-gold text-center space-y-3 animate-scale-in shadow-xl">
-              <span className="text-[10px] font-black uppercase tracking-widest text-brand-gold block">
+            <div className="p-3.5 rounded-2xl bg-[#121622] border border-emerald-500/40 text-center space-y-2.5 animate-scale-in shadow-xl">
+              <span className="text-[10px] font-black uppercase tracking-widest text-emerald-400 block">
                 {gameState.roundResult?.winnerName ? 'STAGE RÉUSSI !' : 'TEMPS ÉCOULÉ !'}
               </span>
-              <div className="text-2xl font-display font-black text-white">
+              <div className="text-xl font-display font-black text-white">
                 « {gameState.roundResult?.word} »
               </div>
               {gameState.roundResult?.winnerName && (
@@ -280,11 +265,12 @@ export const FourPicsController: React.FC = () => {
                   triggerHaptic(hapticPatterns.tap);
                   sendGameAction('four_pics_next_stage');
                 }}
-                className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-display font-black text-sm uppercase shadow-lg active:scale-95 transition-all flex items-center justify-center space-x-2"
+                className="w-full py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-400 text-black font-display font-black text-xs uppercase shadow-md active:scale-95 transition-all flex items-center justify-center space-x-2"
               >
-                <span>STAGE SUIVANT ⏩</span>
+                <Play className="w-3.5 h-3.5 fill-current" />
+                <span>STAGE SUIVANT</span>
                 {Boolean(gameState.autoAdvanceSeconds) && (
-                  <span className="px-2 py-0.5 rounded-full bg-black/30 text-[11px] font-mono font-bold">
+                  <span className="px-1.5 py-0.2 rounded-full bg-black/20 text-[10px] font-mono font-bold">
                     {gameState.autoAdvanceSeconds}s
                   </span>
                 )}
@@ -294,14 +280,14 @@ export const FourPicsController: React.FC = () => {
         </div>
 
         {/* 4. Tactile Keyboard Grid */}
-        <div className="space-y-2">
-          <div className="grid grid-cols-6 gap-2">
+        <div className="space-y-1.5">
+          <div className="grid grid-cols-6 gap-1.5">
             {letterTiles.map((tile) => {
               if (tile.isRemoved) {
                 return (
                   <div
                     key={tile.id}
-                    className="h-12 rounded-xl bg-surface-dark/40 border border-white/5 opacity-20 flex items-center justify-center"
+                    className="h-11 rounded-xl bg-white/5 border border-white/5 opacity-20 flex items-center justify-center"
                   />
                 );
               }
@@ -311,10 +297,10 @@ export const FourPicsController: React.FC = () => {
                   key={tile.id}
                   disabled={tile.isUsed || isSolvedByMe || isRevealed}
                   onClick={() => handleSelectTile(tile.id)}
-                  className={`h-12 rounded-2xl font-display font-black text-lg border-2 transition-all flex items-center justify-center shadow-lg active:scale-90 ${
+                  className={`h-11 rounded-xl font-display font-black text-base border transition-all flex items-center justify-center shadow-sm active:scale-90 ${
                     tile.isUsed
                       ? 'bg-[#101420]/40 border-white/10 text-gray-600 opacity-40'
-                      : 'bg-[#181F33] border-white/25 text-white hover:border-[#00F2FE] hover:bg-white hover:text-gray-950'
+                      : 'bg-[#181F33] border-white/20 text-white hover:border-emerald-400 hover:bg-white hover:text-black'
                   }`}
                 >
                   {tile.char}
@@ -324,29 +310,29 @@ export const FourPicsController: React.FC = () => {
           </div>
 
           {/* Action Tools: Delete, Clear, Hints */}
-          <div className="grid grid-cols-4 gap-2 pt-1">
+          <div className="grid grid-cols-4 gap-1.5 pt-0.5">
             <button
               onClick={handleBackspace}
               disabled={selectedLetterIds.length === 0 || isSolvedByMe || isRevealed}
-              className="py-2.5 rounded-xl bg-[#101420] border border-white/20 text-gray-300 font-black text-xs flex items-center justify-center space-x-1 active:scale-95 disabled:opacity-40"
+              className="py-2 rounded-xl bg-[#121622] border border-white/15 text-gray-300 font-bold text-xs flex items-center justify-center space-x-1 active:scale-95 disabled:opacity-40"
             >
-              <Delete className="w-4 h-4" />
+              <Delete className="w-3.5 h-3.5" />
               <span>Effacer</span>
             </button>
 
             <button
               onClick={handleClear}
               disabled={selectedLetterIds.length === 0 || isSolvedByMe || isRevealed}
-              className="py-2.5 rounded-xl bg-[#101420] border border-white/20 text-rose-400 font-black text-xs flex items-center justify-center space-x-1 active:scale-95 disabled:opacity-40"
+              className="py-2 rounded-xl bg-[#121622] border border-white/15 text-rose-400 font-bold text-xs flex items-center justify-center space-x-1 active:scale-95 disabled:opacity-40"
             >
-              <Trash2 className="w-4 h-4" />
+              <Trash2 className="w-3.5 h-3.5" />
               <span>Vider</span>
             </button>
 
             <button
               onClick={handleHintReveal}
               disabled={isSolvedByMe || isRevealed}
-              className="py-2.5 rounded-xl bg-[#101420] border border-[#FFB800]/40 text-[#FFB800] font-black text-[11px] flex items-center justify-center space-x-1 active:scale-95 disabled:opacity-40"
+              className="py-2 rounded-xl bg-[#121622] border border-amber-500/30 text-amber-400 font-bold text-[11px] flex items-center justify-center space-x-1 active:scale-95 disabled:opacity-40"
               title="Révéler une lettre (-30 pts)"
             >
               <Lightbulb className="w-3.5 h-3.5" />
@@ -356,7 +342,7 @@ export const FourPicsController: React.FC = () => {
             <button
               onClick={handleHintRemove}
               disabled={isSolvedByMe || isRevealed}
-              className="py-2.5 rounded-xl bg-[#101420] border border-[#00F2FE]/40 text-[#00F2FE] font-black text-[11px] flex items-center justify-center space-x-1 active:scale-95 disabled:opacity-40"
+              className="py-2 rounded-xl bg-[#121622] border border-emerald-500/30 text-emerald-400 font-bold text-[11px] flex items-center justify-center space-x-1 active:scale-95 disabled:opacity-40"
               title="Retirer 3 fausses lettres (-20 pts)"
             >
               <Sparkles className="w-3.5 h-3.5" />
@@ -373,22 +359,22 @@ export const FourPicsController: React.FC = () => {
       {inspectImageIndex !== null && currentPuzzle.images[inspectImageIndex] && (
         <div
           onClick={() => setInspectImageIndex(null)}
-          className="fixed inset-0 z-50 bg-black/95 flex flex-col items-center justify-center p-6 select-none animate-scale-in"
+          className="fixed inset-0 z-50 bg-black/95 flex flex-col items-center justify-center p-4 select-none animate-scale-in"
         >
-          <div className="relative max-w-sm w-full rounded-3xl overflow-hidden border-2 border-[#00F2FE] shadow-2xl">
+          <div className="relative max-w-sm w-full rounded-2xl overflow-hidden border border-white/20 shadow-2xl">
             <img
               src={currentPuzzle.images[inspectImageIndex]}
               alt={`Indice #${inspectImageIndex + 1}`}
-              className="w-full h-auto max-h-[70vh] object-contain"
+              className="w-full h-auto max-h-[70vh] object-contain mx-auto"
             />
-            <div className="p-3 bg-[#101420] text-center">
-              <span className="text-xs font-black text-[#FFB800]">INDICE #{inspectImageIndex + 1}</span>
+            <div className="p-2.5 bg-[#121622] text-center">
+              <span className="text-xs font-black text-amber-400">INDICE #{inspectImageIndex + 1}</span>
             </div>
             <button
               onClick={() => setInspectImageIndex(null)}
-              className="absolute top-3 right-3 p-2 rounded-full bg-black/80 text-white"
+              className="absolute top-2 right-2 p-1.5 rounded-full bg-black/80 text-white"
             >
-              <X className="w-5 h-5" />
+              <X className="w-4 h-4" />
             </button>
           </div>
         </div>
