@@ -17,7 +17,6 @@ const BlackjackBoardTV = React.lazy(() => import('../boards/BlackjackBoardTV').t
 const MenteurBoardTV = React.lazy(() => import('../boards/MenteurBoardTV').then(m => ({ default: m.MenteurBoardTV })));
 const InterBoardTV = React.lazy(() => import('../boards/InterBoardTV').then(m => ({ default: m.InterBoardTV })));
 const FourPicsBoardTV = React.lazy(() => import('../boards/FourPicsBoardTV').then(m => ({ default: m.FourPicsBoardTV })));
-const MiniRacingBoardTV = React.lazy(() => import('../boards/MiniRacingBoardTV').then(m => ({ default: m.MiniRacingBoardTV })));
 const QuickGamesBoardTV = React.lazy(() => import('../boards/QuickGamesBoardTV').then(m => ({ default: m.QuickGamesBoardTV })));
 
 const TVBoardLoader: React.FC<{ gameId: string }> = ({ gameId }) => (
@@ -83,8 +82,6 @@ export const TVGamePlayView: React.FC = () => {
         return <InterBoardTV />;
       case 'four_pics':
         return <FourPicsBoardTV />;
-      case 'mini_racing':
-        return <MiniRacingBoardTV />;
       case 'quick_games':
         return <QuickGamesBoardTV />;
       default:

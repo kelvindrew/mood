@@ -1,28 +1,7 @@
-import { MiniRacingEngine } from './games/miniRacingEngine.js';
 import { QuickGamesEngine } from './games/quickGamesEngine.js';
 
 async function testEngines() {
-  console.log('=== Test Mini Racing & Quick Games Engines ===\n');
-
-  // 1. Test Mini Racing
-  console.log('1. Testing Mini Racing...');
-  let raceState = null;
-  const race = new MiniRacingEngine(
-    [
-      { id: 'p1', name: 'Alice', color: 'red' },
-      { id: 'p2', name: 'Bob', color: 'blue', isBot: true },
-    ],
-    (st) => { raceState = st; },
-    (winner) => { console.log('Race winner:', winner); }
-  );
-
-  raceState = race.getState();
-  console.log('Initial race state:', raceState.status, 'countdown:', raceState.countdown);
-  race.handlePlayerInput('p1', 'accelerate', { active: true });
-  race.handlePlayerInput('p1', 'steer', { steering: 0.5 });
-  race.handlePlayerInput('p1', 'nitro', { active: true });
-  console.log('P1 state after inputs:', race.playersList[0]);
-  race.destroy();
+  console.log('=== Test Quick Games Engine ===\n');
 
   // 2. Test Quick Games
   console.log('\n2. Testing Quick Games...');

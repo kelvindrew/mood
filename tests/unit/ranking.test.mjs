@@ -101,20 +101,6 @@ describe('buildFinalRanking (C3)', () => {
     expect(rk[1].playerId).toBe('bob'); // meilleure progression ensuite
   });
 
-  it('utilise finishOrder puis la progression pour la course', () => {
-    const rk = mgr.buildFinalRanking(makeRoom('mini_racing', {
-      status: 'finished',
-      finishOrder: ['carol', 'alice'],
-      players: [
-        { id: 'carol', progress: 3000, finishedRank: 1 },
-        { id: 'alice', progress: 3000, finishedRank: 2 },
-        { id: 'bob', progress: 2400, finishedRank: null },
-        { id: 'dave', progress: 900, finishedRank: null },
-      ],
-    }));
-    expect(rk.map((e) => e.playerId)).toEqual(['carol', 'alice', 'bob', 'dave']);
-  });
-
   it('place le gagnant Uno/Menteur devant puis tri par cartes restantes', () => {
     const rk = mgr.buildFinalRanking(makeRoom('card_party', {
       winner: 'alice',

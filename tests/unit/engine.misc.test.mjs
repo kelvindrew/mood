@@ -1,5 +1,5 @@
 // Moteurs divers : quiz, draw, blind test, menteur, inter, blackjack,
-// ludo, four_pics, mini_racing, quick_games — règles clés + C1 + E2
+// ludo, four_pics, quick_games — règles clés + C1 + E2
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { QuizEngine } from '../../server/games/quizEngine.js';
 import { DrawEngine } from '../../server/games/drawEngine.js';
@@ -9,7 +9,6 @@ import { InterEngine } from '../../server/games/interEngine.js';
 import { BlackjackEngine } from '../../server/games/blackjackEngine.js';
 import { LudoEngine } from '../../server/games/ludoEngine.js';
 import { FourPicsEngine } from '../../server/games/fourPicsEngine.js';
-import { MiniRacingEngine } from '../../server/games/miniRacingEngine.js';
 import { QuickGamesEngine } from '../../server/games/quickGamesEngine.js';
 
 afterEach(() => vi.useRealTimers());
@@ -232,28 +231,6 @@ describe('FourPicsEngine', () => {
     expect(e.getState().currentPuzzle).not.toHaveProperty('word');
     // C1 : pas de getPublicState dédié — l'état complet ne contient aucun secret
     expect(e.getPublicState ?? null).toBeNull();
-  });
-});
-
-describe('MiniRacingEngine', () => {
-  it('enregistre l’ordre d’arrivée puis termine la course', async () => {
-    vi.useFakeTimers();
-    let over = null;
-    const players = [P({ color: 'red' }), P({ id: 'p2', color: 'blue' }), P({ id: 'p3', color: 'green' })];
-    const e = new MiniRacingEngine(players, () => {}, (w) => { over = w; });
-    vi.advanceTimersByTime(3100); // fin du compte à rebours
-    e.status = 'racing';
-    const L = 3000; // TRACK_LENGTH(1000) × TOTAL_LAPS(3)
-    e.playersList[0].progress = L;
-    vi.advanceTimersByTime(40);
-    e.playersList[1].progress = L;
-    vi.advanceTimersByTime(40);
-    e.playersList[2].progress = L;
-    vi.advanceTimersByTime(40);
-    expect(e.finishOrder).toEqual(['p1', 'p2', 'p3']);
-    expect(e.status).toBe('finished');
-    expect(over).not.toBeNull();
-    e.destroy();
   });
 });
 

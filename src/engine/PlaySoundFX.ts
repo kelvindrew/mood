@@ -134,30 +134,6 @@ class PlaySoundFX {
     } catch {}
   }
 
-  // 5. Mini Racing: Engine Rev / Nitro Boost
-  public playNitroBoost() {
-    try {
-      const ctx = this.getContext();
-      if (!ctx) return;
-
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-
-      osc.type = 'sawtooth';
-      osc.frequency.setValueAtTime(220, ctx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.35);
-
-      gain.gain.setValueAtTime(0.4, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.4);
-
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-
-      osc.start();
-      osc.stop(ctx.currentTime + 0.4);
-    } catch {}
-  }
-
   // 7. Card Game: Deal & Swish
   public playCardSwoosh() {
     try {

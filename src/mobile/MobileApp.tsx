@@ -20,7 +20,6 @@ const BlackjackController = React.lazy(() => import('./views/controllers/Blackja
 const MenteurController = React.lazy(() => import('./views/controllers/MenteurController').then(m => ({ default: m.MenteurController })));
 const InterController = React.lazy(() => import('./views/controllers/InterController').then(m => ({ default: m.InterController })));
 const FourPicsController = React.lazy(() => import('./views/controllers/FourPicsController').then(m => ({ default: m.FourPicsController })));
-const MiniRacingController = React.lazy(() => import('./views/controllers/MiniRacingController').then(m => ({ default: m.MiniRacingController })));
 const QuickGamesController = React.lazy(() => import('./views/controllers/QuickGamesController').then(m => ({ default: m.QuickGamesController })));
 
 const ControllerLoader: React.FC = () => (
@@ -90,8 +89,6 @@ export const MobileApp: React.FC<MobileAppProps> = ({ isSimulatorMode = false, d
         return <InterController />;
       case 'four_pics':
         return <FourPicsController />;
-      case 'mini_racing':
-        return <MiniRacingController />;
       case 'quick_games':
         return <QuickGamesController />;
       default:

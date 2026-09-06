@@ -12,7 +12,6 @@ import { BlackjackEngine } from './games/blackjackEngine.js';
 import { MenteurEngine } from './games/menteurEngine.js';
 import { InterEngine } from './games/interEngine.js';
 import { FourPicsEngine } from './games/fourPicsEngine.js';
-import { MiniRacingEngine } from './games/miniRacingEngine.js';
 import { QuickGamesEngine } from './games/quickGamesEngine.js';
 
 const AVAILABLE_COLORS = ['red', 'blue', 'green', 'yellow', 'purple', 'cyan', 'orange', 'pink'];
@@ -393,10 +392,6 @@ export class RoomManager {
         room.gameEngine = new FourPicsEngine(room.players, onStateChange, onGameOver, room.settings);
         break;
       }
-      case 'mini_racing': {
-        room.gameEngine = new MiniRacingEngine(room.players, onStateChange, onGameOver);
-        break;
-      }
       case 'quick_games': {
         room.gameEngine = new QuickGamesEngine(room.players, onStateChange, onGameOver, room.settings);
         break;
@@ -551,11 +546,6 @@ export class RoomManager {
       case 'four_pics_rematch':
         if (room.gameId === 'four_pics' && room.gameEngine) room.gameEngine.startRound();
         break;
-      case 'racing_action':
-        if (room.gameId === 'mini_racing' && room.gameEngine) {
-          room.gameEngine.handlePlayerInput(player.id, payload.action, payload);
-        }
-        break;
       case 'quick_game_action':
         if (room.gameId === 'quick_games' && room.gameEngine) {
           room.gameEngine.handlePlayerAction(player.id, payload.action, payload);
@@ -629,7 +619,7 @@ export class RoomManager {
    *  - podium officiel  : scrabble (finalPodium), president (ordre président->trouduc)
    *  - jetons           : poker (playerChips)
    *  - statuts de paiement: blackjack (payoutStatus: blackjack > win > push > lose)
-   *  - pions / parcours : ludo (pions rentrés + avance), mini_racing (finishOrder)
+   *  - pions / parcours : ludo (pions rentrés + avance)
    *  - cartes restantes : card_party/uno et menteur (le vainqueur a vidé sa main)
    *  - équipe           : werewolf (winnerTeam — pas de vainqueur individuel)
    *
@@ -738,21 +728,6 @@ export class RoomManager {
         break;
       }
 
-      case 'mini_racing': {
-        tieByScore = false; // le résultat EST l'ordre de franchissement
-        const finishIds = Array.isArray(gs.finishOrder) ? gs.finishOrder : [];
-        const progressOf = (id) =>
-          Number((gs.players || []).find((r) => r.id === id)?.progress) || 0;
-        const rest = idsInRoom
-          .filter((id) => !finishIds.includes(id))
-          .map((id) => ({ id, progress: progressOf(id) }))
-          .sort((a, b) => b.progress - a.progress)
-          .map((x) => x.id);
-        ordered = [...finishIds.filter((id) => idsInRoom.includes(id)), ...rest]
-          .map((id) => ({ id, score: 0 }));
-        break;
-      }
-
       case 'card_party':
       case 'menteur': {
         tieByScore = false; // le vainqueur est celui qui a vidé sa main
@@ -850,7 +825,7 @@ export class RoomManager {
   getPublicRoomState(room) {
     // C1 — Seul l'état PUBLIC du jeu circule dans room_state_update.
     // L'état complet (room.gameState) ne quitte jamais le serveur.
-    // Les moteurs sans données secrètes (ludo, four_pics, mini_racing) n'exposent
+    // Les moteurs sans données secrètes (ludo, four_pics) n'exposent
     // pas getPublicState : leur état complet est déjà public.
     const publicGameState =
       room.gameEngine && room.gameState
@@ -894,7 +869,7 @@ export class RoomManager {
   broadcastGameState(room) {
     if (!room.gameEngine || !room.gameState) return;
 
-    // Les moteurs sans secrets (ludo, four_pics, mini_racing) n'ont pas
+    // Les moteurs sans secrets (ludo, four_pics) n'ont pas
     // getPublicState : leur état complet est public par nature.
     const publicState =
       typeof room.gameEngine.getPublicState === 'function'
