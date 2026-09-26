@@ -15,7 +15,8 @@ export type GameId =
   | 'inter'
   | 'four_pics'
   | 'quick_games'
-  | 'spy';
+  | 'spy'
+  | 'petit_bac';
 
 export type PlayerColor = 'red' | 'blue' | 'green' | 'yellow' | 'purple' | 'cyan' | 'orange' | 'pink';
 
@@ -555,6 +556,51 @@ export interface SpyGameState {
   canGuessWord?: boolean;
 }
 
+export interface PetitBacCategory {
+  id: string;
+  label: string;
+  icon: string;
+}
+
+export interface PetitBacGameState {
+  gameId: 'petit_bac';
+  phase: 'wheel' | 'writing' | 'voting' | 'round_recap' | 'gameover';
+  currentRound: number;
+  totalRounds: number;
+  timer: number;
+  currentLetter: string;
+  currentCategories: PetitBacCategory[];
+  votingCategory: PetitBacCategory | null;
+  votingCategoryIndex: number;
+  hasStopBeenTriggered: boolean;
+  finishedPlayerIds: string[];
+  answers: Record<string, Record<string, string>>;
+  validationVotes: Record<string, Record<string, boolean>>;
+  scores: Record<string, number>;
+  finalPodium: Array<{
+    id: string;
+    name: string;
+    avatar?: string;
+    color: string;
+    score: number;
+    rank: number;
+    isWinner: boolean;
+  }> | null;
+  isGameOver: boolean;
+  players: Array<{
+    id: string;
+    name: string;
+    color: string;
+    avatar?: string;
+    isBot?: boolean;
+    hasFinished: boolean;
+  }>;
+  // Private
+  myAnswers?: Record<string, string>;
+  hasFinished?: boolean;
+  myVotes?: Record<string, boolean>;
+}
+
 // ----------------------------------------------------
 // ROOM STATE
 // ----------------------------------------------------
@@ -593,6 +639,7 @@ export interface RoomState {
     | FourPicsGameState
     | QuickGamesGameState
     | SpyGameState
+    | PetitBacGameState
     | null;
   serverLanIp?: string;
   serverPort?: number;

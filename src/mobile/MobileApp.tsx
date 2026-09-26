@@ -22,6 +22,7 @@ const InterController = React.lazy(() => import('./views/controllers/InterContro
 const FourPicsController = React.lazy(() => import('./views/controllers/FourPicsController').then(m => ({ default: m.FourPicsController })));
 const QuickGamesController = React.lazy(() => import('./views/controllers/QuickGamesController').then(m => ({ default: m.QuickGamesController })));
 const SpyController = React.lazy(() => import('./views/controllers/SpyController').then(m => ({ default: m.SpyController })));
+const PetitBacController = React.lazy(() => import('./views/controllers/PetitBacController').then(m => ({ default: m.PetitBacController })));
 
 const ControllerLoader: React.FC = () => (
   <div className="flex flex-col items-center justify-center min-h-screen bg-[#0A120E] text-white p-6 select-none space-y-4">
@@ -94,6 +95,8 @@ export const MobileApp: React.FC<MobileAppProps> = ({ isSimulatorMode = false, d
         return <QuickGamesController />;
       case 'spy':
         return <SpyController />;
+      case 'petit_bac':
+        return <PetitBacController />;
       default:
         return <LudoController />;
     }

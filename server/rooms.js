@@ -14,6 +14,7 @@ import { InterEngine } from './games/interEngine.js';
 import { FourPicsEngine } from './games/fourPicsEngine.js';
 import { QuickGamesEngine } from './games/quickGamesEngine.js';
 import { SpyEngine } from './games/spyEngine.js';
+import { PetitBacEngine } from './games/petitBacEngine.js';
 
 const AVAILABLE_COLORS = ['red', 'blue', 'green', 'yellow', 'purple', 'cyan', 'orange', 'pink'];
 
@@ -399,6 +400,10 @@ export class RoomManager {
       }
       case 'spy': {
         room.gameEngine = new SpyEngine(room.players, onStateChange, onGameOver, room.settings);
+        break;
+      }
+      case 'petit_bac': {
+        room.gameEngine = new PetitBacEngine(room.players, onStateChange, onGameOver, room.settings);
         break;
       }
       default: {

@@ -29,6 +29,34 @@ export const GAMES_CATALOG: GameCatalogItem[] = [
     ]
   },
   {
+    id: 'petit_bac',
+    title: 'LE PETIT BAC MULTIJOUEUR',
+    tagline: 'Le grand classique des lettres, des catégories et des votes hilarants',
+    description: 'Une lettre au sort, 5 catégories et 60 secondes pour tout remplir ! Dès qu’un joueur a fini, il appuie sur STOP pour précipiter ses amis. Ensuite, débattez et votez sur vos smartphones pour valider ou refuser les réponses !',
+    category: 'reflexion',
+    minPlayers: 1,
+    maxPlayers: 12,
+    durationMinutes: '10–20 min',
+    difficulty: 'Facile',
+    badge: 'POPULAIRE',
+    coverImage: 'https://images.unsplash.com/photo-1455390582262-044cdead277a?auto=format&fit=crop&w=800&q=80',
+    heroImage: 'https://images.unsplash.com/photo-1455390582262-044cdead277a?auto=format&fit=crop&w=1920&q=85',
+    features: [
+      'Tirage de la lettre à la roulette en direct sur la TV',
+      '5 catégories variées à remplir sur smartphone',
+      'Bouton buzzer « STOP ! » qui enclenche le compte à rebours final de 10s',
+      'Phase de vote collectif : validez ou refusez les réponses des amis',
+      'Bonus de mots uniques (+10 pts) et détection de doublons (+5 pts)'
+    ],
+    rules: [
+      'Observez la lettre tirée au sort et les 5 catégories sur la TV.',
+      'Remplissez chaque champ sur votre mobile avec un mot commençant par la bonne lettre.',
+      'Si vous avez tout rempli, appuyez sur « STOP ! » pour précipiter la fin du chrono.',
+      'Votez ensuite pour chaque catégorie afin de valider ou refuser les propositions.',
+      'Cumulez les points sur 3 manches pour remporter la couronne du Petit Bac !'
+    ]
+  },
+  {
     id: 'quick_games',
     title: 'QUICK GAMES ARCADE',
     tagline: 'Micro-jeux ultra-rapides de 30s à 2min pour tester vos réflexes',
