@@ -17,7 +17,8 @@ export type GameId =
   | 'quick_games'
   | 'spy'
   | 'petit_bac'
-  | 'fake_news';
+  | 'fake_news'
+  | 'bomb_party';
 
 export type PlayerColor = 'red' | 'blue' | 'green' | 'yellow' | 'purple' | 'cyan' | 'orange' | 'pink';
 
@@ -652,6 +653,48 @@ export interface FakeNewsGameState {
   myOwnChoiceId?: string | null;
 }
 
+export interface BombPartyPlayer {
+  id: string;
+  name: string;
+  color: string;
+  avatar?: string;
+  lives: number;
+  isAlive: boolean;
+  isBot?: boolean;
+  score: number;
+}
+
+export interface BombPartyGameState {
+  gameId: 'bomb_party';
+  phase: 'playing' | 'exploding' | 'gameover';
+  currentSyllable: string;
+  activePlayerId: string;
+  activePlayerName: string;
+  activePlayerColor: string;
+  turnTimeRemaining: number;
+  turnDuration: number;
+  roundNumber: number;
+  combo: number;
+  usedWords: string[];
+  lastWord: { word: string; player: string; playerId?: string } | null;
+  lastExplodedPlayerId: string | null;
+  players: BombPartyPlayer[];
+  isGameOver: boolean;
+  finalPodium: Array<{
+    id: string;
+    name: string;
+    avatar?: string;
+    color: string;
+    score: number;
+    rank: number;
+    isWinner: boolean;
+  }> | null;
+  // Private controller helpers
+  isMyTurn?: boolean;
+  myLives?: number;
+  isMyAlive?: boolean;
+}
+
 // ----------------------------------------------------
 // ROOM STATE
 // ----------------------------------------------------
@@ -692,6 +735,7 @@ export interface RoomState {
     | SpyGameState
     | PetitBacGameState
     | FakeNewsGameState
+    | BombPartyGameState
     | null;
   serverLanIp?: string;
   serverPort?: number;

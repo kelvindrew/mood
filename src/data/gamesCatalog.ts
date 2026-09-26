@@ -85,6 +85,34 @@ export const GAMES_CATALOG: GameCatalogItem[] = [
     ]
   },
   {
+    id: 'bomb_party',
+    title: 'TIC-TAC BOOM',
+    tagline: 'Le jeu culte de la bombe à retardement, de vocabulaire et de panique',
+    description: 'Une bombe avec une mèche allumée tourne entre tous les joueurs du salon ! Trouvez un mot contenant la syllabe imposée pour vous débarrasser de la bombe et la passer à votre voisin avant qu’elle n’explose ! 3 vies chacun, qui sera le dernier survivant ?',
+    category: 'party',
+    minPlayers: 2,
+    maxPlayers: 12,
+    durationMinutes: '10–20 min',
+    difficulty: 'Facile',
+    badge: 'POPULAIRE',
+    coverImage: 'https://images.unsplash.com/photo-1546776310-eef45dd6d63c?auto=format&fit=crop&w=800&q=80',
+    heroImage: 'https://images.unsplash.com/photo-1546776310-eef45dd6d63c?auto=format&fit=crop&w=1920&q=85',
+    features: [
+      'Grosse bombe animée avec mèche crépitante et étincelles sur Smart TV',
+      'Syllabes françaises tirées au sort et vérification dictionnaire officielle en temps réel',
+      'Passage ultra-dynamique de la bombe de smartphone en smartphone',
+      'Chrono sous tension avec pulsations et vibrations haptiques sous 5 secondes',
+      'Système de 3 vies (cœurs) et élimination jusqu’au survivant ultime'
+    ],
+    rules: [
+      'Regardez la syllabe imposée affichée au centre de la bombe sur la TV.',
+      'Si vous avez la bombe, tapez sur votre mobile un mot français d’au moins 3 lettres qui contient cette syllabe.',
+      'Validez votre mot : la bombe passe immédiatement au joueur suivant et une nouvelle syllabe apparaît !',
+      'Attention au chrono : si la bombe explose dans vos mains, vous perdez un cœur !',
+      'Le dernier joueur qui conserve au moins une vie remporte la victoire !'
+    ]
+  },
+  {
     id: 'quick_games',
     title: 'QUICK GAMES ARCADE',
     tagline: 'Micro-jeux ultra-rapides de 30s à 2min pour tester vos réflexes',

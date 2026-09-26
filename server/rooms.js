@@ -16,6 +16,7 @@ import { QuickGamesEngine } from './games/quickGamesEngine.js';
 import { SpyEngine } from './games/spyEngine.js';
 import { PetitBacEngine } from './games/petitBacEngine.js';
 import { FakeNewsEngine } from './games/fakeNewsEngine.js';
+import { BombPartyEngine } from './games/bombPartyEngine.js';
 
 const AVAILABLE_COLORS = ['red', 'blue', 'green', 'yellow', 'purple', 'cyan', 'orange', 'pink'];
 
@@ -409,6 +410,10 @@ export class RoomManager {
       }
       case 'fake_news': {
         room.gameEngine = new FakeNewsEngine(room.players, onStateChange, onGameOver, room.settings);
+        break;
+      }
+      case 'bomb_party': {
+        room.gameEngine = new BombPartyEngine(room.players, onStateChange, onGameOver, room.settings);
         break;
       }
       default: {
