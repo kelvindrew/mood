@@ -140,6 +140,34 @@ export const GAMES_CATALOG: GameCatalogItem[] = [
     ]
   },
   {
+    id: 'meme_factory',
+    title: 'MEME FACTORY',
+    tagline: 'Le grand jeu des légendes hilarantes et des réactions cultes',
+    description: 'Une photo virale ou une réaction culte s’affiche avec une situation absurde. Inventez anonymement la punchline la plus drôle sur votre smartphone ! Ensuite, votez pour vos légendes favorites et découvrez qui a créé les pépites de la soirée.',
+    category: 'party',
+    minPlayers: 2,
+    maxPlayers: 12,
+    durationMinutes: '10–20 min',
+    difficulty: 'Facile',
+    badge: 'POPULAIRE',
+    coverImage: 'https://images.unsplash.com/photo-1534361960057-19889db9621e?auto=format&fit=crop&w=800&q=80',
+    heroImage: 'https://images.unsplash.com/photo-1534361960057-19889db9621e?auto=format&fit=crop&w=1920&q=85',
+    features: [
+      'Galerie de photos insolites et d’expressions virales cultes',
+      'Phase de rédaction secrète de punchlines sur smartphone avec suggestions',
+      'Exposition anonyme façon galerie d’art sur la Smart TV',
+      'Système de votes sous tension (+150 pts par vote, +100 pts bonus)',
+      'Révélation théâtralisée des auteurs avec attribution de la couronne'
+    ],
+    rules: [
+      'Observez la photo de meme et la situation projetées sur la télévision.',
+      'Rédigez la légende la plus drôle ou inattendue sur votre smartphone.',
+      'Toutes les créations s’affichent anonymement sur la TV : votez pour votre préférée (sans voter pour la vôtre !).',
+      'Gagnez 150 points pour chaque joueur qui a voté pour votre punchline.',
+      'Le joueur qui cumule le plus de points après 3 manches est sacré Meme Master !'
+    ]
+  },
+  {
     id: 'quick_games',
     title: 'QUICK GAMES ARCADE',
     tagline: 'Micro-jeux ultra-rapides de 30s à 2min pour tester vos réflexes',

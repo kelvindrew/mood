@@ -19,7 +19,8 @@ export type GameId =
   | 'petit_bac'
   | 'fake_news'
   | 'bomb_party'
-  | 'naval_battle';
+  | 'naval_battle'
+  | 'meme_factory';
 
 export type PlayerColor = 'red' | 'blue' | 'green' | 'yellow' | 'purple' | 'cyan' | 'orange' | 'pink';
 
@@ -744,6 +745,57 @@ export interface NavalBattleGameState {
   isMyTurn?: boolean;
 }
 
+export interface MemeFactorySubmission {
+  id: string;
+  text: string;
+  authorName?: string;
+  authorAvatar?: string;
+  authorColor?: string;
+  votesCount?: number;
+  voters?: string[];
+  isMine?: boolean;
+}
+
+export interface MemeFactoryGameState {
+  gameId: 'meme_factory';
+  phase: 'captioning' | 'voting' | 'reveal' | 'gameover';
+  currentRound: number;
+  totalRounds: number;
+  timeRemaining: number;
+  currentMeme: {
+    id: string;
+    title: string;
+    imageUrl: string;
+    situation: string;
+    defaultJokes: string[];
+  } | null;
+  submissions: MemeFactorySubmission[];
+  players: Array<{
+    id: string;
+    name: string;
+    color: string;
+    avatar?: string;
+    score: number;
+    hasSubmitted: boolean;
+    hasVoted: boolean;
+  }>;
+  isGameOver: boolean;
+  finalPodium: Array<{
+    id: string;
+    name: string;
+    avatar?: string;
+    color: string;
+    score: number;
+    rank: number;
+    isWinner: boolean;
+  }> | null;
+  // Private controller helpers
+  hasSubmitted?: boolean;
+  hasVoted?: boolean;
+  myCaption?: string;
+  myVotedSubmissionId?: string;
+}
+
 // ----------------------------------------------------
 // ROOM STATE
 // ----------------------------------------------------
@@ -786,6 +838,7 @@ export interface RoomState {
     | FakeNewsGameState
     | BombPartyGameState
     | NavalBattleGameState
+    | MemeFactoryGameState
     | null;
   serverLanIp?: string;
   serverPort?: number;

@@ -18,6 +18,7 @@ import { PetitBacEngine } from './games/petitBacEngine.js';
 import { FakeNewsEngine } from './games/fakeNewsEngine.js';
 import { BombPartyEngine } from './games/bombPartyEngine.js';
 import { NavalBattleEngine } from './games/navalBattleEngine.js';
+import { MemeFactoryEngine } from './games/memeFactoryEngine.js';
 
 const AVAILABLE_COLORS = ['red', 'blue', 'green', 'yellow', 'purple', 'cyan', 'orange', 'pink'];
 
@@ -419,6 +420,10 @@ export class RoomManager {
       }
       case 'naval_battle': {
         room.gameEngine = new NavalBattleEngine(room.players, onStateChange, onGameOver, room.settings);
+        break;
+      }
+      case 'meme_factory': {
+        room.gameEngine = new MemeFactoryEngine(room.players, onStateChange, onGameOver, room.settings);
         break;
       }
       default: {
