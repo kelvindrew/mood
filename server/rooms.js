@@ -15,6 +15,7 @@ import { FourPicsEngine } from './games/fourPicsEngine.js';
 import { QuickGamesEngine } from './games/quickGamesEngine.js';
 import { SpyEngine } from './games/spyEngine.js';
 import { PetitBacEngine } from './games/petitBacEngine.js';
+import { FakeNewsEngine } from './games/fakeNewsEngine.js';
 
 const AVAILABLE_COLORS = ['red', 'blue', 'green', 'yellow', 'purple', 'cyan', 'orange', 'pink'];
 
@@ -404,6 +405,10 @@ export class RoomManager {
       }
       case 'petit_bac': {
         room.gameEngine = new PetitBacEngine(room.players, onStateChange, onGameOver, room.settings);
+        break;
+      }
+      case 'fake_news': {
+        room.gameEngine = new FakeNewsEngine(room.players, onStateChange, onGameOver, room.settings);
         break;
       }
       default: {

@@ -16,7 +16,8 @@ export type GameId =
   | 'four_pics'
   | 'quick_games'
   | 'spy'
-  | 'petit_bac';
+  | 'petit_bac'
+  | 'fake_news';
 
 export type PlayerColor = 'red' | 'blue' | 'green' | 'yellow' | 'purple' | 'cyan' | 'orange' | 'pink';
 
@@ -601,6 +602,56 @@ export interface PetitBacGameState {
   myVotes?: Record<string, boolean>;
 }
 
+export interface FakeNewsChoice {
+  id: string;
+  text: string;
+  authorPlayerId?: string;
+  isCorrect?: boolean;
+}
+
+export interface FakeNewsGameState {
+  gameId: 'fake_news';
+  phase: 'writing' | 'voting' | 'reveal' | 'round_recap' | 'gameover';
+  currentRound: number;
+  totalRounds: number;
+  timer: number;
+  prompt: string;
+  truth?: string;
+  votingChoices: FakeNewsChoice[];
+  playerVotes: Record<string, string>;
+  lastRoundStats: Array<{
+    id: string;
+    text: string;
+    isCorrect?: boolean;
+    authorName?: string;
+    voters: string[];
+  }>;
+  scores: Record<string, number>;
+  finalPodium: Array<{
+    id: string;
+    name: string;
+    avatar?: string;
+    color: string;
+    score: number;
+    rank: number;
+    isWinner: boolean;
+  }> | null;
+  isGameOver: boolean;
+  players: Array<{
+    id: string;
+    name: string;
+    color: string;
+    avatar?: string;
+    isBot?: boolean;
+    hasSubmittedLie: boolean;
+    hasVoted: boolean;
+  }>;
+  // Private
+  myLie?: string;
+  myVote?: string | null;
+  myOwnChoiceId?: string | null;
+}
+
 // ----------------------------------------------------
 // ROOM STATE
 // ----------------------------------------------------
@@ -640,6 +691,7 @@ export interface RoomState {
     | QuickGamesGameState
     | SpyGameState
     | PetitBacGameState
+    | FakeNewsGameState
     | null;
   serverLanIp?: string;
   serverPort?: number;

@@ -57,6 +57,34 @@ export const GAMES_CATALOG: GameCatalogItem[] = [
     ]
   },
   {
+    id: 'fake_news',
+    title: 'FAKE NEWS : QUI A DIT VRAI ?',
+    tagline: 'Le grand jeu de bluff, d’intox et d’anecdotes insolites',
+    description: 'Une question insolite mais 100% réelle est posée. Inventez le mensonge le plus crédible possible pour piéger vos amis ! Ensuite, découvrez les propositions de tout le monde mélangées à la vérité : trouvez le vrai et évitez les pièges de vos potes !',
+    category: 'party',
+    minPlayers: 2,
+    maxPlayers: 12,
+    durationMinutes: '10–20 min',
+    difficulty: 'Facile',
+    badge: 'BLUFF',
+    coverImage: 'https://images.unsplash.com/photo-1585829365295-ab7cd400c167?auto=format&fit=crop&w=800&q=80',
+    heroImage: 'https://images.unsplash.com/photo-1585829365295-ab7cd400c167?auto=format&fit=crop&w=1920&q=85',
+    features: [
+      'Anecdotes et faits historiques insolites mais 100% véridiques',
+      'Phase de rédaction secrète de mensonges sur smartphone',
+      'Mélange aléatoire des bobards et de la vérité sur la Smart TV',
+      'Votes sous tension : gagnez +200 pts en trouvant le vrai, +100 pts par joueur piégé par votre bluff !',
+      'Révélation théâtralisée auteur par auteur avec réactions'
+    ],
+    rules: [
+      'Lisez l’anecdote à trou affichée sur l’écran de la télévision.',
+      'Sur votre smartphone, inventez un mensonge crédible ou amusant pour compléter la phrase.',
+      'Toutes les propositions (vos mensonges + la vraie réponse) s’affichent anonymement.',
+      'Votez pour celle qui est, selon vous, la VRAIE réponse !',
+      'Marquez 200 points si vous trouvez la vérité, et 100 points pour chaque ami qui a voté pour votre mensonge !'
+    ]
+  },
+  {
     id: 'quick_games',
     title: 'QUICK GAMES ARCADE',
     tagline: 'Micro-jeux ultra-rapides de 30s à 2min pour tester vos réflexes',
