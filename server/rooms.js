@@ -19,6 +19,7 @@ import { FakeNewsEngine } from './games/fakeNewsEngine.js';
 import { BombPartyEngine } from './games/bombPartyEngine.js';
 import { NavalBattleEngine } from './games/navalBattleEngine.js';
 import { MemeFactoryEngine } from './games/memeFactoryEngine.js';
+import { ConnectFourEngine } from './games/connectFourEngine.js';
 
 const AVAILABLE_COLORS = ['red', 'blue', 'green', 'yellow', 'purple', 'cyan', 'orange', 'pink'];
 
@@ -424,6 +425,10 @@ export class RoomManager {
       }
       case 'meme_factory': {
         room.gameEngine = new MemeFactoryEngine(room.players, onStateChange, onGameOver, room.settings);
+        break;
+      }
+      case 'connect_four': {
+        room.gameEngine = new ConnectFourEngine(room.players, onStateChange, onGameOver, room.settings);
         break;
       }
       default: {

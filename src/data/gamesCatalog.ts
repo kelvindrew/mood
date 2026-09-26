@@ -168,6 +168,33 @@ export const GAMES_CATALOG: GameCatalogItem[] = [
     ]
   },
   {
+    id: 'connect_four',
+    title: 'PUISSANCE 4 DELUXE',
+    tagline: 'Le duel vertical légendaire réinventé pour votre salon',
+    description: 'Affrontez vos amis dans un face-à-face tactique intense ! Sélectionnez votre colonne d’un glissement de doigt sur smartphone et regardez vos pions rouges ou jaunes tomber avec gravité dans la grille 3D lumineuse de la télévision. Alignez 4 pions pour gagner !',
+    category: 'reflexion',
+    minPlayers: 2,
+    maxPlayers: 6,
+    durationMinutes: '5–15 min',
+    difficulty: 'Facile',
+    badge: 'POPULAIRE',
+    coverImage: 'https://images.unsplash.com/photo-1610890716171-6b1bb98ffd09?auto=format&fit=crop&w=800&q=80',
+    heroImage: 'https://images.unsplash.com/photo-1610890716171-6b1bb98ffd09?auto=format&fit=crop&w=1920&q=85',
+    features: [
+      'Grille verticale officielle 7x6 en 3D luminescente sur la Smart TV',
+      'Sélecteur de colonne tactile ultra-fluide avec prévisualisation sur smartphone',
+      'Physique de chute des pions et effets sonores percutants',
+      'Détection automatique des alignements gagnants (horizontal, vertical, diagonal)',
+      'Matchs en Best of 3 avec suivi des étoiles de victoires'
+    ],
+    rules: [
+      'À votre tour, sélectionnez une des 7 colonnes sur votre écran de smartphone.',
+      'Appuyez sur « LÂCHER LE PION » pour faire tomber votre jeton dans la grille.',
+      'Le pion descend par gravité jusqu’à la position disponible la plus basse.',
+      'Le premier joueur qui aligne 4 pions consécutifs de sa couleur remporte la manche !'
+    ]
+  },
+  {
     id: 'quick_games',
     title: 'QUICK GAMES ARCADE',
     tagline: 'Micro-jeux ultra-rapides de 30s à 2min pour tester vos réflexes',

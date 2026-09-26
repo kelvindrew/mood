@@ -24,6 +24,7 @@ const FakeNewsBoardTV = React.lazy(() => import('../boards/FakeNewsBoardTV').the
 const BombPartyBoardTV = React.lazy(() => import('../boards/BombPartyBoardTV').then(m => ({ default: m.BombPartyBoardTV })));
 const NavalBattleBoardTV = React.lazy(() => import('../boards/NavalBattleBoardTV').then(m => ({ default: m.NavalBattleBoardTV })));
 const MemeFactoryBoardTV = React.lazy(() => import('../boards/MemeFactoryBoardTV').then(m => ({ default: m.MemeFactoryBoardTV })));
+const ConnectFourBoardTV = React.lazy(() => import('../boards/ConnectFourBoardTV').then(m => ({ default: m.ConnectFourBoardTV })));
 
 const TVBoardLoader: React.FC<{ gameId: string }> = ({ gameId }) => (
   <div className="flex flex-col items-center justify-center space-y-4 text-center select-none animate-scale-in">
@@ -102,6 +103,8 @@ export const TVGamePlayView: React.FC = () => {
         return <NavalBattleBoardTV />;
       case 'meme_factory':
         return <MemeFactoryBoardTV />;
+      case 'connect_four':
+        return <ConnectFourBoardTV />;
       default:
         return <LudoBoardTV />;
     }

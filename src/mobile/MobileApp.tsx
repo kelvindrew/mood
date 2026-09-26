@@ -27,6 +27,7 @@ const FakeNewsController = React.lazy(() => import('./views/controllers/FakeNews
 const BombPartyController = React.lazy(() => import('./views/controllers/BombPartyController').then(m => ({ default: m.BombPartyController })));
 const NavalBattleController = React.lazy(() => import('./views/controllers/NavalBattleController').then(m => ({ default: m.NavalBattleController })));
 const MemeFactoryController = React.lazy(() => import('./views/controllers/MemeFactoryController').then(m => ({ default: m.MemeFactoryController })));
+const ConnectFourController = React.lazy(() => import('./views/controllers/ConnectFourController').then(m => ({ default: m.ConnectFourController })));
 
 const ControllerLoader: React.FC = () => (
   <div className="flex flex-col items-center justify-center min-h-screen bg-[#0A120E] text-white p-6 select-none space-y-4">
@@ -109,6 +110,8 @@ export const MobileApp: React.FC<MobileAppProps> = ({ isSimulatorMode = false, d
         return <NavalBattleController />;
       case 'meme_factory':
         return <MemeFactoryController />;
+      case 'connect_four':
+        return <ConnectFourController />;
       default:
         return <LudoController />;
     }

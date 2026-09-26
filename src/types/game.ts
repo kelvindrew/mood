@@ -20,7 +20,8 @@ export type GameId =
   | 'fake_news'
   | 'bomb_party'
   | 'naval_battle'
-  | 'meme_factory';
+  | 'meme_factory'
+  | 'connect_four';
 
 export type PlayerColor = 'red' | 'blue' | 'green' | 'yellow' | 'purple' | 'cyan' | 'orange' | 'pink';
 
@@ -796,6 +797,50 @@ export interface MemeFactoryGameState {
   myVotedSubmissionId?: string;
 }
 
+export interface ConnectFourPlayerState {
+  id: string;
+  name: string;
+  avatar?: string;
+  color: string;
+  chipColor: 'red' | 'yellow';
+  score: number;
+  roundsWon: number;
+}
+
+export interface ConnectFourGameState {
+  gameId: 'connect_four';
+  phase: 'playing' | 'round_over' | 'gameover';
+  roundNumber: number;
+  targetWins: number;
+  currentTurnPlayerId: string;
+  currentTurnPlayerName: string;
+  currentTurnColor: 'red' | 'yellow';
+  board: (('red' | 'yellow') | null)[][]; // 6 rows x 7 cols
+  winningCells: number[][] | null; // [[row, col], ...]
+  lastDrop: {
+    col: number;
+    row: number;
+    playerChip: 'red' | 'yellow';
+    playerName: string;
+  } | null;
+  p1: ConnectFourPlayerState;
+  p2: ConnectFourPlayerState;
+  isGameOver: boolean;
+  finalPodium: Array<{
+    id: string;
+    name: string;
+    avatar?: string;
+    color: string;
+    score: number;
+    rank: number;
+    isWinner: boolean;
+  }> | null;
+  // Private controller helpers
+  myRole?: 'p1' | 'p2' | 'spectator';
+  myChipColor?: 'red' | 'yellow' | null;
+  isMyTurn?: boolean;
+}
+
 // ----------------------------------------------------
 // ROOM STATE
 // ----------------------------------------------------
@@ -839,6 +884,7 @@ export interface RoomState {
     | BombPartyGameState
     | NavalBattleGameState
     | MemeFactoryGameState
+    | ConnectFourGameState
     | null;
   serverLanIp?: string;
   serverPort?: number;
