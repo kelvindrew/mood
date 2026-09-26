@@ -113,6 +113,33 @@ export const GAMES_CATALOG: GameCatalogItem[] = [
     ]
   },
   {
+    id: 'naval_battle',
+    title: 'BATAILLE NAVALE LIVE',
+    tagline: 'Le grand duel tactique de guerre navale et de tirs de missiles',
+    description: 'Placez secrètement vos 4 navires de guerre (Porte-avions, Croiseur, Torpilleur, Sous-marin) à l’abri des regards sur votre smartphone. Donnez vos ordres de tir au radar et regardez les missiles s’écraser en direct sur l’écran géant de la télévision !',
+    category: 'reflexion',
+    minPlayers: 2,
+    maxPlayers: 8,
+    durationMinutes: '10–25 min',
+    difficulty: 'Moyen',
+    badge: 'STRATÉGIE',
+    coverImage: 'https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?auto=format&fit=crop&w=800&q=80',
+    heroImage: 'https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?auto=format&fit=crop&w=1920&q=85',
+    features: [
+      'Radar satellite océanique haute définition sur la Smart TV',
+      'Placement de flotte 100% confidentiel sur smartphone (ou auto-déploiement éclair)',
+      'Animations cinématiques de tirs de missiles : À l’eau, Touché ou Coulé !',
+      'Affichage tactique de la flotte amie et des avaries en direct',
+      'IA Amiral Jarvis disponible pour jouer en solo ou compléter les duels'
+    ],
+    rules: [
+      'Déployez secrètement vos 4 navires sur la grille océanique 8x8 de votre smartphone.',
+      'À votre tour de tir, désignez une case ennemie (de A1 à H8) puis appuyez sur « FAIRE FEU ! ».',
+      'Suivez la trajectoire du missile sur la TV : de l’eau jaillit ou une explosion retentit !',
+      'Coulez tous les navires de la flotte adverse pour remporter la bataille navale !'
+    ]
+  },
+  {
     id: 'quick_games',
     title: 'QUICK GAMES ARCADE',
     tagline: 'Micro-jeux ultra-rapides de 30s à 2min pour tester vos réflexes',

@@ -18,7 +18,8 @@ export type GameId =
   | 'spy'
   | 'petit_bac'
   | 'fake_news'
-  | 'bomb_party';
+  | 'bomb_party'
+  | 'naval_battle';
 
 export type PlayerColor = 'red' | 'blue' | 'green' | 'yellow' | 'purple' | 'cyan' | 'orange' | 'pink';
 
@@ -695,6 +696,54 @@ export interface BombPartyGameState {
   isMyAlive?: boolean;
 }
 
+export interface NavalBattleShip {
+  id: string;
+  name: string;
+  size: number;
+  coordinates: string[];
+  hits: string[];
+}
+
+export interface NavalBattlePlayerState {
+  id: string;
+  name: string;
+  avatar?: string;
+  color: string;
+  ready: boolean;
+  score: number;
+  shotsReceived: Record<string, 'hit' | 'miss'>;
+  sunkShips: string[];
+  ships?: NavalBattleShip[]; // Private to the player or shown at game over
+}
+
+export interface NavalBattleGameState {
+  gameId: 'naval_battle';
+  phase: 'placement' | 'battle' | 'gameover';
+  turnPlayerId: string;
+  turnPlayerName: string;
+  lastShot: {
+    attackerId: string;
+    attackerName: string;
+    coord: string;
+    result: 'hit' | 'miss' | 'sunk';
+    sunkShipName?: string | null;
+  } | null;
+  p1: NavalBattlePlayerState;
+  p2: NavalBattlePlayerState;
+  isGameOver: boolean;
+  finalPodium: Array<{
+    id: string;
+    name: string;
+    avatar?: string;
+    color: string;
+    score: number;
+    rank: number;
+    isWinner: boolean;
+  }> | null;
+  myRole?: 'p1' | 'p2' | 'spectator';
+  isMyTurn?: boolean;
+}
+
 // ----------------------------------------------------
 // ROOM STATE
 // ----------------------------------------------------
@@ -736,6 +785,7 @@ export interface RoomState {
     | PetitBacGameState
     | FakeNewsGameState
     | BombPartyGameState
+    | NavalBattleGameState
     | null;
   serverLanIp?: string;
   serverPort?: number;

@@ -25,6 +25,7 @@ const SpyController = React.lazy(() => import('./views/controllers/SpyController
 const PetitBacController = React.lazy(() => import('./views/controllers/PetitBacController').then(m => ({ default: m.PetitBacController })));
 const FakeNewsController = React.lazy(() => import('./views/controllers/FakeNewsController').then(m => ({ default: m.FakeNewsController })));
 const BombPartyController = React.lazy(() => import('./views/controllers/BombPartyController').then(m => ({ default: m.BombPartyController })));
+const NavalBattleController = React.lazy(() => import('./views/controllers/NavalBattleController').then(m => ({ default: m.NavalBattleController })));
 
 const ControllerLoader: React.FC = () => (
   <div className="flex flex-col items-center justify-center min-h-screen bg-[#0A120E] text-white p-6 select-none space-y-4">
@@ -103,6 +104,8 @@ export const MobileApp: React.FC<MobileAppProps> = ({ isSimulatorMode = false, d
         return <FakeNewsController />;
       case 'bomb_party':
         return <BombPartyController />;
+      case 'naval_battle':
+        return <NavalBattleController />;
       default:
         return <LudoController />;
     }

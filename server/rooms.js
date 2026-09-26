@@ -17,6 +17,7 @@ import { SpyEngine } from './games/spyEngine.js';
 import { PetitBacEngine } from './games/petitBacEngine.js';
 import { FakeNewsEngine } from './games/fakeNewsEngine.js';
 import { BombPartyEngine } from './games/bombPartyEngine.js';
+import { NavalBattleEngine } from './games/navalBattleEngine.js';
 
 const AVAILABLE_COLORS = ['red', 'blue', 'green', 'yellow', 'purple', 'cyan', 'orange', 'pink'];
 
@@ -414,6 +415,10 @@ export class RoomManager {
       }
       case 'bomb_party': {
         room.gameEngine = new BombPartyEngine(room.players, onStateChange, onGameOver, room.settings);
+        break;
+      }
+      case 'naval_battle': {
+        room.gameEngine = new NavalBattleEngine(room.players, onStateChange, onGameOver, room.settings);
         break;
       }
       default: {
