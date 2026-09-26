@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { useGame } from '../../../context/GameContext';
 import { ScrabbleGameState } from '../../../types/game';
 import { MobileHeader } from '../../components/MobileHeader';
@@ -12,7 +12,6 @@ import {
   ArrowRight,
   ArrowDown,
   Grid,
-  BookOpen,
   RefreshCw,
   X,
   Trophy,
@@ -22,7 +21,6 @@ import {
   AlertCircle,
   HelpCircle,
 } from 'lucide-react';
-import { getFrenchDefinition } from '../../../data/frenchDefinitions';
 
 function getMultiplier(r: number, c: number): string {
   if (r === 7 && c === 7) return 'CENTER';
@@ -96,11 +94,16 @@ export const WordController: React.FC = () => {
   const [focusedCell, setFocusedCell] = useState<{ row: number; col: number }>({ row: 7, col: 7 });
   const [direction, setDirection] = useState<'horizontal' | 'vertical'>('horizontal');
   const [rackOrder, setRackOrder] = useState<string[]>([]);
+  const [selectedRackTileId, setSelectedRackTileId] = useState<string | null>(null);
   const [showSwapModal, setShowSwapModal] = useState<boolean>(false);
   const [selectedSwapIds, setSelectedSwapIds] = useState<string[]>([]);
   const [localError, setLocalError] = useState<string>('');
   const [dragState, setDragState] = useState<DragState | null>(null);
 
+  const boardContainerRef = useRef<HTMLDivElement | null>(null);
+  const rackContainerRef = useRef<HTMLDivElement | null>(null);
+  const boardRectRef = useRef<DOMRect | null>(null);
+  const rackRectRef = useRef<DOMRect | null>(null);
   const dragRef = useRef<DragState | null>(null);
 
   const myRack: TileItem[] = useMemo(() => {
@@ -142,7 +145,7 @@ export const WordController: React.FC = () => {
     }
   }, [myRack]);
 
-  // Map of placed tiles for quick coordinate lookup
+  // Map of placed tiles for fast O(1) coordinate lookup
   const placedTileMap = useMemo(() => {
     const map = new Map<string, PlacedTile>();
     for (const p of placedTiles) {
@@ -338,6 +341,7 @@ export const WordController: React.FC = () => {
     triggerHaptic(hapticPatterns.tap);
     audio.playFocus();
     setPlacedTiles([]);
+    setSelectedRackTileId(null);
     setLocalError('');
   };
 
@@ -350,49 +354,113 @@ export const WordController: React.FC = () => {
     setLocalError('');
   };
 
-  // Tap handler (when touch doesn't move > 7px)
+  // Place a tile on a specific board cell
+  const placeTileAtCell = (tile: TileItem, r: number, c: number) => {
+    if (gameState.board[r]?.[c] !== null) return false;
+    setPlacedTiles((prev) => {
+      const filtered = prev.filter((p) => p.tile.id !== tile.id);
+      return [...filtered, { tile, row: r, col: c }];
+    });
+    setFocusedCell({ row: r, col: c });
+    setSelectedRackTileId(null);
+    triggerHaptic(hapticPatterns.tap);
+    audio.playSelect();
+    setLocalError('');
+    return true;
+  };
+
+  // HCI Research: Mathematical Bounding Box Snapping for high-density 15x15 board
+  // Solves finger occlusion ("Fat finger") by offsetting the target center above touch contact
+  const getCellFromTouchPoint = (
+    clientX: number,
+    clientY: number,
+    verticalOffset = 50
+  ): { row: number; col: number } | null => {
+    const rect = boardRectRef.current;
+    if (!rect) return null;
+
+    // Aim coordinate is placed above the fingertip so player sees where tile drops
+    const aimX = clientX;
+    const aimY = clientY - verticalOffset;
+
+    // Margin of 14px around the board edges for forgiving magnetic snap
+    const margin = 14;
+    if (
+      aimX >= rect.left - margin &&
+      aimX <= rect.right + margin &&
+      aimY >= rect.top - margin &&
+      aimY <= rect.bottom + margin
+    ) {
+      const clampedX = Math.max(rect.left, Math.min(rect.right - 1, aimX));
+      const clampedY = Math.max(rect.top, Math.min(rect.bottom - 1, aimY));
+      const col = Math.floor(((clampedX - rect.left) / rect.width) * 15);
+      const row = Math.floor(((clampedY - rect.top) / rect.height) * 15);
+      if (row >= 0 && row < 15 && col >= 0 && col < 15) {
+        return { row, col };
+      }
+    }
+
+    // Direct touch position fallback if touch occurs directly inside board
+    if (
+      clientX >= rect.left &&
+      clientX <= rect.right &&
+      clientY >= rect.top &&
+      clientY <= rect.bottom
+    ) {
+      const col = Math.floor(((clientX - rect.left) / rect.width) * 15);
+      const row = Math.floor(((clientY - rect.top) / rect.height) * 15);
+      if (row >= 0 && row < 15 && col >= 0 && col < 15) {
+        return { row, col };
+      }
+    }
+
+    return null;
+  };
+
+  // Bounding box snapping for rack slot reordering
+  const getRackSlotFromTouchPoint = (clientX: number, clientY: number): number | null => {
+    const rect = rackRectRef.current;
+    if (!rect) return null;
+
+    if (
+      clientX >= rect.left - 12 &&
+      clientX <= rect.right + 12 &&
+      clientY >= rect.top - 20 &&
+      clientY <= rect.bottom + 30
+    ) {
+      const clampedX = Math.max(rect.left, Math.min(rect.right - 1, clientX));
+      const slotCount = orderedRack.length || 7;
+      const idx = Math.floor(((clampedX - rect.left) / rect.width) * slotCount);
+      return Math.max(0, Math.min(slotCount - 1, idx));
+    }
+    return null;
+  };
+
+  // Tap handler (when touch doesn't move > 6px)
   const handleTap = (
     tile: TileItem,
-    source: DragSource,
-    sourceRow?: number,
-    sourceCol?: number
+    source: DragSource
   ) => {
     if (source === 'board') {
       handleRemovePlacedTile(tile.id);
       return;
     }
 
-    // Tap on rack tile: place at focused cell or next available empty cell
+    // Tap on rack tile: select/toggle selection for fast tap-to-place
     if (!isMyTurn) return;
     triggerHaptic(hapticPatterns.tap);
     audio.playFocus();
     setLocalError('');
 
-    const isCellTaken = (r: number, c: number) => {
-      return gameState.board[r]?.[c] !== null || placedTiles.some((p) => p.row === r && p.col === c);
-    };
-
-    let curR = focusedCell.row;
-    let curC = focusedCell.col;
-
-    while (curR < 15 && curC < 15 && isCellTaken(curR, curC)) {
-      if (direction === 'horizontal') curC++;
-      else curR++;
-    }
-
-    if (curR < 15 && curC < 15) {
-      setPlacedTiles((prev) => [...prev, { tile, row: curR, col: curC }]);
-      let nextR = curR;
-      let nextC = curC;
-      if (direction === 'horizontal') nextC++;
-      else nextR++;
-      if (nextR < 15 && nextC < 15) {
-        setFocusedCell({ row: nextR, col: nextC });
-      }
+    if (selectedRackTileId === tile.id) {
+      // Toggle off
+      setSelectedRackTileId(null);
+    } else {
+      setSelectedRackTileId(tile.id);
     }
   };
 
-  // Pointer Down: starts touch tracking for finger drag & drop
+  // Pointer Down: starts high-precision touch tracking for finger drag & drop
   const handlePointerDown = (
     e: React.PointerEvent,
     tile: TileItem,
@@ -403,6 +471,14 @@ export const WordController: React.FC = () => {
   ) => {
     if (isGameOver || !isMyTurn) return;
     if (e.button !== 0 && e.pointerType === 'mouse') return;
+
+    // Cache layout bounding boxes at touch start for zero layout-thrashing 120fps drag
+    if (boardContainerRef.current) {
+      boardRectRef.current = boardContainerRef.current.getBoundingClientRect();
+    }
+    if (rackContainerRef.current) {
+      rackRectRef.current = rackContainerRef.current.getBoundingClientRect();
+    }
 
     const startX = e.clientX;
     const startY = e.clientY;
@@ -431,8 +507,9 @@ export const WordController: React.FC = () => {
       const dy = moveEvt.clientY - dragRef.current.startY;
       const dist = Math.hypot(dx, dy);
 
-      if (!dragRef.current.isDragging && dist > 7) {
+      if (!dragRef.current.isDragging && dist > 6) {
         dragRef.current.isDragging = true;
+        setSelectedRackTileId(null);
         triggerHaptic(hapticPatterns.tap);
         audio.playFocus();
         document.body.style.userSelect = 'none';
@@ -443,39 +520,36 @@ export const WordController: React.FC = () => {
         dragRef.current.currentX = moveEvt.clientX;
         dragRef.current.currentY = moveEvt.clientY;
 
-        // Check target under finger or slightly above finger (preview tile offset ~28px)
-        let target = document.elementFromPoint(moveEvt.clientX, moveEvt.clientY);
-        let cellEl = target?.closest('[data-board-cell="true"]') as HTMLElement | null;
-        if (!cellEl) {
-          const targetAbove = document.elementFromPoint(moveEvt.clientX, moveEvt.clientY - 28);
-          cellEl = targetAbove?.closest('[data-board-cell="true"]') as HTMLElement | null;
-        }
+        // Mathematical magnetic snapping with ergonomic 50px vertical finger offset
+        const cellCoords = getCellFromTouchPoint(moveEvt.clientX, moveEvt.clientY, 50);
 
         let hoveredCell = null;
-        if (cellEl) {
-          const r = parseInt(cellEl.getAttribute('data-row') || '-1', 10);
-          const c = parseInt(cellEl.getAttribute('data-col') || '-1', 10);
-          if (r >= 0 && r < 15 && c >= 0 && c < 15) {
-            const isBoardOccupied = !!gameState.board[r]?.[c];
-            const isPlacedByOther = placedTiles.some(
-              (p) => p.row === r && p.col === c && p.tile.id !== dragRef.current?.tile.id
-            );
-            const mult = getMultiplier(r, c);
-            hoveredCell = {
-              row: r,
-              col: c,
-              multiplier: mult,
-              isOccupied: isBoardOccupied || isPlacedByOther,
-            };
-          }
+        if (cellCoords) {
+          const { row, col } = cellCoords;
+          const isBoardOccupied = !!gameState.board[row]?.[col];
+          const isPlacedByOther = placedTiles.some(
+            (p) => p.row === row && p.col === col && p.tile.id !== dragRef.current?.tile.id
+          );
+          const mult = getMultiplier(row, col);
+          hoveredCell = {
+            row,
+            col,
+            multiplier: mult,
+            isOccupied: isBoardOccupied || isPlacedByOther,
+          };
         }
 
         // Check rack hover for reordering letters
-        let rackEl = target?.closest('[data-rack-slot="true"]') as HTMLElement | null;
-        let hoveredRackIndex = null;
-        if (rackEl) {
-          const idx = parseInt(rackEl.getAttribute('data-index') || '-1', 10);
-          if (!isNaN(idx)) hoveredRackIndex = idx;
+        const hoveredRackIndex = getRackSlotFromTouchPoint(moveEvt.clientX, moveEvt.clientY);
+
+        // Haptic pulse when snapping onto a new board cell
+        if (
+          hoveredCell &&
+          (!dragRef.current.hoveredCell ||
+            dragRef.current.hoveredCell.row !== hoveredCell.row ||
+            dragRef.current.hoveredCell.col !== hoveredCell.col)
+        ) {
+          triggerHaptic(hapticPatterns.tap);
         }
 
         dragRef.current.hoveredCell = hoveredCell;
@@ -502,14 +576,7 @@ export const WordController: React.FC = () => {
         // Drag release
         if (drag.hoveredCell && !drag.hoveredCell.isOccupied) {
           const { row, col } = drag.hoveredCell;
-          setPlacedTiles((prev) => {
-            const filtered = prev.filter((p) => p.tile.id !== drag.tile.id);
-            return [...filtered, { tile: drag.tile, row, col }];
-          });
-          setFocusedCell({ row, col });
-          triggerHaptic(hapticPatterns.tap);
-          audio.playSelect();
-          setLocalError('');
+          placeTileAtCell(drag.tile, row, col);
         } else if (drag.hoveredRackIndex !== null) {
           if (drag.source === 'board') {
             setPlacedTiles((prev) => prev.filter((p) => p.tile.id !== drag.tile.id));
@@ -518,13 +585,13 @@ export const WordController: React.FC = () => {
             handleReorderRack(drag.sourceRackIndex, drag.hoveredRackIndex);
           }
         } else if (drag.source === 'board') {
-          // Dragged from board and dropped outside valid empty cell: recall to rack
+          // Dragged from board and dropped outside board: recall to rack
           setPlacedTiles((prev) => prev.filter((p) => p.tile.id !== drag.tile.id));
           triggerHaptic(hapticPatterns.tap);
         }
       } else {
         // Tap
-        handleTap(drag.tile, drag.source, drag.sourceRow, drag.sourceCol);
+        handleTap(drag.tile, drag.source);
       }
     };
 
@@ -533,8 +600,27 @@ export const WordController: React.FC = () => {
     window.addEventListener('pointercancel', handlePointerUp);
   };
 
-  const handleSelectCell = (r: number, c: number) => {
+  // Tap on board cell: either place selected rack tile or set cursor
+  const handleBoardCellClick = (r: number, c: number) => {
     if (isGameOver) return;
+
+    // Check if cell already has a placed tile from this turn -> recall it
+    const placed = placedTileMap.get(`${r}_${c}`);
+    if (placed) {
+      handleRemovePlacedTile(placed.tile.id);
+      return;
+    }
+
+    // If user has a selected tile from rack, place it immediately!
+    if (selectedRackTileId) {
+      const tile = orderedRack.find((t) => t.id === selectedRackTileId);
+      if (tile && gameState.board[r]?.[c] === null) {
+        placeTileAtCell(tile, r, c);
+        return;
+      }
+    }
+
+    // Otherwise, set focus cursor
     triggerHaptic(hapticPatterns.tap);
     audio.playFocus();
     setLocalError('');
@@ -591,6 +677,7 @@ export const WordController: React.FC = () => {
 
     sendGameAction('word_play_word', { tilesPlaced });
     setPlacedTiles([]);
+    setSelectedRackTileId(null);
   };
 
   const handlePass = () => {
@@ -598,6 +685,7 @@ export const WordController: React.FC = () => {
     triggerHaptic(hapticPatterns.tap);
     sendGameAction('word_pass_turn');
     setPlacedTiles([]);
+    setSelectedRackTileId(null);
     setLocalError('');
   };
 
@@ -614,6 +702,7 @@ export const WordController: React.FC = () => {
     setSelectedSwapIds([]);
     setShowSwapModal(false);
     setPlacedTiles([]);
+    setSelectedRackTileId(null);
   };
 
   const handleReplay = () => {
@@ -703,7 +792,7 @@ export const WordController: React.FC = () => {
     <div className="min-h-screen flex flex-col justify-between bg-[#0B100E] text-white select-none relative overflow-x-hidden">
       <MobileHeader />
 
-      <main className="p-3 flex-1 flex flex-col justify-between space-y-2.5 max-w-lg mx-auto w-full pb-6">
+      <main className="p-3 flex-1 flex flex-col justify-between space-y-2 max-w-lg mx-auto w-full pb-5">
         {/* Turn Status Banner */}
         <div
           className={`p-2.5 rounded-2xl text-center border transition-all ${
@@ -729,16 +818,22 @@ export const WordController: React.FC = () => {
           </div>
         </div>
 
-        {/* Tactile Tip Banner */}
-        <div className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-500/15 to-emerald-500/15 border border-amber-500/30 flex items-center justify-between text-[11px]">
+        {/* Clean Tactile / Tap Guide Banner */}
+        <div className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-500/15 via-black/40 to-emerald-500/15 border border-amber-500/30 flex items-center justify-between text-[11px]">
           <div className="flex items-center space-x-1.5 text-amber-200">
             <Hand className="w-3.5 h-3.5 text-amber-400 animate-pulse flex-shrink-0" />
             <span className="leading-tight">
-              Glissez vos lettres avec le doigt sur le plateau ou le chevalet !
+              {selectedRackTileId ? (
+                <strong className="text-amber-300">
+                  Lettre sélectionnée ! Touchez une case du plateau pour la poser.
+                </strong>
+              ) : (
+                'Glissez vos lettres sur le plateau ou touchez pour poser !'
+              )}
             </span>
           </div>
-          <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-amber-400/20 text-amber-300 ml-1">
-            Tactile
+          <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-amber-400/20 text-amber-300 ml-1 flex-shrink-0">
+            {selectedRackTileId ? 'Sélection' : 'Tactile'}
           </span>
         </div>
 
@@ -750,43 +845,28 @@ export const WordController: React.FC = () => {
           </div>
         )}
 
-        {/* Live Word Formation Display with Definition */}
+        {/* Sleek Compact Word Formation Bar (NO DICTIONARY in remote controller) */}
         {validationInfo.fullWord && (
-          <div className="p-2.5 rounded-2xl bg-white/[0.08] border-2 border-[#38BDF8] shadow-lg space-y-1.5 animate-scale-in">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <BookOpen className="w-4 h-4 text-[#38BDF8]" />
-                <span className="text-[10px] font-black uppercase text-gray-300">Mot formé :</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <span className="text-base font-black font-mono tracking-widest text-[#38BDF8]">
-                  "{validationInfo.fullWord}"
-                </span>
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-[#38BDF8]/20 text-[#38BDF8]">
-                  +{potentialScore} pts
-                </span>
-              </div>
+          <div className="px-3 py-2 rounded-2xl bg-white/[0.08] border border-[#38BDF8]/60 shadow-lg flex items-center justify-between animate-scale-in">
+            <div className="flex items-center space-x-2">
+              <span className="text-[10px] font-black uppercase text-gray-300">Mot formé :</span>
+              <span className="text-base font-black font-mono tracking-widest text-[#38BDF8]">
+                "{validationInfo.fullWord}"
+              </span>
             </div>
-
-            {/* Live Definition Preview */}
-            <div className="p-2 rounded-xl bg-black/40 border border-white/10 text-[11px] text-gray-300 space-y-0.5">
-              <div className="text-[10px] font-bold italic text-emerald-300 font-serif">
-                — {getFrenchDefinition(validationInfo.fullWord).nature}
-              </div>
-              <p className="text-[10px] leading-tight text-gray-300">
-                {getFrenchDefinition(validationInfo.fullWord).def}
-              </p>
-            </div>
+            <span className="text-xs font-black px-2.5 py-0.5 rounded-full bg-[#38BDF8]/20 text-[#38BDF8] border border-[#38BDF8]/30">
+              +{potentialScore} pts
+            </span>
           </div>
         )}
 
-        {/* Interactive 15x15 Mini Scrabble Table */}
-        <div className="rounded-3xl bg-[#140F0A] border-2 border-[#3A2D23] p-2 shadow-2xl space-y-2">
+        {/* Interactive 15x15 Mini Scrabble Table with Crosshair Alignment */}
+        <div className="rounded-3xl bg-[#140F0A] border-2 border-[#3A2D23] p-2 shadow-2xl space-y-1.5">
           <div className="flex items-center justify-between px-1">
             <div className="flex items-center space-x-1.5">
               <Grid className="w-4 h-4 text-[#FBBF24]" />
               <span className="text-[11px] font-black uppercase tracking-wide text-gray-200">
-                TABLEAU SCRABBLE 15x15
+                PLATEAU 15x15
               </span>
             </div>
 
@@ -803,8 +883,11 @@ export const WordController: React.FC = () => {
             </button>
           </div>
 
-          {/* 15x15 Mini Grid */}
-          <div className="w-full aspect-square overflow-hidden bg-[#100C09] p-1 rounded-2xl border border-white/10 relative touch-none">
+          {/* 15x15 Mini Grid with ref for bounding-box calculation */}
+          <div
+            ref={boardContainerRef}
+            className="w-full aspect-square overflow-hidden bg-[#100C09] p-1 rounded-2xl border border-white/10 relative touch-none"
+          >
             <div
               className="w-full h-full grid gap-[1.5px]"
               style={{
@@ -820,40 +903,56 @@ export const WordController: React.FC = () => {
                   const mult = getMultiplier(rIdx, cIdx);
                   const multConfig = MULTIPLIERS_MAP[mult];
 
-                  const isHoveredDuringDrag =
+                  // Magnetic hover detection
+                  const isHoveredTarget =
                     dragState?.isDragging &&
                     dragState.hoveredCell?.row === rIdx &&
                     dragState.hoveredCell?.col === cIdx;
 
+                  // Crosshair alignment guide: highlights row and column of current hover/focus
+                  const isCrosshairGuide =
+                    (dragState?.isDragging &&
+                      dragState.hoveredCell &&
+                      (dragState.hoveredCell.row === rIdx || dragState.hoveredCell.col === cIdx)) ||
+                    (!dragState?.isDragging &&
+                      (focusedCell.row === rIdx || focusedCell.col === cIdx));
+
                   return (
                     <div
                       key={`grid_${rIdx}_${cIdx}`}
-                      data-board-cell="true"
-                      data-row={rIdx}
-                      data-col={cIdx}
-                      onClick={() => handleSelectCell(rIdx, cIdx)}
+                      onClick={() => handleBoardCellClick(rIdx, cIdx)}
                       onPointerDown={
                         placed
                           ? (e) => handlePointerDown(e, placed.tile, 'board', rIdx, cIdx)
                           : undefined
                       }
                       className={`relative w-full h-full rounded-[3px] flex items-center justify-center font-display font-black text-[9px] transition-all leading-none select-none cursor-pointer ${
-                        isHoveredDuringDrag
+                        isHoveredTarget
                           ? dragState?.hoveredCell?.isOccupied
-                            ? 'ring-2 ring-rose-500 bg-rose-500/40 text-rose-200 z-30 scale-125 shadow-lg'
-                            : 'ring-2 ring-emerald-400 bg-emerald-500/50 text-white z-30 scale-125 shadow-lg'
+                            ? 'ring-2 ring-rose-500 bg-rose-600 text-white z-30 scale-125 shadow-xl animate-pulse'
+                            : 'ring-2 ring-emerald-300 bg-emerald-500 text-white z-30 scale-125 shadow-xl animate-pulse font-black'
                           : placed
-                          ? 'bg-gradient-to-b from-[#FFF5DE] to-[#EBD4A8] border border-[#C5B084] text-gray-950 shadow-md ring-2 ring-emerald-400/80 z-10 active:scale-95'
+                          ? 'bg-gradient-to-b from-[#FFF5DE] to-[#EBD4A8] border border-[#C5B084] text-gray-950 shadow-md ring-2 ring-emerald-400/90 z-10 active:scale-95'
                           : isSelectedFocus
                           ? 'ring-2 ring-[#FBBF24] bg-amber-400 text-gray-950 z-20 scale-110 shadow-lg'
                           : boardTile
                           ? 'bg-[#FBF2DE] text-gray-950 shadow-sm opacity-90'
                           : multConfig
                           ? `${multConfig.bg} ${multConfig.text} opacity-90`
+                          : isCrosshairGuide
+                          ? 'bg-[#2E231B] text-gray-500'
                           : 'bg-[#221A14]/80 text-gray-600 hover:bg-[#34281F]'
                       }`}
                     >
-                      {placed ? (
+                      {/* Ghost Letter Preview right inside the cell during drag hover */}
+                      {isHoveredTarget && dragState?.tile && !dragState.hoveredCell?.isOccupied ? (
+                        <div className="flex flex-col items-center justify-center w-full h-full relative">
+                          <span className="leading-none text-[11px] font-black">{dragState.tile.letter}</span>
+                          <span className="absolute bottom-[1px] right-[1px] text-[6px] text-white/90 font-sans font-bold leading-none">
+                            {dragState.tile.points}
+                          </span>
+                        </div>
+                      ) : placed ? (
                         <div className="flex flex-col items-center justify-center w-full h-full relative">
                           <span className="leading-none text-[10px] font-black">{placed.tile.letter}</span>
                           <span className="absolute bottom-[1px] right-[1px] text-[6px] text-gray-800 font-sans font-bold leading-none">
@@ -876,21 +975,19 @@ export const WordController: React.FC = () => {
             <span>
               📍 Viseur :{' '}
               <strong className="text-white">
-                Ligne {focusedCell.row + 1}, Col {focusedCell.col + 1}
+                L.{focusedCell.row + 1}, C.{focusedCell.col + 1}
               </strong>
             </span>
-            <span className="text-[#FBBF24]">Glissez ou touchez pour poser</span>
+            <span className="text-[#FBBF24]">Glissez ou touchez une case</span>
           </div>
         </div>
 
-        {/* Word Builder Construction Area ("Lettres posées") */}
+        {/* Placed Letters Tray ("Lettres posées") */}
         <div className="p-2.5 rounded-2xl bg-white/[0.06] border border-white/10 space-y-1.5 shadow-xl">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-1.5">
-              <span className="text-[10px] font-black uppercase text-gray-300">
-                LETTRES POSÉES CE TOUR ({placedTiles.length})
-              </span>
-            </div>
+            <span className="text-[10px] font-black uppercase text-gray-300">
+              LETTRES POSÉES CE TOUR ({placedTiles.length})
+            </span>
             {placedTiles.length > 0 && (
               <button
                 onClick={handleRecallAll}
@@ -903,9 +1000,9 @@ export const WordController: React.FC = () => {
           </div>
 
           {/* Letter Slots */}
-          <div className="flex items-center space-x-1.5 min-h-[48px] p-1.5 rounded-xl bg-black/40 border border-dashed border-white/20 overflow-x-auto">
+          <div className="flex items-center space-x-1.5 min-h-[46px] p-1.5 rounded-xl bg-black/40 border border-dashed border-white/20 overflow-x-auto">
             {placedTiles.length === 0 ? (
-              <span className="text-xs text-gray-500 mx-auto text-center py-1">
+              <span className="text-xs text-gray-500 mx-auto text-center py-0.5">
                 Glissez vos lettres sur le plateau ci-dessus
               </span>
             ) : (
@@ -954,18 +1051,20 @@ export const WordController: React.FC = () => {
             </div>
           </div>
 
-          {/* Wooden Rack Bar */}
-          <div className="grid grid-cols-7 gap-1.5 p-2 rounded-2xl bg-gradient-to-b from-[#382619] via-[#2A1C12] to-[#1E130B] border-2 border-[#5C402B] shadow-2xl relative">
+          {/* Wooden Rack Bar with ref for slot snapping */}
+          <div
+            ref={rackContainerRef}
+            className="grid grid-cols-7 gap-1.5 p-2 rounded-2xl bg-gradient-to-b from-[#382619] via-[#2A1C12] to-[#1E130B] border-2 border-[#5C402B] shadow-2xl relative"
+          >
             {orderedRack.map((tile: TileItem, idx: number) => {
               const isPlaced = placedTiles.some((p) => p.tile.id === tile.id);
+              const isSelected = selectedRackTileId === tile.id;
               const isHoveredSlot =
                 dragState?.isDragging && dragState?.hoveredRackIndex === idx;
 
               return (
                 <div
                   key={tile.id}
-                  data-rack-slot="true"
-                  data-index={idx}
                   onPointerDown={
                     !isPlaced && isMyTurn
                       ? (e) => handlePointerDown(e, tile, 'rack', undefined, undefined, idx)
@@ -973,14 +1072,16 @@ export const WordController: React.FC = () => {
                   }
                   className={`aspect-square rounded-xl flex flex-col items-center justify-center font-display font-black text-lg relative transition-all touch-none select-none ${
                     isPlaced
-                      ? 'bg-black/30 border border-dashed border-white/10 text-gray-600 opacity-30 shadow-inner'
+                      ? 'bg-black/30 border border-dashed border-white/10 text-gray-600 opacity-25 shadow-inner'
                       : isHoveredSlot
                       ? 'bg-amber-400 text-gray-950 ring-4 ring-amber-400 scale-105 shadow-xl'
+                      : isSelected
+                      ? 'bg-gradient-to-b from-[#FFF5DE] to-[#FDE68A] border-2 border-amber-400 text-gray-950 ring-4 ring-amber-400/80 scale-105 -translate-y-1 shadow-2xl'
                       : 'bg-gradient-to-b from-[#FFF5DE] to-[#EEDBB5] border-2 border-[#D5C29A] text-gray-950 shadow-[0_4px_8px_rgba(0,0,0,0.5)] active:scale-90 cursor-grab hover:scale-105'
                   }`}
                 >
                   {isPlaced ? (
-                    <span className="text-xs text-gray-500 font-sans font-bold">posée</span>
+                    <span className="text-[10px] text-gray-500 font-sans font-bold">posée</span>
                   ) : (
                     <>
                       <span className="leading-none text-xl">{tile.letter}</span>
@@ -1026,13 +1127,13 @@ export const WordController: React.FC = () => {
           </button>
         </div>
 
-        {/* Floating Tile Preview following finger during drag */}
+        {/* Floating Magnifier HUD / Tile Preview following finger during drag */}
         {dragState && dragState.isDragging && (
           <div
             className="fixed pointer-events-none z-50 transform -translate-x-1/2 -translate-y-full"
             style={{
               left: `${dragState.currentX}px`,
-              top: `${dragState.currentY - 14}px`,
+              top: `${dragState.currentY - 18}px`,
             }}
           >
             {/* Coordinate / Status Tooltip Badge */}
@@ -1051,7 +1152,7 @@ export const WordController: React.FC = () => {
                 )
               ) : dragState.hoveredRackIndex !== null ? (
                 <span className="inline-block px-2.5 py-0.5 rounded-full bg-amber-600 text-white font-bold text-[10px] shadow-lg border border-amber-400">
-                  Chevalet (emplacement {dragState.hoveredRackIndex + 1})
+                  Chevalet (position {dragState.hoveredRackIndex + 1})
                 </span>
               ) : dragState.source === 'board' ? (
                 <span className="inline-block px-2 py-0.5 rounded-full bg-rose-600/90 text-white text-[9px] shadow-md border border-rose-400">
