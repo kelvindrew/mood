@@ -13,6 +13,7 @@ import { MenteurEngine } from './games/menteurEngine.js';
 import { InterEngine } from './games/interEngine.js';
 import { FourPicsEngine } from './games/fourPicsEngine.js';
 import { QuickGamesEngine } from './games/quickGamesEngine.js';
+import { SpyEngine } from './games/spyEngine.js';
 
 const AVAILABLE_COLORS = ['red', 'blue', 'green', 'yellow', 'purple', 'cyan', 'orange', 'pink'];
 
@@ -394,6 +395,10 @@ export class RoomManager {
       }
       case 'quick_games': {
         room.gameEngine = new QuickGamesEngine(room.players, onStateChange, onGameOver, room.settings);
+        break;
+      }
+      case 'spy': {
+        room.gameEngine = new SpyEngine(room.players, onStateChange, onGameOver, room.settings);
         break;
       }
       default: {

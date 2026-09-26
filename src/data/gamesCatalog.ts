@@ -2,6 +2,33 @@ import { GameCatalogItem } from '../types/game';
 
 export const GAMES_CATALOG: GameCatalogItem[] = [
   {
+    id: 'spy',
+    title: 'L’ESPION : UNDERCOVER',
+    tagline: 'Le grand jeu de déduction sociale, de bluff et de mots secrets',
+    description: 'Tous les citoyens reçoivent le même mot secret, sauf l’espion qui reçoit un mot différent et tente de passer inaperçu ! Donnez des indices subtils, débattez ensemble et votez pour démasquer l’infiltré du salon.',
+    category: 'party',
+    minPlayers: 3,
+    maxPlayers: 10,
+    durationMinutes: '10–20 min',
+    difficulty: 'Facile',
+    badge: 'BLUFF',
+    coverImage: 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?auto=format&fit=crop&w=800&q=80',
+    heroImage: 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?auto=format&fit=crop&w=1920&q=85',
+    features: [
+      'Mot secret confidentiel à révéler au doigt sur smartphone',
+      'Phase de tour de parole avec indices oraux ou écrits',
+      'Débats animés et vote d’élimination en direct sur la Smart TV',
+      'Dernière chance : l’espion éliminé peut voler la victoire en devinant le mot !'
+    ],
+    rules: [
+      'Chaque joueur découvre son mot secret sur son smartphone.',
+      'Les citoyens ont tous le même mot, l’espion a un mot différent !',
+      'À tour de rôle, donnez un indice sans trop en dire.',
+      'Débattez puis votez sur votre mobile pour éliminer le joueur le plus suspect.',
+      'Les citoyens gagnent si tous les espions sont éliminés !'
+    ]
+  },
+  {
     id: 'quick_games',
     title: 'QUICK GAMES ARCADE',
     tagline: 'Micro-jeux ultra-rapides de 30s à 2min pour tester vos réflexes',

@@ -14,7 +14,8 @@ export type GameId =
   | 'menteur'
   | 'inter'
   | 'four_pics'
-  | 'quick_games';
+  | 'quick_games'
+  | 'spy';
 
 export type PlayerColor = 'red' | 'blue' | 'green' | 'yellow' | 'purple' | 'cyan' | 'orange' | 'pink';
 
@@ -505,6 +506,55 @@ export interface QuickGamesGameState {
   winner: string | null;
 }
 
+export interface SpyGameState {
+  gameId: 'spy';
+  phase: 'reveal' | 'clue' | 'vote' | 'elimination' | 'guess' | 'gameover';
+  round: number;
+  timer: number;
+  category: string;
+  currentSpeakerId: string | null;
+  clues: Record<string, string>;
+  votes: Record<string, string>;
+  lastEliminated: {
+    id: string;
+    name: string;
+    role: 'civil' | 'spy' | 'white';
+    votesReceived: number;
+  } | null;
+  winner: 'civils' | 'spies' | null;
+  winningRoleName: string | null;
+  finalPodium: Array<{
+    id: string;
+    name: string;
+    avatar?: string;
+    color: string;
+    role: string;
+    score: number;
+    isWinner: boolean;
+  }> | null;
+  isGameOver: boolean;
+  alivePlayerIds: string[];
+  players: Array<{
+    id: string;
+    name: string;
+    color: string;
+    avatar?: string;
+    isBot?: boolean;
+    alive: boolean;
+    hasVoted: boolean;
+    hasGivenClue: boolean;
+  }>;
+  civilWord?: string;
+  spyWord?: string;
+  myRole?: 'civil' | 'spy' | 'white';
+  myWord?: string;
+  isAlive?: boolean;
+  myClue?: string;
+  myVote?: string | null;
+  isMyTurnToSpeak?: boolean;
+  canGuessWord?: boolean;
+}
+
 // ----------------------------------------------------
 // ROOM STATE
 // ----------------------------------------------------
@@ -542,6 +592,7 @@ export interface RoomState {
     | InterGameState
     | FourPicsGameState
     | QuickGamesGameState
+    | SpyGameState
     | null;
   serverLanIp?: string;
   serverPort?: number;

@@ -18,6 +18,7 @@ const MenteurBoardTV = React.lazy(() => import('../boards/MenteurBoardTV').then(
 const InterBoardTV = React.lazy(() => import('../boards/InterBoardTV').then(m => ({ default: m.InterBoardTV })));
 const FourPicsBoardTV = React.lazy(() => import('../boards/FourPicsBoardTV').then(m => ({ default: m.FourPicsBoardTV })));
 const QuickGamesBoardTV = React.lazy(() => import('../boards/QuickGamesBoardTV').then(m => ({ default: m.QuickGamesBoardTV })));
+const SpyBoardTV = React.lazy(() => import('../boards/SpyBoardTV').then(m => ({ default: m.SpyBoardTV })));
 
 const TVBoardLoader: React.FC<{ gameId: string }> = ({ gameId }) => (
   <div className="flex flex-col items-center justify-center space-y-4 text-center select-none animate-scale-in">
@@ -84,6 +85,8 @@ export const TVGamePlayView: React.FC = () => {
         return <FourPicsBoardTV />;
       case 'quick_games':
         return <QuickGamesBoardTV />;
+      case 'spy':
+        return <SpyBoardTV />;
       default:
         return <LudoBoardTV />;
     }
