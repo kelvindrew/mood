@@ -30,81 +30,78 @@ export const TVNavbar: React.FC = () => {
 
   return (
     <header className="fixed top-5 left-0 right-0 z-40 px-[4vw] flex items-center justify-between pointer-events-auto select-none">
-      {/* Pure Floating Top Navigation (Without any surrounding capsule or background box) */}
-      <div className="flex items-center justify-between w-full max-w-6xl mx-auto">
-        {/* 1. Left Controls: Brand Logo & Navigation */}
-        <div className="flex items-center space-x-3">
+      <div className="flex items-center justify-between w-full max-w-7xl mx-auto px-4 py-2.5 rounded-2xl bg-[#060810]/70 backdrop-blur-xl border border-white/10 shadow-2xl">
+        {/* 1. Left Controls: MOOD Brand & Navigation Shortcuts */}
+        <div className="flex items-center space-x-4">
           <button
             data-tv-focus
             tabIndex={0}
             onClick={() => handleNav('home')}
-            className="flex items-center space-x-2 text-white transition-transform active:scale-95 outline-none focus:scale-115"
-            title="Accueil"
+            className="flex items-center space-x-2.5 text-white transition-all outline-none focus:scale-110 group"
+            title="Accueil MOOD"
           >
-            <Globe className="w-5 h-5 drop-shadow" style={{ color: 'var(--theme-primary, #00F2FE)' }} />
-            <span className="font-display font-black text-sm tracking-wider uppercase text-white drop-shadow">
-              PLAYFLIX AI
-            </span>
+            <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-mood-indigo via-mood-coral to-mood-amber flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform">
+              <span className="font-display font-black text-white text-base tracking-tighter">M</span>
+            </div>
+            <div className="flex flex-col text-left">
+              <span className="font-display font-black text-base tracking-widest text-white leading-none">
+                MOOD
+              </span>
+              <span className="text-[9px] font-mono font-bold tracking-widest text-mood-coral uppercase">
+                SMART TV
+              </span>
+            </div>
           </button>
 
-          <div className="flex items-center space-x-1 text-white/70 pl-2">
+          <div className="h-5 w-px bg-white/15 mx-1" />
+
+          {/* Quick Views */}
+          <div className="flex items-center space-x-1.5">
             <button
               data-tv-focus
               tabIndex={0}
               onClick={() => handleNav('home')}
-              className="p-1 hover:text-white transition-transform outline-none focus:scale-125"
-              title="Précédent"
+              className="px-3 py-1 rounded-xl text-xs font-bold text-gray-300 hover:text-white hover:bg-white/10 transition-all outline-none focus:bg-white focus:text-black"
             >
-              <ChevronLeft className="w-5 h-5 drop-shadow" />
+              Accueil
             </button>
-
             <button
               data-tv-focus
               tabIndex={0}
               onClick={() => handleNav('categories')}
-              className="p-1 hover:text-white transition-transform outline-none focus:scale-125"
-              title="Suivant"
+              className="px-3 py-1 rounded-xl text-xs font-bold text-gray-300 hover:text-white hover:bg-white/10 transition-all outline-none focus:bg-white focus:text-black flex items-center space-x-1.5"
             >
-              <ChevronRight className="w-5 h-5 drop-shadow" />
+              <Layers className="w-3.5 h-3.5" />
+              <span>Catalogue (21)</span>
             </button>
           </div>
         </div>
 
-        {/* 2. Center Text Title Display */}
-        <div className="flex items-center space-x-2 text-xs text-gray-200 drop-shadow">
-          <span
-            className="w-2 h-2 rounded-full animate-pulse"
-            style={{ backgroundColor: 'var(--theme-accent, #10B981)' }}
-          />
-          <span className="font-display font-black text-white tracking-widest text-xs uppercase drop-shadow-md">
-            {room ? `SALON ACTIF #${room.code}` : 'PLAYFLIX SMART TV LAUNCHER'}
-          </span>
-          <span className="text-gray-500">•</span>
-          <span className="text-[#FBBF24] font-mono text-[11px] font-bold">10 JEUX 3D</span>
+        {/* 2. Center Status & Room Indicator */}
+        <div className="flex items-center space-x-3 text-xs">
+          <div className="flex items-center space-x-2 px-3.5 py-1 rounded-full bg-white/5 border border-white/10">
+            <span
+              className="w-2 h-2 rounded-full animate-pulse bg-mood-emerald"
+            />
+            <span className="font-display font-black text-white tracking-widest text-[11px] uppercase">
+              {room ? `SALON #${room.code}` : '21 JEUX DE SALON EN LIGNE'}
+            </span>
+            <span className="text-gray-500">•</span>
+            <span className="text-mood-amber font-mono text-[10px] font-bold">100% SMARTPHONE</span>
+          </div>
         </div>
 
-        {/* 3. Right Status & Action Icons */}
-        <div className="flex items-center space-x-4 text-white/70">
-          {/* Categories Button */}
-          <button
-            data-tv-focus
-            tabIndex={0}
-            onClick={() => handleNav('categories')}
-            className="p-1.5 hover:text-white transition-transform outline-none focus:scale-125 focus:text-[#38BDF8]"
-            title="Catalogue de Catégories"
-          >
-            <Layers className="w-5 h-5 drop-shadow" />
-          </button>
-
+        {/* 3. Right Controls: AI Studio, Gamepad Simulator & Live Clock */}
+        <div className="flex items-center space-x-3 text-white/80">
           {/* AI Content Studio Button */}
           <button
             data-tv-focus
             tabIndex={0}
             onClick={() => handleNav('admin')}
-            className="p-1.5 hover:text-white transition-transform outline-none focus:scale-125 focus:text-[#FBBF24]"
-            title="AI Studio (Gemini)"
+            className="p-1.5 rounded-xl hover:text-white hover:bg-white/10 transition-all outline-none focus:scale-125 focus:text-mood-amber"
+            title="Studio de Contenu (Gemini)"
           >
-            <Sparkles className="w-5 h-5 text-[#FBBF24] fill-current drop-shadow" />
+            <Sparkles className="w-4 h-4 text-mood-amber fill-current" />
           </button>
 
           {/* Controller Simulator */}
@@ -115,16 +112,18 @@ export const TVNavbar: React.FC = () => {
               audio.playSelect();
               setIsSimulatorOpen(!isSimulatorOpen);
             }}
-            className={`p-1.5 transition-transform outline-none focus:scale-125 ${
-              isSimulatorOpen ? 'text-[#F59E0B] font-black' : 'hover:text-white'
+            className={`p-1.5 rounded-xl transition-all outline-none focus:scale-125 ${
+              isSimulatorOpen ? 'text-mood-amber bg-mood-amber/20 font-black' : 'hover:text-white hover:bg-white/10'
             }`}
-            title="Manette Mobile"
+            title="Simulateur Manette"
           >
-            <Smartphone className="w-5 h-5 drop-shadow" />
+            <Smartphone className="w-4 h-4" />
           </button>
 
+          <div className="h-4 w-px bg-white/15" />
+
           {/* Digital Time */}
-          <span className="font-mono text-xs font-bold text-white/90 drop-shadow pl-1">
+          <span className="font-mono text-xs font-bold text-white tracking-wider px-1">
             {time || '20:00'}
           </span>
         </div>

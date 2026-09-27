@@ -42,6 +42,7 @@ export const TVGameRow: React.FC<TVGameRowProps> = ({ title, games, icon, onSele
           <TVGameCard
             key={game.id}
             game={game}
+            className="w-72 md:w-84 h-56 flex-shrink-0"
             onSelect={onSelectGame}
             onPlayDirect={onPlayGame}
           />

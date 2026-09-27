@@ -174,24 +174,24 @@ export const MobileJoinView: React.FC<MobileJoinViewProps> = ({ defaultRoomCode 
   };
 
   return (
-    <div className="min-h-screen p-5 flex flex-col justify-between forest-sunlight-bg text-white select-none">
+    <div className="min-h-screen p-5 flex flex-col justify-between bg-[#060810] text-white select-none">
       {/* Top Brand Banner */}
-      <div className="text-center pt-2 space-y-1.5 animate-scale-in">
-        <div className="w-14 h-14 mx-auto rounded-3xl bg-gradient-to-tr from-[#10B981] via-[#059669] to-[#F59E0B] flex items-center justify-center shadow-[0_0_25px_rgba(16,185,129,0.5)] border border-white/20">
+      <div className="text-center pt-2 space-y-2 animate-scale-in">
+        <div className="w-14 h-14 mx-auto rounded-2xl bg-gradient-to-tr from-mood-indigo via-mood-coral to-mood-amber flex items-center justify-center shadow-[0_0_30px_rgba(255,71,87,0.4)] border border-white/20">
           <Gamepad2 className="w-8 h-8 text-white" />
         </div>
         <div>
-          <h1 className="text-2xl font-black font-display tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-white via-emerald-100 to-[#FBBF24]">
-            PLAYFLIX AI
+          <h1 className="text-2xl font-black font-display tracking-widest text-white">
+            MOOD
           </h1>
-          <p className="text-[11px] text-[#9CA3AF] font-bold uppercase tracking-wider">
-            Manette Intelligente Sans Fil
+          <p className="text-[11px] text-mood-coral font-bold uppercase tracking-widest">
+            Manette Sans Fil • Smart TV
           </p>
         </div>
       </div>
 
       {/* Main Join Form */}
-      <form onSubmit={handleJoin} className="my-auto space-y-4 glass-forest-card p-6 rounded-3xl">
+      <form onSubmit={handleJoin} className="my-auto space-y-4 bg-[#0F1424] border border-white/10 p-6 rounded-3xl shadow-2xl">
         {/* Room Code */}
         <div>
           <label className="text-[11px] font-black text-gray-300 uppercase tracking-wider block mb-1">
@@ -205,7 +205,7 @@ export const MobileJoinView: React.FC<MobileJoinViewProps> = ({ defaultRoomCode 
             value={code}
             onChange={(e) => setCode(e.target.value.toUpperCase())}
             placeholder="Ex: 4827"
-            className="w-full text-center py-3.5 px-4 rounded-2xl bg-black/50 border-2 border-[#10B981]/60 text-3xl font-black font-mono tracking-widest text-white placeholder-gray-600 focus:outline-none focus:border-[#FBBF24] focus:shadow-[0_0_20px_rgba(251,191,36,0.5)] uppercase"
+            className="w-full text-center py-3.5 px-4 rounded-2xl bg-black/60 border-2 border-mood-coral/60 text-3xl font-black font-mono tracking-widest text-white placeholder-gray-600 focus:outline-none focus:border-mood-amber focus:shadow-[0_0_25px_rgba(245,158,11,0.5)] uppercase"
             required
           />
         </div>
@@ -221,7 +221,7 @@ export const MobileJoinView: React.FC<MobileJoinViewProps> = ({ defaultRoomCode 
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Entrez votre prénom ou pseudo"
-            className="w-full py-3 px-4 rounded-2xl bg-surface-card border border-white/15 text-sm font-bold text-white placeholder-gray-500 focus:outline-none focus:border-white/40 shadow-inner"
+            className="w-full py-3 px-4 rounded-2xl bg-black/40 border border-white/15 text-sm font-bold text-white placeholder-gray-500 focus:outline-none focus:border-mood-coral shadow-inner"
             required
           />
         </div>
@@ -235,7 +235,7 @@ export const MobileJoinView: React.FC<MobileJoinViewProps> = ({ defaultRoomCode 
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              className="text-[11px] font-bold text-brand-gold flex items-center space-x-1"
+              className="text-[11px] font-bold text-mood-amber flex items-center space-x-1"
             >
               <Camera className="w-3.5 h-3.5" />
               <span>{selfieImage ? 'Changer Photo' : 'Prendre Selfie'}</span>
@@ -251,12 +251,12 @@ export const MobileJoinView: React.FC<MobileJoinViewProps> = ({ defaultRoomCode 
           </div>
 
           {selfieImage ? (
-            <div className="flex items-center space-x-3 p-2 rounded-2xl bg-surface-card border border-brand-gold/40">
-              <img src={selfieImage} alt="Selfie" className="w-12 h-12 rounded-xl object-cover border-2 border-brand-gold shadow-md" />
-              <span className="text-xs font-bold text-emerald-400">Photo Selfie capturée pour la TV</span>
+            <div className="flex items-center space-x-3 p-2 rounded-2xl bg-black/40 border border-mood-amber/50">
+              <img src={selfieImage} alt="Selfie" className="w-12 h-12 rounded-xl object-cover border-2 border-mood-amber shadow-md" />
+              <span className="text-xs font-bold text-mood-emerald">Photo Selfie capturée pour la TV</span>
             </div>
           ) : (
-            <div className="grid grid-cols-6 gap-1.5 p-2 bg-surface-card rounded-2xl border border-white/10 shadow-inner">
+            <div className="grid grid-cols-6 gap-1.5 p-2 bg-black/40 rounded-2xl border border-white/10 shadow-inner">
               {AVATAR_LETTERS.map((av) => (
                 <button
                   key={av}
@@ -267,8 +267,8 @@ export const MobileJoinView: React.FC<MobileJoinViewProps> = ({ defaultRoomCode 
                   }}
                   className={`w-10 h-10 rounded-xl text-base font-black flex items-center justify-center transition-all ${
                     selectedAvatar === av
-                      ? 'bg-brand-red scale-110 shadow-glow-red ring-2 ring-white text-white'
-                      : 'bg-surface-light text-gray-300 hover:bg-surface-light/80'
+                      ? 'bg-gradient-to-r from-mood-coral to-mood-amber scale-110 shadow-lg ring-2 ring-white text-white'
+                      : 'bg-white/5 text-gray-300 hover:bg-white/10'
                   }`}
                 >
                   {av}
@@ -291,8 +291,8 @@ export const MobileJoinView: React.FC<MobileJoinViewProps> = ({ defaultRoomCode 
                 onClick={() => handlePreviewBuzzer(s.id)}
                 className={`py-2 rounded-xl text-[10px] font-bold flex flex-col items-center justify-center space-y-0.5 border transition-all ${
                   buzzerSound === s.id
-                    ? 'bg-brand-gold text-background border-brand-gold font-black shadow-md scale-105'
-                    : 'bg-surface-card border-white/10 text-gray-400'
+                    ? 'bg-mood-amber text-black border-mood-amber font-black shadow-md scale-105'
+                    : 'bg-black/30 border-white/10 text-gray-400'
                 }`}
               >
                 <span>{s.label}</span>
@@ -302,16 +302,16 @@ export const MobileJoinView: React.FC<MobileJoinViewProps> = ({ defaultRoomCode 
         </div>
 
         {/* Spectator Mode */}
-        <div className="flex items-center justify-between p-3 rounded-2xl bg-surface-card border border-white/10">
+        <div className="flex items-center justify-between p-3 rounded-2xl bg-black/30 border border-white/10">
           <div className="flex items-center space-x-2">
-            <Eye className="w-4 h-4 text-brand-purple" />
+            <Eye className="w-4 h-4 text-mood-cyan" />
             <span className="text-xs font-bold text-white">Mode Spectateur</span>
           </div>
           <input
             type="checkbox"
             checked={isSpectator}
             onChange={(e) => setIsSpectator(e.target.checked)}
-            className="w-5 h-5 accent-brand-red rounded cursor-pointer"
+            className="w-5 h-5 accent-mood-coral rounded cursor-pointer"
           />
         </div>
 
@@ -326,7 +326,7 @@ export const MobileJoinView: React.FC<MobileJoinViewProps> = ({ defaultRoomCode 
         <button
           type="submit"
           disabled={isLoading}
-          className="w-full py-4 rounded-2xl bg-gradient-to-r from-[#10B981] via-[#059669] to-[#F59E0B] text-white font-black text-base shadow-[0_0_25px_rgba(16,185,129,0.5)] active:scale-95 transition-all flex items-center justify-center space-x-2 border border-white/20"
+          className="w-full py-4 rounded-2xl bg-gradient-to-r from-mood-coral via-rose-500 to-mood-amber text-white font-black text-base shadow-[0_0_25px_rgba(255,71,87,0.5)] active:scale-95 transition-all flex items-center justify-center space-x-2 border border-white/20"
         >
           <span>{isLoading ? 'Connexion en cours...' : 'REJOINDRE LA PARTIE'}</span>
           <ArrowRight className="w-5 h-5" />
@@ -336,13 +336,13 @@ export const MobileJoinView: React.FC<MobileJoinViewProps> = ({ defaultRoomCode 
       <div className="flex flex-col items-center space-y-2 pb-2 text-center text-[11px] text-gray-400 font-medium">
         <a
           href="/?mode=tv"
-          className="px-4 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-[#FBBF24] font-bold flex items-center space-x-1.5 border border-white/15 transition-colors"
+          className="px-4 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-mood-amber font-bold flex items-center space-x-1.5 border border-white/15 transition-colors"
         >
           <span>📺 Afficher la Page d'Accueil TV</span>
         </a>
         <a
           href="/?admin=true"
-          className="text-[10px] text-gray-400 hover:text-[#FBBF24] font-bold flex items-center space-x-1 underline transition-colors"
+          className="text-[10px] text-gray-400 hover:text-mood-amber font-bold flex items-center space-x-1 underline transition-colors"
         >
           <span>⚙️ Panneau d'Administration Back-Office</span>
         </a>

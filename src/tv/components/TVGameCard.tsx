@@ -7,9 +7,10 @@ interface TVGameCardProps {
   game: GameCatalogItem;
   onSelect: (game: GameCatalogItem) => void;
   onPlayDirect: (game: GameCatalogItem) => void;
+  className?: string;
 }
 
-export const TVGameCard: React.FC<TVGameCardProps> = ({ game, onSelect, onPlayDirect }) => {
+export const TVGameCard: React.FC<TVGameCardProps> = ({ game, onSelect, onPlayDirect, className = '' }) => {
   return (
     <div
       data-tv-focus
@@ -25,26 +26,26 @@ export const TVGameCard: React.FC<TVGameCardProps> = ({ game, onSelect, onPlayDi
           onSelect(game);
         }
       }}
-      className="group relative w-full h-56 rounded-2xl overflow-hidden cursor-pointer bg-[#0D111A] border border-white/10 shadow-xl transition-all duration-200 transform outline-none
-                 focus:scale-105 focus:z-30 focus:border-emerald-400 focus:ring-4 focus:ring-emerald-400/60 focus:shadow-[0_0_35px_rgba(16,185,129,0.6)] hover:scale-102 hover:border-white/30 flex flex-col justify-between"
+      className={`group relative rounded-2xl overflow-hidden cursor-pointer bg-[#0F1424] border border-white/10 shadow-2xl transition-all duration-300 transform outline-none
+                 focus:scale-105 focus:z-30 focus:border-mood-coral focus:ring-4 focus:ring-mood-coral/70 focus:shadow-[0_0_40px_rgba(255,71,87,0.6)] hover:scale-102 hover:border-white/30 flex flex-col justify-between ${className}`}
     >
-      {/* Background Cover Image with Hover Zoom */}
+      {/* Background Cover Image with Hover/Focus Zoom */}
       <div className="absolute inset-0 z-0 overflow-hidden">
         <img
           src={game.coverImage || game.heroImage}
           alt={game.title}
           loading="lazy"
-          className="w-full h-full object-cover object-center transform group-hover:scale-110 group-focus:scale-110 transition-transform duration-500 filter brightness-90"
+          className="w-full h-full object-cover object-center transform group-hover:scale-110 group-focus:scale-110 transition-transform duration-700 filter brightness-90"
         />
         {/* Cinematic Vignette Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-[#07090E] via-[#07090E]/65 to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#060810] via-[#060810]/70 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-transparent to-transparent" />
       </div>
 
       {/* Top Badges Bar */}
       <div className="relative z-10 p-3.5 flex items-center justify-between">
         {game.badge ? (
-          <span className="px-2.5 py-1 rounded-full bg-emerald-500/90 text-black text-[10px] font-black uppercase tracking-wider shadow-md flex items-center space-x-1">
+          <span className="px-3 py-1 rounded-full bg-gradient-to-r from-mood-coral to-mood-amber text-white text-[10px] font-black uppercase tracking-wider shadow-lg flex items-center space-x-1">
             <Sparkles className="w-3 h-3 fill-current" />
             <span>{game.badge}</span>
           </span>
@@ -54,20 +55,20 @@ export const TVGameCard: React.FC<TVGameCardProps> = ({ game, onSelect, onPlayDi
           </span>
         )}
 
-        <div className="flex items-center space-x-1 px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-md border border-white/15 text-[11px] font-black text-emerald-400 shadow-sm">
+        <div className="flex items-center space-x-1 px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-md border border-white/15 text-[11px] font-black text-mood-cyan shadow-sm">
           <Users className="w-3 h-3" />
           <span>{game.minPlayers}-{game.maxPlayers}</span>
         </div>
       </div>
 
       {/* Bottom Content & Sleek Action Button */}
-      <div className="relative z-10 p-4 flex flex-col space-y-2 bg-gradient-to-t from-[#07090E] via-[#07090E]/90 to-transparent">
+      <div className="relative z-10 p-4 flex flex-col space-y-2 bg-gradient-to-t from-[#060810] via-[#060810]/95 to-transparent">
         <div>
-          <h4 className="text-lg font-black font-display text-white tracking-wide leading-tight group-focus:text-emerald-400 group-hover:text-emerald-300 transition-colors truncate drop-shadow">
+          <h4 className="text-base lg:text-lg font-black font-display text-white tracking-wide leading-tight group-focus:text-mood-coral group-hover:text-mood-coral transition-colors truncate drop-shadow">
             {game.title}
           </h4>
           <div className="flex items-center space-x-2 text-[11px] text-gray-400 font-medium mt-0.5">
-            <span className="flex items-center space-x-1 text-amber-400 font-bold">
+            <span className="flex items-center space-x-1 text-mood-amber font-bold">
               <Clock className="w-3 h-3" />
               <span>{game.durationMinutes}</span>
             </span>
@@ -79,7 +80,7 @@ export const TVGameCard: React.FC<TVGameCardProps> = ({ game, onSelect, onPlayDi
         {/* Footer Buttons Bar */}
         <div className="pt-2 border-t border-white/10 flex items-center justify-between">
           <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider group-focus:text-white">
-            Voir détails
+            Détails
           </span>
 
           <button
@@ -88,7 +89,7 @@ export const TVGameCard: React.FC<TVGameCardProps> = ({ game, onSelect, onPlayDi
               audio.playSelect();
               onPlayDirect(game);
             }}
-            className="flex items-center space-x-1.5 px-4 py-1.5 rounded-full bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-black font-display font-black text-xs uppercase tracking-wider shadow-md transition-all hover:scale-105 active:scale-95 outline-none focus:ring-2 focus:ring-white"
+            className="flex items-center space-x-1.5 px-4 py-1.5 rounded-full bg-gradient-to-r from-mood-coral to-mood-amber hover:from-rose-500 hover:to-amber-400 text-white font-display font-black text-xs uppercase tracking-wider shadow-md transition-all hover:scale-105 active:scale-95 outline-none focus:ring-2 focus:ring-white"
           >
             <Play className="w-3 h-3 fill-current" />
             <span>JOUER</span>

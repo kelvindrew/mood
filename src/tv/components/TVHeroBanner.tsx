@@ -1,6 +1,6 @@
 import React from 'react';
 import { GameCatalogItem } from '../../types/game';
-import { Play, Info, Sparkles, Smartphone, Bot, Users, Clock } from 'lucide-react';
+import { Play, Info, Sparkles, Smartphone, Users, Clock, QrCode } from 'lucide-react';
 import { audio } from '../../services/audio';
 
 interface TVHeroBannerProps {
@@ -10,84 +10,93 @@ interface TVHeroBannerProps {
 }
 
 export const TVHeroBanner: React.FC<TVHeroBannerProps> = ({ game, onPlay, onMoreInfo }) => {
-  // 3 cinematic scene previews inspired by the user's reference design
-  const previewScenes = [
-    {
-      id: 'sc1',
-      title: 'Forêt Émeraude',
-      tag: 'Sunlight Rays',
-      img: 'https://images.unsplash.com/photo-1511497584788-87676104235f?auto=format&fit=crop&w=600&q=80',
-    },
-    {
-      id: 'sc2',
-      title: 'Sanctuaire Magique',
-      tag: 'Golden Hues',
-      img: 'https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=600&q=80',
-    },
-    {
-      id: 'sc3',
-      title: 'Arène Multijoueur',
-      tag: '3D Gameplay',
-      img: game.coverImage || 'https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&w=600&q=80',
-    },
-  ];
-
   return (
-    <div className="relative w-full min-h-[72vh] flex items-center px-[5vw] pt-24 pb-8 overflow-hidden select-none">
-      {/* 1. Background Forest & Sunbeams Image */}
-      <div className="absolute inset-0 z-0">
+    <div className="relative w-full min-h-[62vh] flex items-center px-[4vw] pt-20 pb-8 overflow-hidden select-none">
+      {/* 1. Layered Atmospheric Background (Midnight Canyon with Mesa Silhouettes) */}
+      <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden mood-canyon-bg">
+        {/* Dynamic Game Hero Backdrop Image with layered vignette */}
         <img
-          src="https://images.unsplash.com/photo-1511497584788-87676104235f?auto=format&fit=crop&w=1920&q=85"
-          alt="Forest Sunlight Background"
-          className="w-full h-full object-cover object-center filter brightness-90 contrast-105"
+          src={game.heroImage || game.coverImage}
+          alt={game.title}
+          className="w-full h-full object-cover object-center filter blur-xl opacity-25 scale-110 transition-all duration-700"
         />
 
-        {/* Sunlight Volumetric Radial Glows */}
-        <div className="absolute inset-0 bg-gradient-to-r from-[#070D0B] via-[#070D0B]/85 to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#070D0B] via-[#070D0B]/50 to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-b from-[#070D0B]/70 via-transparent to-[#070D0B]" />
-        
-        {/* Soft Golden Sunbeam Overlay */}
-        <div className="absolute top-0 right-1/4 w-[600px] h-[600px] rounded-full bg-gradient-to-br from-amber-400/20 via-emerald-500/10 to-transparent blur-3xl pointer-events-none" />
+        {/* Vector Landscape Silhouette Layers (User inspiration reference) */}
+        <svg
+          className="absolute bottom-0 left-0 right-0 w-full h-44 text-[#060810]/90 preserve-3d"
+          viewBox="0 0 1440 240"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          {/* Distant Ridge Layer */}
+          <path
+            d="M0,160 L120,140 L280,180 L420,110 L580,160 L740,90 L900,150 L1060,110 L1220,170 L1360,130 L1440,150 L1440,240 L0,240 Z"
+            fill="#1E1B4B"
+            fillOpacity="0.4"
+          />
+          {/* Mid Ridge Layer */}
+          <path
+            d="M0,190 L160,150 L340,180 L520,130 L680,170 L860,120 L1020,160 L1180,130 L1340,170 L1440,160 L1440,240 L0,240 Z"
+            fill="#0F1424"
+            fillOpacity="0.8"
+          />
+          {/* Foreground Plateau Layer */}
+          <path
+            d="M0,210 L200,180 L400,200 L600,175 L800,195 L1000,170 L1200,190 L1440,180 L1440,240 L0,240 Z"
+            fill="#060810"
+          />
+        </svg>
+
+        {/* Ambient Twilight Glow & Vignette */}
+        <div className="absolute inset-0 bg-gradient-to-r from-[#060810] via-[#060810]/75 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#060810] via-transparent to-transparent" />
       </div>
 
-      {/* 2. Glassmorphic Main Hero Card (Exact aesthetic of reference image) */}
-      <div className="relative z-10 w-full rounded-3xl glass-forest-card p-8 lg:p-10 flex flex-col lg:flex-row items-center justify-between gap-8 animate-scale-in">
-        {/* Left Side: Typographic Masterpiece & Actions */}
+      {/* 2. Main Hero Showcase Container */}
+      <div className="relative z-10 w-full max-w-7xl mx-auto flex flex-col lg:flex-row items-center justify-between gap-8 pt-4">
+        {/* Left Side: Game Showcase & Direct Remote Action CTAs */}
         <div className="flex-1 max-w-2xl flex flex-col space-y-4">
-          {/* Header Keywords & Tag */}
-          <div className="space-y-1">
-            <h2 className="text-3xl lg:text-4xl font-black font-display tracking-wide text-white uppercase drop-shadow-md">
-              {game.title || 'PLAYFLIX GAMING UNIVERSE'}
-            </h2>
-            <div className="text-xs font-black uppercase tracking-widest text-[#FBBF24] flex items-center space-x-2">
-              <span>KEYWORD : SUNLIGHT PENETRATING THE FOREST • {game.category?.toUpperCase() || 'MULTIJOUEUR'}</span>
-            </div>
+          {/* Badges Bar */}
+          <div className="flex items-center space-x-2.5">
+            <span className="px-3.5 py-1 rounded-full bg-gradient-to-r from-mood-coral to-mood-amber text-white font-mono text-[11px] font-black uppercase tracking-wider shadow-lg flex items-center space-x-1.5">
+              <Sparkles className="w-3.5 h-3.5 fill-current" />
+              <span>{game.badge || 'EN VEDETTE'}</span>
+            </span>
+            <span className="px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/15 text-gray-300 font-mono text-[11px] font-bold uppercase tracking-wider">
+              {game.category.toUpperCase()}
+            </span>
+            <span className="text-gray-500">•</span>
+            <span className="text-mood-cyan font-mono text-xs font-bold">SMART TV DELUXE</span>
           </div>
 
-          {/* Prompt / Description Box */}
-          <div className="p-4 rounded-2xl bg-black/40 border border-white/10 shadow-inner">
-            <span className="text-[11px] font-mono font-bold text-[#F59E0B] uppercase block mb-1">
-              PROMPT :
-            </span>
-            <p className="text-xs lg:text-sm text-gray-200 font-sans leading-relaxed">
-              "{game.description || 'Digital illustration, Sunlight penetrating a dense forest with tall trees and rich green foliage, rays of sunlight creating a magical atmosphere with soft golden hues.'}"
+          {/* Main Title & Tagline */}
+          <div>
+            <h1 className="text-4xl lg:text-5xl font-black font-display tracking-tight text-white uppercase leading-tight drop-shadow-lg">
+              {game.title}
+            </h1>
+            <p className="text-base lg:text-lg text-mood-amber font-medium mt-1 drop-shadow">
+              {game.tagline}
             </p>
           </div>
 
-          {/* Metadata Badges (Players, Duration, Difficulty) */}
+          {/* Game Description */}
+          <p className="text-sm lg:text-base text-gray-300 font-sans leading-relaxed line-clamp-3 max-w-xl">
+            {game.description}
+          </p>
+
+          {/* Quick Specs (Players, Duration, Controller) */}
           <div className="flex items-center space-x-3 text-xs font-bold pt-1">
             <div className="flex items-center space-x-1.5 px-3.5 py-1.5 rounded-xl bg-white/10 border border-white/15 text-white">
-              <Users className="w-3.5 h-3.5 text-[#34D399]" />
+              <Users className="w-3.5 h-3.5 text-mood-cyan" />
               <span>{game.minPlayers}–{game.maxPlayers} Joueurs</span>
             </div>
-            <div className="flex items-center space-x-1.5 px-3.5 py-1.5 rounded-xl bg-white/10 border border-white/15 text-[#FBBF24]">
-              <Clock className="w-3.5 h-3.5 text-[#FBBF24]" />
+            <div className="flex items-center space-x-1.5 px-3.5 py-1.5 rounded-xl bg-white/10 border border-white/15 text-mood-amber">
+              <Clock className="w-3.5 h-3.5 text-mood-amber" />
               <span>{game.durationMinutes}</span>
             </div>
-            <div className="flex items-center space-x-1.5 px-3.5 py-1.5 rounded-xl bg-white/10 border border-white/15 text-[#38BDF8]">
-              <Smartphone className="w-3.5 h-3.5" />
-              <span>Manettes Mobiles</span>
+            <div className="flex items-center space-x-1.5 px-3.5 py-1.5 rounded-xl bg-white/10 border border-white/15 text-mood-emerald">
+              <Smartphone className="w-3.5 h-3.5 text-mood-emerald" />
+              <span>Manettes Smartphones</span>
             </div>
           </div>
 
@@ -100,8 +109,8 @@ export const TVHeroBanner: React.FC<TVHeroBannerProps> = ({ game, onPlay, onMore
                 audio.playSelect();
                 onPlay(game);
               }}
-              className="flex items-center space-x-2.5 px-8 py-3.5 rounded-2xl bg-gradient-to-r from-[#10B981] via-[#059669] to-[#047857] text-white font-black text-sm uppercase tracking-wider shadow-[0_0_30px_rgba(16,185,129,0.6)] transition-all duration-200 outline-none
-                         focus:scale-110 focus:bg-white focus:text-[#064E3B] focus:ring-4 focus:ring-[#FBBF24] focus:shadow-[0_0_40px_rgba(251,191,36,0.85)]"
+              className="flex items-center space-x-2.5 px-8 py-3.5 rounded-2xl bg-gradient-to-r from-mood-coral via-rose-500 to-mood-amber text-white font-black text-sm uppercase tracking-wider shadow-[0_0_35px_rgba(255,71,87,0.5)] transition-all duration-200 outline-none
+                         focus:scale-110 focus:bg-white focus:text-black focus:ring-4 focus:ring-mood-amber focus:shadow-[0_0_45px_rgba(245,158,11,0.8)]"
             >
               <Play className="w-5 h-5 fill-current" />
               <span>CRÉER UN SALON</span>
@@ -118,43 +127,43 @@ export const TVHeroBanner: React.FC<TVHeroBannerProps> = ({ game, onPlay, onMore
                          focus:scale-110 focus:bg-white focus:text-black focus:ring-4 focus:ring-white"
             >
               <Info className="w-4 h-4" />
-              <span>Détails & Règles</span>
+              <span>Règles & Détails</span>
             </button>
           </div>
         </div>
 
-        {/* Center / Right: 3D Character Hero + Golden Sparkle Box + 3 Preview Cards */}
+        {/* Right Side: Game Poster & Smart TV Wireless Controller Card */}
         <div className="flex flex-col items-center lg:items-end space-y-4">
-          {/* Character Render & Golden Sparkle Box */}
-          <div className="relative w-64 h-64 lg:w-72 lg:h-72 rounded-3xl overflow-hidden shadow-2xl border border-white/20">
+          {/* Main 16:9 / Cinematic Poster Card */}
+          <div className="relative w-72 h-44 lg:w-96 lg:h-56 rounded-3xl overflow-hidden shadow-2xl border-2 border-white/20 group">
             <img
-              src="https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?auto=format&fit=crop&w=800&q=85"
-              alt="Emerald Heroine"
-              className="w-full h-full object-cover object-top filter brightness-105"
+              src={game.coverImage || game.heroImage}
+              alt={game.title}
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
             />
-            {/* Ambient golden rim overlay */}
-            <div className="absolute inset-0 bg-gradient-to-t from-[#0A1612] via-transparent to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#060810] via-transparent to-transparent opacity-80" />
 
-            {/* Floating Golden Sparkle Badge (From User's Reference) */}
-            <div className="absolute bottom-3 left-3 w-12 h-12 rounded-2xl sparkle-gold-box flex items-center justify-center animate-bounce">
-              <Sparkles className="w-6 h-6 text-[#FBBF24] fill-current" />
+            {/* Glowing Corner Badge */}
+            <div className="absolute bottom-3 right-3 px-3 py-1 rounded-xl bg-black/60 backdrop-blur-md border border-white/20 text-white font-mono text-[11px] font-black uppercase">
+              100% SANS FIL
             </div>
           </div>
 
-          {/* 3 Bottom Scene Variations (Exact Reference Layout) */}
-          <div className="flex items-center space-x-3">
-            {previewScenes.map((sc) => (
-              <div
-                key={sc.id}
-                className="w-20 h-14 lg:w-24 lg:h-16 rounded-xl overflow-hidden border border-white/20 shadow-md relative group cursor-pointer hover:scale-105 transition-transform"
-              >
-                <img src={sc.img} alt={sc.title} className="w-full h-full object-cover" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
-                <span className="absolute bottom-1 left-1.5 text-[8px] font-black text-white truncate max-w-[80px]">
-                  {sc.title}
-                </span>
+          {/* Smart TV Pairing Mini Banner */}
+          <div className="w-72 lg:w-96 p-3.5 rounded-2xl bg-[#0F1424]/90 border border-white/10 shadow-xl flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-mood-indigo to-mood-cyan flex items-center justify-center text-white shadow-md">
+                <Smartphone className="w-5 h-5" />
               </div>
-            ))}
+              <div className="text-left">
+                <div className="text-xs font-black text-white">Vos Mobiles = Manettes</div>
+                <div className="text-[10px] text-gray-400">Aucune application à télécharger</div>
+              </div>
+            </div>
+
+            <div className="px-2.5 py-1 rounded-lg bg-mood-emerald/20 border border-mood-emerald/40 text-mood-emerald text-[10px] font-mono font-black">
+              INSTANTANÉ
+            </div>
           </div>
         </div>
       </div>

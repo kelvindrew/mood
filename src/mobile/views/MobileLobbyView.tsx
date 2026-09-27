@@ -41,13 +41,13 @@ export const MobileLobbyView: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col justify-between bg-background text-white select-none">
+    <div className="min-h-screen flex flex-col justify-between bg-[#060810] text-white select-none">
       <MobileHeader />
 
       <main className="p-4 flex-1 flex flex-col justify-between space-y-4 animate-scale-in">
         {/* Game Badge */}
         <div className="text-center space-y-1">
-          <span className="px-3 py-1 rounded-full bg-gradient-to-r from-brand-red to-brand-accent text-white text-[10px] font-black uppercase tracking-wider shadow-glow-red border border-white/20">
+          <span className="px-3.5 py-1 rounded-full bg-gradient-to-r from-mood-coral to-mood-amber text-white text-[10px] font-black uppercase tracking-wider shadow-lg border border-white/20">
             SALON DU JEU
           </span>
           <h1 className="text-2xl font-black font-display text-white">{selectedGame.title}</h1>
@@ -55,10 +55,10 @@ export const MobileLobbyView: React.FC = () => {
         </div>
 
         {/* Color / Team Selector */}
-        <div className="p-4 rounded-3xl bg-surface-card border border-white/10 space-y-3 shadow-xl">
+        <div className="p-4 rounded-3xl bg-[#0F1424] border border-white/10 space-y-3 shadow-xl">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
-              <Palette className="w-4 h-4 text-brand-gold" />
+              <Palette className="w-4 h-4 text-mood-amber" />
               <span className="text-xs font-black uppercase tracking-wider text-gray-300">
                 Couleur de Pion / Équipe
               </span>
@@ -90,8 +90,8 @@ export const MobileLobbyView: React.FC = () => {
             onClick={handleToggleReady}
             className={`w-full py-5 rounded-3xl font-black text-xl flex items-center justify-center space-x-3 transition-all active:scale-95 shadow-xl ${
               localPlayer.isReady
-                ? 'bg-emerald-600 text-white shadow-glow-emerald border-2 border-emerald-400'
-                : 'bg-surface-card border-2 border-white/20 text-gray-200 hover:border-white/50'
+                ? 'bg-mood-emerald text-white shadow-[0_0_30px_rgba(16,185,129,0.5)] border-2 border-emerald-400'
+                : 'bg-[#0F1424] border-2 border-white/20 text-gray-200 hover:border-white/50'
             }`}
           >
             <CheckCircle2 className="w-6 h-6" />
@@ -107,7 +107,7 @@ export const MobileLobbyView: React.FC = () => {
                   audio.playSelect();
                   socketService.addBot(room.code);
                 }}
-                className="w-full py-3 rounded-2xl bg-indigo-600/90 border border-indigo-400/40 text-white font-black text-xs shadow-md flex items-center justify-center space-x-2 active:scale-95"
+                className="w-full py-3 rounded-2xl bg-mood-indigo/90 border border-mood-indigo text-white font-black text-xs shadow-md flex items-center justify-center space-x-2 active:scale-95"
               >
                 <Bot className="w-4 h-4" />
                 <span>+ AJOUTER UN BOT IA</span>
@@ -115,7 +115,7 @@ export const MobileLobbyView: React.FC = () => {
 
               <button
                 onClick={handleStartGame}
-                className="w-full py-4 rounded-2xl bg-gradient-to-r from-brand-red to-brand-accent text-white font-black text-sm shadow-glow-red hover:brightness-110 active:scale-95 transition-all flex items-center justify-center space-x-2 border border-white/20"
+                className="w-full py-4 rounded-2xl bg-gradient-to-r from-mood-coral to-mood-amber text-white font-black text-sm shadow-[0_0_30px_rgba(255,71,87,0.5)] hover:brightness-110 active:scale-95 transition-all flex items-center justify-center space-x-2 border border-white/20"
               >
                 <Play className="w-5 h-5 fill-current" />
                 <span>LANCER DEPUIS LE TÉLÉPHONE</span>

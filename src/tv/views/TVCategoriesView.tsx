@@ -66,19 +66,19 @@ export const TVCategoriesView: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen pt-20 px-[4vw] pb-24 select-none flex flex-col space-y-8 bg-[#07090E] text-white">
+    <div className="min-h-screen pt-20 px-[4vw] pb-24 select-none flex flex-col space-y-8 bg-[#060810] text-white">
       {/* 1. Header & Navigation Top Bar */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-white/10 pb-5">
         <div>
-          <div className="flex items-center space-x-2 text-xs font-black uppercase text-emerald-400 tracking-widest mb-1.5">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span>ESPACE JEUX VIDÉO • 10 EXPÉRIENCES CONNECTÉES</span>
+          <div className="flex items-center space-x-2 text-xs font-black uppercase text-mood-coral tracking-widest mb-1.5">
+            <span className="w-2 h-2 rounded-full bg-mood-coral animate-pulse" />
+            <span>MOOD SMART TV • 21 EXPÉRIENCES MULTIJOUEURS</span>
           </div>
           <h1 className="text-3xl md:text-4xl font-black font-display text-white tracking-tight">
-            Catalogue & Jeux Multijoueur
+            Catalogue des Jeux de Salon
           </h1>
           <p className="text-xs text-gray-400 mt-1">
-            Jouez instantanément sur grand écran en connectant vos smartphones comme manettes
+            Jouez instantanément sur grand écran en connectant vos smartphones comme manettes sans fil
           </p>
         </div>
 
@@ -102,15 +102,15 @@ export const TVCategoriesView: React.FC = () => {
                 }}
                 className={`flex items-center space-x-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all duration-200 outline-none flex-shrink-0 ${
                   isActive
-                    ? 'bg-gradient-to-r from-emerald-500 to-teal-400 text-black font-black shadow-[0_0_20px_rgba(16,185,129,0.4)] scale-105 ring-2 ring-white/50'
-                    : 'bg-[#121622] hover:bg-[#1A2030] border border-white/10 text-gray-300 hover:text-white'
+                    ? 'bg-gradient-to-r from-mood-coral to-mood-amber text-white font-black shadow-[0_0_25px_rgba(255,71,87,0.5)] scale-105 ring-2 ring-white/50'
+                    : 'bg-[#0F1424] hover:bg-[#1A2238] border border-white/10 text-gray-300 hover:text-white'
                 }`}
               >
                 <span>{CATEGORY_ICONS[cat.id] || <Gamepad2 className="w-4 h-4" />}</span>
                 <span>{cat.name}</span>
                 <span
                   className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono font-bold ${
-                    isActive ? 'bg-black/30 text-black' : 'bg-white/10 text-gray-400'
+                    isActive ? 'bg-black/30 text-white' : 'bg-white/10 text-gray-400'
                   }`}
                 >
                   {count}
