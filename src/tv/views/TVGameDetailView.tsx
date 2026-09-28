@@ -292,9 +292,9 @@ export const TVGameDetailView: React.FC = () => {
               data-tv-focus
               tabIndex={0}
               onClick={() => setShowCreateModal(true)}
-              className="col-span-3 flex items-center justify-center space-x-3 py-4 px-6 rounded-2xl bg-gradient-to-r from-mood-coral via-rose-500 to-mood-amber hover:from-rose-500 hover:to-amber-400 text-white font-black text-lg shadow-[0_0_35px_rgba(255,71,87,0.5)] hover:scale-105 focus:scale-105 focus:bg-white focus:text-black focus:ring-4 focus:ring-mood-amber transition-all outline-none"
+              className="col-span-3 flex items-center justify-center space-x-3 py-4 px-6 rounded-full bg-[#7C3AED] hover:bg-[#6D28D9] text-white font-black text-lg shadow-[0_0_35px_rgba(124,58,237,0.65)] hover:scale-105 focus:scale-105 focus:bg-white focus:text-black focus:ring-4 focus:ring-purple-400 transition-all outline-none"
             >
-              <Play className="w-6 h-6 fill-current" />
+              <Play className="w-5 h-5 fill-current" />
               <span>▶ CRÉER UN SALON</span>
             </button>
 

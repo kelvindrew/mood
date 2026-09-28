@@ -216,7 +216,7 @@ export const MobileJoinView: React.FC<MobileJoinViewProps> = ({ defaultRoomCode 
             value={code}
             onChange={(e) => setCode(e.target.value.toUpperCase())}
             placeholder="Ex: 4827"
-            className="w-full text-center py-3.5 px-4 rounded-2xl bg-black/60 border-2 border-mood-coral/60 text-3xl font-black font-mono tracking-widest text-white placeholder-gray-600 focus:outline-none focus:border-mood-amber focus:shadow-[0_0_25px_rgba(245,158,11,0.5)] uppercase"
+            className="w-full text-center py-3.5 px-4 rounded-2xl bg-black/60 border-2 border-purple-500/50 text-3xl font-black font-mono tracking-widest text-white placeholder-gray-600 focus:outline-none focus:border-purple-400 focus:shadow-[0_0_25px_rgba(124,58,237,0.5)] uppercase"
             required
           />
         </div>
@@ -337,7 +337,7 @@ export const MobileJoinView: React.FC<MobileJoinViewProps> = ({ defaultRoomCode 
         <button
           type="submit"
           disabled={isLoading}
-          className="w-full py-4 rounded-2xl bg-gradient-to-r from-mood-coral via-rose-500 to-mood-amber text-white font-black text-base shadow-[0_0_25px_rgba(255,71,87,0.5)] active:scale-95 transition-all flex items-center justify-center space-x-2 border border-white/20"
+          className="w-full py-4 rounded-2xl bg-[#7C3AED] hover:bg-[#6D28D9] text-white font-black text-base shadow-[0_0_30px_rgba(124,58,237,0.6)] active:scale-95 transition-all flex items-center justify-center space-x-2 border border-white/20"
         >
           <span>{isLoading ? 'Connexion en cours...' : 'REJOINDRE LA PARTIE'}</span>
           <ArrowRight className="w-5 h-5" />

@@ -186,10 +186,10 @@ export const TVCategoriesView: React.FC = () => {
                     audio.playSelect();
                     handlePlayGame(spotlightGame);
                   }}
-                  className="flex items-center space-x-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-400 text-black font-display font-black text-xs uppercase tracking-wider shadow-[0_0_20px_rgba(16,185,129,0.5)] transition-all hover:scale-105 active:scale-95 outline-none focus:scale-110 focus:ring-4 focus:ring-emerald-300"
+                  className="flex items-center space-x-2 px-7 py-3 rounded-full bg-[#7C3AED] hover:bg-[#6D28D9] text-white font-black text-xs uppercase tracking-widest shadow-[0_0_25px_rgba(124,58,237,0.6)] transition-all hover:scale-105 active:scale-95 outline-none focus:scale-105 focus:ring-4 focus:ring-white"
                 >
-                  <Play className="w-4 h-4 fill-current" />
-                  <span>JOUER MAINTENANT</span>
+                  <Play className="w-3.5 h-3.5 fill-current" />
+                  <span>PLAY</span>
                 </button>
 
                 <button
@@ -199,10 +199,10 @@ export const TVCategoriesView: React.FC = () => {
                     audio.playSelect();
                     handleSelectGame(spotlightGame);
                   }}
-                  className="flex items-center space-x-1.5 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 text-white font-bold text-xs transition-all outline-none focus:scale-105 focus:bg-white focus:text-black"
+                  className="flex items-center space-x-1.5 px-5 py-3 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold text-xs transition-all outline-none focus:scale-105 focus:bg-white focus:text-black"
                 >
                   <Info className="w-4 h-4" />
-                  <span>RÈGLES & DÉTAILS</span>
+                  <span>RÈGLES DU JEU</span>
                 </button>
               </div>
             </div>
@@ -210,20 +210,22 @@ export const TVCategoriesView: React.FC = () => {
         </div>
       )}
 
-      {/* 3. Games Grid Showcase */}
+      {/* 3. Games Grid Showcase (Vertical Poster Grid) */}
       <div>
         <div className="flex items-center justify-between mb-4">
-          <h3 className="font-display font-black text-lg text-white flex items-center space-x-2">
-            <span>Tous les jeux de la catégorie</span>
-            <span className="text-xs text-emerald-400 font-mono font-bold">({filteredGames.length})</span>
+          <h3 className="font-display font-black text-base text-white tracking-[0.2em] uppercase flex items-center space-x-2">
+            <span>CATALOGUE COMPLET</span>
+            <span className="text-xs text-purple-400 font-mono font-bold">({filteredGames.length} jeux)</span>
           </h3>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-5">
           {filteredGames.map((game) => (
             <TVGameCard
               key={game.id}
               game={game}
+              isActive={spotlightGame?.id === game.id}
+              onHighlight={(g) => setSpotlightGame(g)}
               onSelect={(g) => {
                 setSpotlightGame(g);
                 handleSelectGame(g);

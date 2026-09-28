@@ -9,7 +9,7 @@ import { GameCatalogItem } from '../../types/game';
 import { CATEGORIES } from '../../data/gamesCatalog';
 import { tvNav } from '../../services/tvNavigation';
 import { audio } from '../../services/audio';
-import { Sparkles, Flame, Layers, Box, Gamepad2, Brain } from 'lucide-react';
+import { Layers, Box } from 'lucide-react';
 
 export const TVHomeView: React.FC = () => {
   const { setSelectedGame, setTvView, createRoom } = useGame();
@@ -24,7 +24,9 @@ export const TVHomeView: React.FC = () => {
     const unsub = adminCms.subscribe(() => {
       const updated = adminCms.getGamesCatalog();
       setGames(updated);
-      if (updated.length > 0) setSpotlightGame(updated[0]);
+      if (updated.length > 0 && !spotlightGame) {
+        setSpotlightGame(updated[0]);
+      }
     });
     return () => unsub();
   }, []);
@@ -41,15 +43,23 @@ export const TVHomeView: React.FC = () => {
 
   // Thematic collections for Smart TV shelf layout
   const partyGames = useMemo(() => {
-    return games.filter((g) => ['spy', 'bomb_party', 'petit_bac', 'fake_news', 'meme_factory', 'connect_four', 'quick_games'].includes(g.id));
+    return games.filter((g) =>
+      ['spy', 'bomb_party', 'petit_bac', 'fake_news', 'meme_factory', 'connect_four', 'quick_games'].includes(g.id)
+    );
   }, [games]);
 
   const cardGames = useMemo(() => {
-    return games.filter((g) => ['menteur', 'inter', 'card_party', 'president', 'poker', 'blackjack'].includes(g.id) || g.category === 'cards');
+    return games.filter(
+      (g) => ['menteur', 'inter', 'card_party', 'president', 'poker', 'blackjack'].includes(g.id) || g.category === 'cards'
+    );
   }, [games]);
 
   const boardGames = useMemo(() => {
-    return games.filter((g) => ['scrabble', 'naval_battle', 'ludo', 'four_pics', 'werewolf', 'quiz', 'blind_test', 'draw_and_guess'].includes(g.id) || g.category === 'reflexion');
+    return games.filter(
+      (g) =>
+        ['scrabble', 'naval_battle', 'ludo', 'four_pics', 'werewolf', 'quiz', 'blind_test', 'draw_and_guess'].includes(g.id) ||
+        g.category === 'reflexion'
+    );
   }, [games]);
 
   const filteredGames = useMemo(() => {
@@ -57,7 +67,7 @@ export const TVHomeView: React.FC = () => {
     return games.filter((g) => g.category === selectedCat);
   }, [games, selectedCat]);
 
-  // If in 3D CoverFlow mode
+  // 3D CoverFlow Mode
   if (viewMode === 'coverflow') {
     const activeCoverGame = games[coverflowIndex] || games[0];
     return (
@@ -69,8 +79,8 @@ export const TVHomeView: React.FC = () => {
             alt={activeCoverGame.title}
             className="w-full h-full object-cover object-center filter blur-3xl opacity-30 scale-125 transition-opacity duration-700"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#060810] via-[#060810]/60 to-transparent" />
-          <div className="absolute inset-0 bg-gradient-to-b from-[#060810]/80 via-transparent to-[#060810]" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#07090E] via-[#07090E]/60 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-b from-[#07090E]/80 via-transparent to-[#07090E]" />
         </div>
 
         {/* Top Switcher Button */}
@@ -82,7 +92,7 @@ export const TVHomeView: React.FC = () => {
               audio.playSelect();
               setViewMode('platform');
             }}
-            className="flex items-center space-x-2 px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold text-xs backdrop-blur-md outline-none focus:scale-110 focus:bg-white focus:text-black"
+            className="flex items-center space-x-2 px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold text-xs backdrop-blur-md outline-none focus:scale-110 focus:bg-white focus:text-black"
           >
             <Layers className="w-4 h-4" />
             <span>Vue Plateforme Smart TV</span>
@@ -94,7 +104,10 @@ export const TVHomeView: React.FC = () => {
           <TVCoverFlowLauncher
             games={games}
             activeIndex={coverflowIndex}
-            onIndexChange={setCoverflowIndex}
+            onIndexChange={(idx) => {
+              setCoverflowIndex(idx);
+              if (games[idx]) setSpotlightGame(games[idx]);
+            }}
             onPlayGame={handlePlayGame}
             onMoreInfo={handleMoreInfo}
           />
@@ -112,19 +125,38 @@ export const TVHomeView: React.FC = () => {
     );
   }
 
-  // Smart TV Platform Mode (Default)
+  // Cinematic Smart TV Mode (Reference Image: RAYA AND THE LAST DRAGON Style)
   return (
-    <div className="relative min-h-screen bg-transparent text-white select-none pb-24 overflow-x-hidden">
-      {/* 1. Cinematic Hero Banner */}
+    <div className="relative min-h-screen text-white select-none pb-20 overflow-x-hidden">
+      {/* 1. Dynamic Full-Bleed Background (Directly Inspired by Reference Image) */}
+      <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden select-none">
+        <img
+          key={spotlightGame.id}
+          src={spotlightGame.heroImage || spotlightGame.coverImage}
+          alt={spotlightGame.title}
+          className="w-full h-full object-cover object-right md:object-center filter brightness-[0.90] contrast-[1.05] transition-opacity duration-700 animate-fade-in"
+        />
+
+        {/* Left Dark Gradient: Deep contrast for Title, Meta, and Buttons */}
+        <div className="absolute inset-0 bg-gradient-to-r from-[#07090E] via-[#07090E]/85 via-42% via-[#07090E]/30 to-transparent" />
+
+        {/* Top Vignette under Navbar */}
+        <div className="absolute top-0 left-0 right-0 h-44 bg-gradient-to-b from-[#07090E] via-[#07090E]/60 to-transparent" />
+
+        {/* Bottom Vignette for the MY LIST carousel */}
+        <div className="absolute bottom-0 left-0 right-0 h-[48vh] bg-gradient-to-t from-[#07090E] via-[#07090E]/90 to-transparent" />
+      </div>
+
+      {/* 2. Hero Title & Actions Section */}
       <TVHeroBanner
         game={spotlightGame}
         onPlay={handlePlayGame}
         onMoreInfo={handleMoreInfo}
       />
 
-      {/* 2. Category Filter Switcher & Mode Toggle Bar */}
-      <div className="px-[5vw] py-4 flex items-center justify-between border-t border-b border-white/10 bg-[#060810]/60 backdrop-blur-md sticky top-16 z-20">
-        <div className="flex items-center space-x-2 overflow-x-auto scrollbar-none py-1">
+      {/* 3. Category Filter & View Mode Bar */}
+      <div className="relative z-10 px-8 md:px-12 pt-4 pb-2 flex items-center justify-between">
+        <div className="flex items-center space-x-3 overflow-x-auto scrollbar-none py-1">
           {CATEGORIES.map((cat) => {
             const isActive = selectedCat === cat.id;
             return (
@@ -136,14 +168,18 @@ export const TVHomeView: React.FC = () => {
                   audio.playSelect();
                   setSelectedCat(cat.id);
                 }}
-                className={`flex items-center space-x-2 px-4 py-2 rounded-xl text-xs font-bold transition-all outline-none flex-shrink-0 ${
+                className={`flex items-center space-x-2 px-4 py-1.5 rounded-full text-xs font-bold transition-all outline-none flex-shrink-0 ${
                   isActive
-                    ? 'bg-gradient-to-r from-mood-coral to-mood-amber text-white font-black shadow-[0_0_25px_rgba(255,71,87,0.5)] scale-105 ring-2 ring-white/50'
-                    : 'bg-[#0F1424] hover:bg-[#1A2238] border border-white/10 text-gray-300 hover:text-white'
+                    ? 'bg-purple-600 text-white font-extrabold shadow-[0_0_20px_rgba(124,58,237,0.5)] scale-105 ring-1 ring-purple-400'
+                    : 'bg-white/10 hover:bg-white/20 border border-white/10 text-gray-300 hover:text-white'
                 }`}
               >
                 <span>{cat.name}</span>
-                <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono font-bold ${isActive ? 'bg-black/30 text-white' : 'bg-white/10 text-gray-400'}`}>
+                <span
+                  className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono font-bold ${
+                    isActive ? 'bg-black/30 text-white' : 'bg-white/10 text-gray-400'
+                  }`}
+                >
                   {cat.id === 'all' ? games.length : games.filter((g) => g.category === cat.id).length}
                 </span>
               </button>
@@ -159,23 +195,24 @@ export const TVHomeView: React.FC = () => {
             audio.playSelect();
             setViewMode('coverflow');
           }}
-          className="hidden md:flex items-center space-x-2 px-4 py-2 rounded-xl bg-white/5 hover:bg-white/15 border border-white/10 text-mood-cyan font-bold text-xs transition-all outline-none focus:scale-105 focus:bg-white focus:text-black ml-4 flex-shrink-0"
+          className="hidden md:flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-white/10 hover:bg-white/20 border border-white/15 text-white font-bold text-xs transition-all outline-none focus:scale-105 focus:bg-white focus:text-black ml-4 flex-shrink-0"
           title="Afficher la vue CoverFlow 3D"
         >
-          <Box className="w-4 h-4 text-mood-cyan" />
-          <span>Vue CoverFlow 3D</span>
+          <Box className="w-3.5 h-3.5 text-purple-400" />
+          <span>CoverFlow 3D</span>
         </button>
       </div>
 
-      {/* 3. Thematic Game Shelves / Rows */}
-      <div className="py-6 space-y-6">
+      {/* 4. Bottom Shelves: MY LIST Carousel (Reference Image Style) */}
+      <div className="relative z-10 pt-2 pb-6 space-y-4">
         {selectedCat === 'all' ? (
           <>
-            {/* Shelf 1: Party & Hits */}
+            {/* Shelf 1: MY LIST (Reference Image: MY LIST with Vertical Posters) */}
             <TVGameRow
-              title="🔥 Tendances & Soirées Multijoueurs"
+              title="MY LIST • COUPS DE CŒUR"
               games={partyGames}
-              icon={<Flame className="w-5 h-5 text-mood-coral" />}
+              activeGameId={spotlightGame.id}
+              onHighlightGame={(g) => setSpotlightGame(g)}
               onSelectGame={(g) => {
                 setSpotlightGame(g);
                 handleMoreInfo(g);
@@ -185,9 +222,10 @@ export const TVHomeView: React.FC = () => {
 
             {/* Shelf 2: Card Games */}
             <TVGameRow
-              title="🃏 Jeux de Cartes de Salon"
+              title="JEUX DE CARTES DE SALON"
               games={cardGames}
-              icon={<Sparkles className="w-5 h-5 text-mood-amber" />}
+              activeGameId={spotlightGame.id}
+              onHighlightGame={(g) => setSpotlightGame(g)}
               onSelectGame={(g) => {
                 setSpotlightGame(g);
                 handleMoreInfo(g);
@@ -195,11 +233,12 @@ export const TVHomeView: React.FC = () => {
               onPlayGame={handlePlayGame}
             />
 
-            {/* Shelf 3: Board, Words & Strategy */}
+            {/* Shelf 3: Board & Words */}
             <TVGameRow
-              title="🧠 Société, Mots & Réflexion"
+              title="SOCIÉTÉ, MOTS & STRATÉGIE"
               games={boardGames}
-              icon={<Brain className="w-5 h-5 text-mood-cyan" />}
+              activeGameId={spotlightGame.id}
+              onHighlightGame={(g) => setSpotlightGame(g)}
               onSelectGame={(g) => {
                 setSpotlightGame(g);
                 handleMoreInfo(g);
@@ -209,9 +248,10 @@ export const TVHomeView: React.FC = () => {
           </>
         ) : (
           <TVGameRow
-            title={`Jeux : ${CATEGORIES.find((c) => c.id === selectedCat)?.name || selectedCat}`}
+            title={`JEUX : ${CATEGORIES.find((c) => c.id === selectedCat)?.name || selectedCat}`}
             games={filteredGames}
-            icon={<Gamepad2 className="w-5 h-5 text-mood-coral" />}
+            activeGameId={spotlightGame.id}
+            onHighlightGame={(g) => setSpotlightGame(g)}
             onSelectGame={(g) => {
               setSpotlightGame(g);
               handleMoreInfo(g);

@@ -6,45 +6,57 @@ import { ChevronRight } from 'lucide-react';
 interface TVGameRowProps {
   title: string;
   games: GameCatalogItem[];
+  activeGameId?: string;
   icon?: React.ReactNode;
   onSelectGame: (game: GameCatalogItem) => void;
   onPlayGame: (game: GameCatalogItem) => void;
+  onHighlightGame?: (game: GameCatalogItem) => void;
 }
 
-export const TVGameRow: React.FC<TVGameRowProps> = ({ title, games, icon, onSelectGame, onPlayGame }) => {
+export const TVGameRow: React.FC<TVGameRowProps> = ({
+  title,
+  games,
+  activeGameId,
+  icon,
+  onSelectGame,
+  onPlayGame,
+  onHighlightGame,
+}) => {
   const rowRef = useRef<HTMLDivElement>(null);
 
   if (games.length === 0) return null;
 
   return (
-    <div className="flex flex-col space-y-3 py-3 px-[5vw] select-none">
+    <div className="flex flex-col space-y-3 py-2 px-8 md:px-12 select-none">
       {/* Category Row Header */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-2.5">
+        <div className="flex items-center space-x-2">
           {icon}
-          <h2 className="text-2xl font-black font-display text-white tracking-wide flex items-center group cursor-pointer">
+          <h2 className="text-sm md:text-base font-extrabold font-display text-white tracking-[0.2em] uppercase flex items-center group cursor-pointer">
             <span>{title}</span>
-            <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-white group-hover:translate-x-1 transition-all ml-1" />
+            <ChevronRight className="w-4 h-4 text-gray-500 group-hover:text-white group-hover:translate-x-1 transition-all ml-1" />
           </h2>
         </div>
-        <span className="text-xs font-bold text-[#B8C2D8]">
+        <span className="text-[11px] font-mono font-bold text-gray-500 uppercase tracking-widest">
           {games.length} {games.length > 1 ? 'Jeux' : 'Jeu'}
         </span>
       </div>
 
-      {/* Horizontal Carousel with Smooth D-Pad scrolling */}
+      {/* Horizontal Posters Carousel */}
       <div
         ref={rowRef}
-        className="flex items-center space-x-5 overflow-x-auto py-5 -my-5 scrollbar-none scroll-smooth focus-within:scroll-auto"
+        className="flex items-center space-x-4 md:space-x-5 overflow-x-auto py-3 px-1 scrollbar-none scroll-smooth focus-within:scroll-auto"
         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
       >
         {games.map((game) => (
           <TVGameCard
             key={game.id}
             game={game}
-            className="w-72 md:w-84 h-56 flex-shrink-0"
+            isActive={activeGameId === game.id}
+            className="w-36 md:w-44 lg:w-48"
             onSelect={onSelectGame}
             onPlayDirect={onPlayGame}
+            onHighlight={onHighlightGame}
           />
         ))}
       </div>

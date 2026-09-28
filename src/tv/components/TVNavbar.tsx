@@ -1,114 +1,150 @@
 import React, { useState, useEffect } from 'react';
 import { useGame, TVView } from '../../context/GameContext';
-import {
-  Globe,
-  ChevronLeft,
-  ChevronRight,
-  Sparkles,
-  Smartphone,
-  Layers,
-} from 'lucide-react';
+import { Search, Smartphone, Sparkles } from 'lucide-react';
 import { audio } from '../../services/audio';
+import { TVSearchModal } from './TVSearchModal';
 import { MoodThemeSwitcher } from '../../components/MoodThemeSwitcher';
+import { GAMES_CATALOG } from '../../data/gamesCatalog';
 
-export const TVNavbar: React.FC = () => {
-  const { setTvView, isSimulatorOpen, setIsSimulatorOpen, room } = useGame();
-  const [time, setTime] = useState<string>('');
+interface TVNavbarProps {
+  onSelectCategory?: (category: string) => void;
+  activeCategory?: string;
+}
 
-  useEffect(() => {
-    const updateTime = () => {
-      const now = new Date();
-      setTime(now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }));
-    };
-    updateTime();
-    const interval = setInterval(updateTime, 10000);
-    return () => clearInterval(interval);
-  }, []);
+export const TVNavbar: React.FC<TVNavbarProps> = ({ onSelectCategory, activeCategory = 'all' }) => {
+  const { tvView, setTvView, isSimulatorOpen, setIsSimulatorOpen, setSelectedGame, createRoom } = useGame();
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
 
-  const handleNav = (view: TVView) => {
+  const handleNav = (view: TVView, cat?: string) => {
+    audio.playSelect();
+    if (cat && onSelectCategory) {
+      onSelectCategory(cat);
+    }
     setTvView(view);
   };
 
   return (
-    <header className="fixed top-5 left-0 right-0 z-40 px-[4vw] flex items-center justify-between pointer-events-auto select-none">
-      <div className="flex items-center justify-between w-full max-w-7xl mx-auto px-4 py-2.5 rounded-2xl bg-[#060810]/70 backdrop-blur-xl border border-white/10 shadow-2xl">
-        {/* 1. Left Controls: MOOD Brand & Navigation Shortcuts */}
-        <div className="flex items-center space-x-4">
+    <>
+      <header className="fixed top-0 left-0 right-0 z-40 px-8 md:px-12 pt-7 pb-4 flex items-center justify-between select-none pointer-events-auto bg-gradient-to-b from-[#07090E]/95 via-[#07090E]/60 to-transparent">
+        {/* Left Navigation: Brand & Minimalist Streaming Links */}
+        <div className="flex items-center space-x-8 md:space-x-12">
+          {/* Brand Logo */}
           <button
             data-tv-focus
             tabIndex={0}
-            onClick={() => handleNav('home')}
-            className="flex items-center space-x-2.5 text-white transition-all outline-none focus:scale-110 group"
+            onClick={() => handleNav('home', 'all')}
+            className="flex items-center space-x-2 text-white outline-none focus:scale-105 group"
             title="Accueil MOOD"
           >
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-mood-indigo via-mood-coral to-mood-amber flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform">
+            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-purple-600 via-indigo-600 to-purple-800 flex items-center justify-center shadow-[0_0_20px_rgba(124,58,237,0.5)] group-hover:scale-105 transition-transform">
               <span className="font-display font-black text-white text-base tracking-tighter">M</span>
             </div>
-            <div className="flex flex-col text-left">
-              <span className="font-display font-black text-base tracking-widest text-white leading-none">
-                MOOD
-              </span>
-              <span className="text-[9px] font-mono font-bold tracking-widest text-mood-coral uppercase">
-                SMART TV
-              </span>
-            </div>
+            <span className="font-display font-black text-lg tracking-[0.25em] text-white">
+              MOOD
+            </span>
           </button>
 
-          <div className="h-5 w-px bg-white/15 mx-1" />
-
-          {/* Quick Views */}
-          <div className="flex items-center space-x-1.5">
+          {/* Minimalist Uppercase Links (Inspired by reference image: DASHBOARD, MOVIES, SERIES, KIDS) */}
+          <nav className="flex items-center space-x-6 md:space-x-8 text-xs font-extrabold tracking-[0.2em] uppercase">
             <button
               data-tv-focus
               tabIndex={0}
-              onClick={() => handleNav('home')}
-              className="px-3 py-1 rounded-xl text-xs font-bold text-gray-300 hover:text-white hover:bg-white/10 transition-all outline-none focus:bg-white focus:text-black"
+              onClick={() => handleNav('home', 'all')}
+              className={`transition-all outline-none py-1 focus:text-purple-400 focus:scale-105 ${
+                tvView === 'home' && activeCategory === 'all'
+                  ? 'text-white font-black drop-shadow-[0_0_12px_rgba(255,255,255,0.8)] border-b-2 border-purple-500'
+                  : 'text-white/70 hover:text-white'
+              }`}
             >
-              Accueil
+              Dashboard
             </button>
+
             <button
               data-tv-focus
               tabIndex={0}
-              onClick={() => handleNav('categories')}
-              className="px-3 py-1 rounded-xl text-xs font-bold text-gray-300 hover:text-white hover:bg-white/10 transition-all outline-none focus:bg-white focus:text-black flex items-center space-x-1.5"
+              onClick={() => {
+                if (onSelectCategory) {
+                  onSelectCategory('all');
+                  handleNav('categories');
+                } else {
+                  handleNav('categories');
+                }
+              }}
+              className={`transition-all outline-none py-1 focus:text-purple-400 focus:scale-105 ${
+                tvView === 'categories'
+                  ? 'text-white font-black drop-shadow-[0_0_12px_rgba(255,255,255,0.8)] border-b-2 border-purple-500'
+                  : 'text-white/70 hover:text-white'
+              }`}
             >
-              <Layers className="w-3.5 h-3.5" />
-              <span>Catalogue (21)</span>
+              Jeux (21)
             </button>
-          </div>
+
+            <button
+              data-tv-focus
+              tabIndex={0}
+              onClick={() => {
+                if (onSelectCategory) {
+                  onSelectCategory('party');
+                }
+                handleNav('home', 'party');
+              }}
+              className={`transition-all outline-none py-1 focus:text-purple-400 focus:scale-105 ${
+                activeCategory === 'party' && tvView === 'home'
+                  ? 'text-white font-black drop-shadow-[0_0_12px_rgba(255,255,255,0.8)] border-b-2 border-purple-500'
+                  : 'text-white/70 hover:text-white'
+              }`}
+            >
+              Party
+            </button>
+
+            <button
+              data-tv-focus
+              tabIndex={0}
+              onClick={() => {
+                if (onSelectCategory) {
+                  onSelectCategory('reflexion');
+                }
+                handleNav('home', 'reflexion');
+              }}
+              className={`transition-all outline-none py-1 focus:text-purple-400 focus:scale-105 ${
+                activeCategory === 'reflexion' && tvView === 'home'
+                  ? 'text-white font-black drop-shadow-[0_0_12px_rgba(255,255,255,0.8)] border-b-2 border-purple-500'
+                  : 'text-white/70 hover:text-white'
+              }`}
+            >
+              Société
+            </button>
+          </nav>
         </div>
 
-        {/* 2. Center Status & Room Indicator */}
-        <div className="flex items-center space-x-3 text-xs">
-          <div className="flex items-center space-x-2 px-3.5 py-1 rounded-full bg-white/5 border border-white/10">
-            <span
-              className="w-2 h-2 rounded-full animate-pulse bg-mood-emerald"
-            />
-            <span className="font-display font-black text-white tracking-widest text-[11px] uppercase">
-              {room ? `SALON #${room.code}` : '21 JEUX DE SALON EN LIGNE'}
-            </span>
-            <span className="text-gray-500">•</span>
-            <span className="text-mood-amber font-mono text-[10px] font-bold">100% SMARTPHONE</span>
-          </div>
-        </div>
-
-        {/* 3. Right Controls: Theme Atmosphere Switcher, AI Studio, Gamepad Simulator & Live Clock */}
-        <div className="flex items-center space-x-3 text-white/80">
-          {/* Mood Atmosphere Switcher (Canyon, Dunes, Rainforest) */}
-          <MoodThemeSwitcher />
+        {/* Right Navigation: Search, Theme, Simulator & Profile Avatar */}
+        <div className="flex items-center space-x-4 md:space-x-5">
+          {/* Quick Search Icon Button (Reference image) */}
+          <button
+            data-tv-focus
+            tabIndex={0}
+            onClick={() => {
+              audio.playSelect();
+              setIsSearchOpen(true);
+            }}
+            className="p-2 rounded-full text-white/80 hover:text-white hover:bg-white/10 transition-all outline-none focus:scale-125 focus:text-purple-400"
+            title="Rechercher un jeu (Recherche instantanée)"
+          >
+            <Search className="w-5 h-5" />
+          </button>
 
           {/* AI Content Studio Button */}
           <button
             data-tv-focus
             tabIndex={0}
             onClick={() => handleNav('admin')}
-            className="p-1.5 rounded-xl hover:text-white hover:bg-white/10 transition-all outline-none focus:scale-125 focus:text-mood-amber"
+            className="p-2 rounded-full text-white/80 hover:text-amber-400 hover:bg-white/10 transition-all outline-none focus:scale-125"
             title="Studio de Contenu (Gemini)"
           >
-            <Sparkles className="w-4 h-4 text-mood-amber fill-current" />
+            <Sparkles className="w-4 h-4 text-amber-400 fill-current" />
           </button>
 
-          {/* Controller Simulator */}
+          {/* Controller Simulator Toggle */}
           <button
             data-tv-focus
             tabIndex={0}
@@ -116,22 +152,52 @@ export const TVNavbar: React.FC = () => {
               audio.playSelect();
               setIsSimulatorOpen(!isSimulatorOpen);
             }}
-            className={`p-1.5 rounded-xl transition-all outline-none focus:scale-125 ${
-              isSimulatorOpen ? 'text-mood-amber bg-mood-amber/20 font-black' : 'hover:text-white hover:bg-white/10'
+            className={`p-2 rounded-full transition-all outline-none focus:scale-125 ${
+              isSimulatorOpen
+                ? 'text-purple-400 bg-purple-600/20 ring-1 ring-purple-500'
+                : 'text-white/80 hover:text-white hover:bg-white/10'
             }`}
-            title="Simulateur Manette"
+            title="Simulateur Manette Mobile"
           >
             <Smartphone className="w-4 h-4" />
           </button>
 
-          <div className="h-4 w-px bg-white/15" />
+          {/* Theme Atmosphere Selector (Compact) */}
+          <div className="hidden lg:block">
+            <MoodThemeSwitcher compact={true} />
+          </div>
 
-          {/* Digital Time */}
-          <span className="font-mono text-xs font-bold text-white tracking-wider px-1">
-            {time || '20:00'}
-          </span>
+          {/* Profile Avatar (Reference image circular portrait) */}
+          <button
+            data-tv-focus
+            tabIndex={0}
+            onClick={() => handleNav('profiles')}
+            className="w-8 h-8 rounded-full overflow-hidden border-2 border-white/30 hover:border-purple-400 focus:border-purple-400 focus:ring-4 focus:ring-purple-500/80 focus:scale-110 transition-all outline-none shadow-lg cursor-pointer"
+            title="Profils & Joueurs"
+          >
+            <img
+              src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80"
+              alt="Profil"
+              className="w-full h-full object-cover"
+            />
+          </button>
         </div>
-      </div>
-    </header>
+      </header>
+
+      {/* Instant TV Search Modal */}
+      <TVSearchModal
+        isOpen={isSearchOpen}
+        onClose={() => setIsSearchOpen(false)}
+        games={GAMES_CATALOG}
+        onSelectGame={(g) => {
+          setSelectedGame(g);
+          setTvView('detail');
+        }}
+        onPlayGame={async (g) => {
+          setSelectedGame(g);
+          await createRoom(g.id);
+        }}
+      />
+    </>
   );
 };
