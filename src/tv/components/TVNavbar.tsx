@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useGame, TVView } from '../../context/GameContext';
-import { Search, Smartphone, Sparkles } from 'lucide-react';
+import { Search } from 'lucide-react';
 import { audio } from '../../services/audio';
 import { TVSearchModal } from './TVSearchModal';
-import { MoodThemeSwitcher } from '../../components/MoodThemeSwitcher';
 import { GAMES_CATALOG } from '../../data/gamesCatalog';
 
 interface TVNavbarProps {
@@ -117,9 +116,9 @@ export const TVNavbar: React.FC<TVNavbarProps> = ({ onSelectCategory, activeCate
           </nav>
         </div>
 
-        {/* Right Navigation: Search, Theme, Simulator & Profile Avatar */}
-        <div className="flex items-center space-x-4 md:space-x-5">
-          {/* Quick Search Icon Button (Reference image) */}
+        {/* Right Navigation: Minimalist Search & Profile Avatar (Reference Image Style: 🔍 + Avatar) */}
+        <div className="flex items-center space-x-5">
+          {/* Quick Search Icon Button */}
           <button
             data-tv-focus
             tabIndex={0}
@@ -128,46 +127,12 @@ export const TVNavbar: React.FC<TVNavbarProps> = ({ onSelectCategory, activeCate
               setIsSearchOpen(true);
             }}
             className="p-2 rounded-full text-white/80 hover:text-white hover:bg-white/10 transition-all outline-none focus:scale-125 focus:text-purple-400"
-            title="Rechercher un jeu (Recherche instantanée)"
+            title="Rechercher un jeu"
           >
             <Search className="w-5 h-5" />
           </button>
 
-          {/* AI Content Studio Button */}
-          <button
-            data-tv-focus
-            tabIndex={0}
-            onClick={() => handleNav('admin')}
-            className="p-2 rounded-full text-white/80 hover:text-amber-400 hover:bg-white/10 transition-all outline-none focus:scale-125"
-            title="Studio de Contenu (Gemini)"
-          >
-            <Sparkles className="w-4 h-4 text-amber-400 fill-current" />
-          </button>
-
-          {/* Controller Simulator Toggle */}
-          <button
-            data-tv-focus
-            tabIndex={0}
-            onClick={() => {
-              audio.playSelect();
-              setIsSimulatorOpen(!isSimulatorOpen);
-            }}
-            className={`p-2 rounded-full transition-all outline-none focus:scale-125 ${
-              isSimulatorOpen
-                ? 'text-purple-400 bg-purple-600/20 ring-1 ring-purple-500'
-                : 'text-white/80 hover:text-white hover:bg-white/10'
-            }`}
-            title="Simulateur Manette Mobile"
-          >
-            <Smartphone className="w-4 h-4" />
-          </button>
-
-          {/* Theme Atmosphere Selector (Compact) */}
-          <div className="hidden lg:block">
-            <MoodThemeSwitcher compact={true} />
-          </div>
-
-          {/* Profile Avatar (Reference image circular portrait) */}
+          {/* Profile Avatar */}
           <button
             data-tv-focus
             tabIndex={0}

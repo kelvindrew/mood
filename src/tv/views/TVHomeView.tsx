@@ -9,7 +9,7 @@ import { GameCatalogItem } from '../../types/game';
 import { CATEGORIES } from '../../data/gamesCatalog';
 import { tvNav } from '../../services/tvNavigation';
 import { audio } from '../../services/audio';
-import { Layers, Box } from 'lucide-react';
+import { Layers } from 'lucide-react';
 
 export const TVHomeView: React.FC = () => {
   const { setSelectedGame, setTvView, createRoom } = useGame();
@@ -154,62 +154,13 @@ export const TVHomeView: React.FC = () => {
         onMoreInfo={handleMoreInfo}
       />
 
-      {/* 3. Category Filter & View Mode Bar */}
-      <div className="relative z-10 px-8 md:px-12 pt-4 pb-2 flex items-center justify-between">
-        <div className="flex items-center space-x-3 overflow-x-auto scrollbar-none py-1">
-          {CATEGORIES.map((cat) => {
-            const isActive = selectedCat === cat.id;
-            return (
-              <button
-                key={cat.id}
-                data-tv-focus
-                tabIndex={0}
-                onClick={() => {
-                  audio.playSelect();
-                  setSelectedCat(cat.id);
-                }}
-                className={`flex items-center space-x-2 px-4 py-1.5 rounded-full text-xs font-bold transition-all outline-none flex-shrink-0 ${
-                  isActive
-                    ? 'bg-purple-600 text-white font-extrabold shadow-[0_0_20px_rgba(124,58,237,0.5)] scale-105 ring-1 ring-purple-400'
-                    : 'bg-white/10 hover:bg-white/20 border border-white/10 text-gray-300 hover:text-white'
-                }`}
-              >
-                <span>{cat.name}</span>
-                <span
-                  className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono font-bold ${
-                    isActive ? 'bg-black/30 text-white' : 'bg-white/10 text-gray-400'
-                  }`}
-                >
-                  {cat.id === 'all' ? games.length : games.filter((g) => g.category === cat.id).length}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-
-        {/* 3D CoverFlow View Toggle */}
-        <button
-          data-tv-focus
-          tabIndex={0}
-          onClick={() => {
-            audio.playSelect();
-            setViewMode('coverflow');
-          }}
-          className="hidden md:flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-white/10 hover:bg-white/20 border border-white/15 text-white font-bold text-xs transition-all outline-none focus:scale-105 focus:bg-white focus:text-black ml-4 flex-shrink-0"
-          title="Afficher la vue CoverFlow 3D"
-        >
-          <Box className="w-3.5 h-3.5 text-purple-400" />
-          <span>CoverFlow 3D</span>
-        </button>
-      </div>
-
-      {/* 4. Bottom Shelves: MY LIST Carousel (Reference Image Style) */}
-      <div className="relative z-10 pt-2 pb-6 space-y-4">
+      {/* 3. Bottom Shelves: MY LIST Carousel (Directly matching the reference image) */}
+      <div className="relative z-10 pt-4 pb-6 space-y-4">
         {selectedCat === 'all' ? (
           <>
-            {/* Shelf 1: MY LIST (Reference Image: MY LIST with Vertical Posters) */}
+            {/* Shelf 1: Pure Clean MY LIST (Exact reference image style) */}
             <TVGameRow
-              title="MY LIST • COUPS DE CŒUR"
+              title="MY LIST"
               games={partyGames}
               activeGameId={spotlightGame.id}
               onHighlightGame={(g) => setSpotlightGame(g)}

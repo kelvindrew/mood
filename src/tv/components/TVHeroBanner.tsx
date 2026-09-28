@@ -1,6 +1,6 @@
 import React from 'react';
 import { GameCatalogItem } from '../../types/game';
-import { Play, Plus } from 'lucide-react';
+import { Play } from 'lucide-react';
 import { audio } from '../../services/audio';
 
 interface TVHeroBannerProps {
@@ -44,7 +44,7 @@ export const TVHeroBanner: React.FC<TVHeroBannerProps> = ({ game, onPlay, onMore
           {game.description || game.tagline}
         </p>
 
-        {/* Action CTAs (Reference Image: Purple Pill 'PLAY' + Circular '(+)' Button) */}
+        {/* Action CTAs (Reference Image: Single Clean Purple Pill 'PLAY') */}
         <div className="flex items-center space-x-4 pt-2">
           {/* Primary Pill Button: PLAY */}
           <button
@@ -54,24 +54,10 @@ export const TVHeroBanner: React.FC<TVHeroBannerProps> = ({ game, onPlay, onMore
               audio.playSelect();
               onPlay(game);
             }}
-            className="px-9 py-3.5 rounded-full bg-[#7C3AED] hover:bg-[#6D28D9] text-white font-bold text-xs uppercase tracking-[0.2em] shadow-[0_0_35px_rgba(124,58,237,0.65)] hover:scale-105 active:scale-95 transition-all outline-none focus:ring-4 focus:ring-white flex items-center justify-center space-x-2"
+            className="px-10 py-3.5 rounded-full bg-[#7C3AED] hover:bg-[#6D28D9] text-white font-bold text-xs uppercase tracking-[0.2em] shadow-[0_0_35px_rgba(124,58,237,0.65)] hover:scale-105 active:scale-95 transition-all outline-none focus:ring-4 focus:ring-white flex items-center justify-center space-x-2"
           >
             <Play className="w-3.5 h-3.5 fill-current" />
             <span>PLAY</span>
-          </button>
-
-          {/* Secondary Circular Button: (+) Add to list / Info / Règles */}
-          <button
-            data-tv-focus
-            tabIndex={0}
-            onClick={() => {
-              audio.playSelect();
-              onMoreInfo(game);
-            }}
-            className="w-11 h-11 rounded-full border-2 border-white/40 hover:border-white text-white flex items-center justify-center hover:bg-white/10 active:scale-95 transition-all outline-none focus:ring-4 focus:ring-white"
-            title="Détails & Règles du jeu"
-          >
-            <Plus className="w-5 h-5 stroke-[2.5]" />
           </button>
         </div>
       </div>

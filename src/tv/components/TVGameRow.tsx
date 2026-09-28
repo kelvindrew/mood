@@ -1,7 +1,6 @@
 import React, { useRef } from 'react';
 import { GameCatalogItem } from '../../types/game';
 import { TVGameCard } from './TVGameCard';
-import { ChevronRight } from 'lucide-react';
 
 interface TVGameRowProps {
   title: string;
@@ -28,18 +27,11 @@ export const TVGameRow: React.FC<TVGameRowProps> = ({
 
   return (
     <div className="flex flex-col space-y-3 py-2 px-8 md:px-12 select-none">
-      {/* Category Row Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-2">
-          {icon}
-          <h2 className="text-sm md:text-base font-extrabold font-display text-white tracking-[0.2em] uppercase flex items-center group cursor-pointer">
-            <span>{title}</span>
-            <ChevronRight className="w-4 h-4 text-gray-500 group-hover:text-white group-hover:translate-x-1 transition-all ml-1" />
-          </h2>
-        </div>
-        <span className="text-[11px] font-mono font-bold text-gray-500 uppercase tracking-widest">
-          {games.length} {games.length > 1 ? 'Jeux' : 'Jeu'}
-        </span>
+      {/* Category Row Header (Reference Image Style: Pure Clean 'MY LIST') */}
+      <div className="flex items-center justify-between pb-1">
+        <h2 className="text-sm md:text-base font-extrabold font-display text-white tracking-[0.2em] uppercase">
+          {title}
+        </h2>
       </div>
 
       {/* Horizontal Posters Carousel */}
