@@ -4,6 +4,8 @@ import { GAMES_CATALOG } from '../data/gamesCatalog';
 import { socketService } from '../services/socket';
 import { audio } from '../services/audio';
 
+import { MoodThemeId, MOOD_THEMES } from '../theme/moodTheme';
+
 export type AppMode = 'tv' | 'mobile';
 export type TVView = 'home' | 'game_detail' | 'detail' | 'categories' | 'lobby' | 'gameplay' | 'playing' | 'results' | 'profile' | 'profiles' | 'settings' | 'admin';
 export type MobileView = 'join' | 'lobby' | 'controller' | 'spectator';
@@ -20,6 +22,8 @@ interface GameContextType {
   setMobileView: (view: MobileView) => void;
   selectedGame: GameCatalogItem;
   setSelectedGame: (game: GameCatalogItem) => void;
+  moodTheme: MoodThemeId;
+  setMoodTheme: (theme: MoodThemeId) => void;
   room: RoomState | null;
   localPlayer: Player | null;
   serverLanIp: string;
@@ -47,12 +51,35 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [tvView, setTvView] = useState<TVView>('home');
   const [mobileView, setMobileView] = useState<MobileView>('join');
   const [selectedGame, setSelectedGame] = useState<GameCatalogItem>(GAMES_CATALOG[0]);
+  const [moodTheme, setMoodThemeState] = useState<MoodThemeId>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('mood_theme') as MoodThemeId | null;
+      if (saved && MOOD_THEMES[saved]) return saved;
+    }
+    return 'canyon';
+  });
   const [room, setRoom] = useState<RoomState | null>(null);
   const [localPlayer, setLocalPlayer] = useState<Player | null>(null);
   const [serverLanIp, setServerLanIp] = useState<string>('localhost');
   const [isSimulatorOpen, setIsSimulatorOpen] = useState<boolean>(false);
   // E9 — la reconnexion automatique reste gérée par socketService
   const [connectionState, setConnectionState] = useState<ConnectionState>('connecting');
+
+  const setMoodTheme = (theme: MoodThemeId) => {
+    setMoodThemeState(theme);
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem('mood_theme', theme);
+        document.documentElement.setAttribute('data-mood-theme', theme);
+      } catch {}
+    }
+  };
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      document.documentElement.setAttribute('data-mood-theme', moodTheme);
+    }
+  }, [moodTheme]);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -323,6 +350,8 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         setMobileView,
         selectedGame,
         setSelectedGame,
+        moodTheme,
+        setMoodTheme,
         room,
         localPlayer,
         serverLanIp,

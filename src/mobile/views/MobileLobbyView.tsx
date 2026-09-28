@@ -7,6 +7,7 @@ import { triggerHaptic, hapticPatterns } from '../components/HapticFeedback';
 import { audio } from '../../services/audio';
 import { socketService } from '../../services/socket';
 import { PlayerColor } from '../../types/game';
+import { MoodAtmosphereBackground } from '../../components/MoodAtmosphereBackground';
 
 const COLORS: { id: PlayerColor; bg: string; name: string }[] = [
   { id: 'red', bg: 'bg-red-600', name: 'Rouge' },
@@ -41,10 +42,14 @@ export const MobileLobbyView: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col justify-between bg-[#060810] text-white select-none">
-      <MobileHeader />
+    <div className="relative min-h-screen flex flex-col justify-between bg-transparent text-white select-none overflow-x-hidden">
+      {/* Background Visual Artwork Atmosphere */}
+      <MoodAtmosphereBackground showOverlays={true} />
 
-      <main className="p-4 flex-1 flex flex-col justify-between space-y-4 animate-scale-in">
+      <div className="relative z-10 flex flex-col justify-between min-h-screen">
+        <MobileHeader />
+
+        <main className="p-4 flex-1 flex flex-col justify-between space-y-4 animate-scale-in">
         {/* Game Badge */}
         <div className="text-center space-y-1">
           <span className="px-3.5 py-1 rounded-full bg-gradient-to-r from-mood-coral to-mood-amber text-white text-[10px] font-black uppercase tracking-wider shadow-lg border border-white/20">
@@ -127,6 +132,7 @@ export const MobileLobbyView: React.FC = () => {
         {/* Reaction Flinger Bar */}
         <ReactionFlinger />
       </main>
+      </div>
     </div>
   );
 };

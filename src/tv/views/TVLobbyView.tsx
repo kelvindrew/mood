@@ -67,15 +67,15 @@ export const TVLobbyView: React.FC = () => {
   const botCount = filledPlayers.filter(p => p.isBot).length;
 
   return (
-    <div className="relative min-h-screen pt-20 px-[5vw] pb-16 select-none flex flex-col justify-between mood-canyon-bg text-white">
+    <div className="relative min-h-screen pt-20 px-[5vw] pb-16 select-none flex flex-col justify-between bg-transparent text-white">
       {/* Background Dynamic Ambient Backdrop */}
       <div className="fixed inset-0 z-0 pointer-events-none">
         <img
           src={selectedGame.heroImage || selectedGame.coverImage}
           alt={selectedGame.title}
-          className="w-full h-full object-cover object-center opacity-25 filter blur-2xl scale-110"
+          className="w-full h-full object-cover object-center opacity-15 filter blur-2xl scale-110"
         />
-        <div className="absolute inset-0 bg-[#060810]/80" />
+        <div className="absolute inset-0 bg-[#060810]/60" />
       </div>
 
       {/* Top Header */}

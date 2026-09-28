@@ -4,6 +4,8 @@ import { Gamepad2, ArrowRight, Camera, Sparkles, User, Eye, Volume2, Shield } fr
 import { triggerHaptic, hapticPatterns } from '../components/HapticFeedback';
 import { audio } from '../../services/audio';
 import { BuzzerSoundType } from '../../types/game';
+import { MoodAtmosphereBackground } from '../../components/MoodAtmosphereBackground';
+import { MoodThemeSwitcher } from '../../components/MoodThemeSwitcher';
 
 const AVATAR_LETTERS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L'];
 
@@ -174,21 +176,30 @@ export const MobileJoinView: React.FC<MobileJoinViewProps> = ({ defaultRoomCode 
   };
 
   return (
-    <div className="min-h-screen p-5 flex flex-col justify-between bg-[#060810] text-white select-none">
-      {/* Top Brand Banner */}
-      <div className="text-center pt-2 space-y-2 animate-scale-in">
-        <div className="w-14 h-14 mx-auto rounded-2xl bg-gradient-to-tr from-mood-indigo via-mood-coral to-mood-amber flex items-center justify-center shadow-[0_0_30px_rgba(255,71,87,0.4)] border border-white/20">
-          <Gamepad2 className="w-8 h-8 text-white" />
+    <div className="relative min-h-screen p-5 flex flex-col justify-between bg-transparent text-white select-none overflow-x-hidden">
+      {/* Visual Landscape Artwork Atmosphere (User Inspiration) */}
+      <MoodAtmosphereBackground showOverlays={true} />
+
+      <div className="relative z-10 flex flex-col justify-between min-h-[calc(100vh-2.5rem)]">
+        {/* Top Brand Banner & Theme Atmosphere Switcher */}
+        <div className="text-center pt-2 space-y-2.5 animate-scale-in flex flex-col items-center">
+          <div className="w-14 h-14 mx-auto rounded-2xl bg-gradient-to-tr from-mood-indigo via-mood-coral to-mood-amber flex items-center justify-center shadow-[0_0_30px_rgba(255,71,87,0.4)] border border-white/20">
+            <Gamepad2 className="w-8 h-8 text-white" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-black font-display tracking-widest text-white">
+              MOOD
+            </h1>
+            <p className="text-[11px] text-mood-coral font-bold uppercase tracking-widest">
+              Manette Sans Fil • Smart TV
+            </p>
+          </div>
+
+          {/* Compact Theme Atmosphere Selector */}
+          <div className="pt-1">
+            <MoodThemeSwitcher compact={true} />
+          </div>
         </div>
-        <div>
-          <h1 className="text-2xl font-black font-display tracking-widest text-white">
-            MOOD
-          </h1>
-          <p className="text-[11px] text-mood-coral font-bold uppercase tracking-widest">
-            Manette Sans Fil • Smart TV
-          </p>
-        </div>
-      </div>
 
       {/* Main Join Form */}
       <form onSubmit={handleJoin} className="my-auto space-y-4 bg-[#0F1424] border border-white/10 p-6 rounded-3xl shadow-2xl">
@@ -333,19 +344,20 @@ export const MobileJoinView: React.FC<MobileJoinViewProps> = ({ defaultRoomCode 
         </button>
       </form>
 
-      <div className="flex flex-col items-center space-y-2 pb-2 text-center text-[11px] text-gray-400 font-medium">
-        <a
-          href="/?mode=tv"
-          className="px-4 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-mood-amber font-bold flex items-center space-x-1.5 border border-white/15 transition-colors"
-        >
-          <span>📺 Afficher la Page d'Accueil TV</span>
-        </a>
-        <a
-          href="/?admin=true"
-          className="text-[10px] text-gray-400 hover:text-mood-amber font-bold flex items-center space-x-1 underline transition-colors"
-        >
-          <span>⚙️ Panneau d'Administration Back-Office</span>
-        </a>
+        <div className="flex flex-col items-center space-y-2 pb-2 text-center text-[11px] text-gray-400 font-medium">
+          <a
+            href="/?mode=tv"
+            className="px-4 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-mood-amber font-bold flex items-center space-x-1.5 border border-white/15 transition-colors"
+          >
+            <span>📺 Afficher la Page d'Accueil TV</span>
+          </a>
+          <a
+            href="/?admin=true"
+            className="text-[10px] text-gray-400 hover:text-mood-amber font-bold flex items-center space-x-1 underline transition-colors"
+          >
+            <span>⚙️ Panneau d'Administration Back-Office</span>
+          </a>
+        </div>
       </div>
     </div>
   );

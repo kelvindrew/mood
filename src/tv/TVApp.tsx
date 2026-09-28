@@ -7,6 +7,7 @@ import { TVGamePlayView } from './views/TVGamePlayView';
 import { TVRemoteHint } from './components/TVRemoteHint';
 import { TVToast } from './components/TVToast';
 import { SimulatorDrawer } from './components/SimulatorDrawer';
+import { MoodAtmosphereBackground } from '../components/MoodAtmosphereBackground';
 import { Loader2 } from 'lucide-react';
 
 // Vues secondaires chargées à la demande pour alléger le bundle initial TV
@@ -65,7 +66,10 @@ export const TVApp: React.FC = () => {
   const isFullScreenGame = tvView === 'playing' || tvView === 'gameplay';
 
   return (
-    <div className="relative min-h-screen bg-background text-white overflow-x-hidden font-sans select-none">
+    <div className="relative min-h-screen bg-transparent text-white overflow-x-hidden font-sans select-none">
+      {/* 0. Cinematic Vector Landscape Atmosphere from User Inspo (Canyon, Dunes, Rainforest) */}
+      <MoodAtmosphereBackground showOverlays={!isFullScreenGame} />
+
       {/* Top TV Navigation Bar (hidden during active gameplay for full immersion) */}
       {!isFullScreenGame && <TVNavbar />}
 

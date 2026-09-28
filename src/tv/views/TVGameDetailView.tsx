@@ -240,7 +240,7 @@ export const TVGameDetailView: React.FC = () => {
   const similarGames = GAMES_CATALOG.filter((g) => g.id !== selectedGame.id);
 
   return (
-    <div className="relative min-h-screen pt-20 px-12 pb-24 select-none bg-[#060810] text-white">
+    <div className="relative min-h-screen pt-20 px-12 pb-24 select-none bg-transparent text-white">
       {/* Background with Ambient Glow */}
       <div className="fixed inset-0 z-0 pointer-events-none">
         <img

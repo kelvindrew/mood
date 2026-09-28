@@ -12,13 +12,13 @@ interface TVHeroBannerProps {
 export const TVHeroBanner: React.FC<TVHeroBannerProps> = ({ game, onPlay, onMoreInfo }) => {
   return (
     <div className="relative w-full min-h-[62vh] flex items-center px-[4vw] pt-20 pb-8 overflow-hidden select-none">
-      {/* 1. Layered Atmospheric Background (Midnight Canyon with Mesa Silhouettes) */}
-      <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden mood-canyon-bg">
+      {/* 1. Layered Atmospheric Background (Seamless blend with MoodAtmosphereBackground) */}
+      <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden bg-transparent">
         {/* Dynamic Game Hero Backdrop Image with layered vignette */}
         <img
           src={game.heroImage || game.coverImage}
           alt={game.title}
-          className="w-full h-full object-cover object-center filter blur-xl opacity-25 scale-110 transition-all duration-700"
+          className="w-full h-full object-cover object-center filter blur-2xl opacity-15 scale-110 transition-all duration-700"
         />
 
         {/* Vector Landscape Silhouette Layers (User inspiration reference) */}

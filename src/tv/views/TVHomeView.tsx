@@ -61,7 +61,7 @@ export const TVHomeView: React.FC = () => {
   if (viewMode === 'coverflow') {
     const activeCoverGame = games[coverflowIndex] || games[0];
     return (
-      <div className="relative w-full h-screen min-h-screen flex flex-col justify-center items-center select-none bg-[#060810] overflow-hidden">
+      <div className="relative w-full h-screen min-h-screen flex flex-col justify-center items-center select-none bg-transparent overflow-hidden">
         {/* Ambient Blur Backdrop */}
         <div className="fixed inset-0 z-0 pointer-events-none transition-all duration-700 overflow-hidden">
           <img
@@ -114,7 +114,7 @@ export const TVHomeView: React.FC = () => {
 
   // Smart TV Platform Mode (Default)
   return (
-    <div className="relative min-h-screen bg-[#060810] text-white select-none pb-24 overflow-x-hidden">
+    <div className="relative min-h-screen bg-transparent text-white select-none pb-24 overflow-x-hidden">
       {/* 1. Cinematic Hero Banner */}
       <TVHeroBanner
         game={spotlightGame}
@@ -123,7 +123,7 @@ export const TVHomeView: React.FC = () => {
       />
 
       {/* 2. Category Filter Switcher & Mode Toggle Bar */}
-      <div className="px-[5vw] py-4 flex items-center justify-between border-t border-b border-white/10 bg-[#060810]/80 backdrop-blur-md sticky top-16 z-20">
+      <div className="px-[5vw] py-4 flex items-center justify-between border-t border-b border-white/10 bg-[#060810]/60 backdrop-blur-md sticky top-16 z-20">
         <div className="flex items-center space-x-2 overflow-x-auto scrollbar-none py-1">
           {CATEGORIES.map((cat) => {
             const isActive = selectedCat === cat.id;

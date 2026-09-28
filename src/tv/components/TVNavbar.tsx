@@ -9,6 +9,7 @@ import {
   Layers,
 } from 'lucide-react';
 import { audio } from '../../services/audio';
+import { MoodThemeSwitcher } from '../../components/MoodThemeSwitcher';
 
 export const TVNavbar: React.FC = () => {
   const { setTvView, isSimulatorOpen, setIsSimulatorOpen, room } = useGame();
@@ -91,8 +92,11 @@ export const TVNavbar: React.FC = () => {
           </div>
         </div>
 
-        {/* 3. Right Controls: AI Studio, Gamepad Simulator & Live Clock */}
+        {/* 3. Right Controls: Theme Atmosphere Switcher, AI Studio, Gamepad Simulator & Live Clock */}
         <div className="flex items-center space-x-3 text-white/80">
+          {/* Mood Atmosphere Switcher (Canyon, Dunes, Rainforest) */}
+          <MoodThemeSwitcher />
+
           {/* AI Content Studio Button */}
           <button
             data-tv-focus

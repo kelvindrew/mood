@@ -66,7 +66,7 @@ export const TVCategoriesView: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen pt-20 px-[4vw] pb-24 select-none flex flex-col space-y-8 bg-[#060810] text-white">
+    <div className="min-h-screen pt-20 px-[4vw] pb-24 select-none flex flex-col space-y-8 bg-transparent text-white">
       {/* 1. Header & Navigation Top Bar */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-white/10 pb-5">
         <div>
