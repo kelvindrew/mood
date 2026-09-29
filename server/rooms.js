@@ -20,6 +20,7 @@ import { BombPartyEngine } from './games/bombPartyEngine.js';
 import { NavalBattleEngine } from './games/navalBattleEngine.js';
 import { MemeFactoryEngine } from './games/memeFactoryEngine.js';
 import { ConnectFourEngine } from './games/connectFourEngine.js';
+import { WildRushEngine } from './games/wildRushEngine.js';
 
 const AVAILABLE_COLORS = ['red', 'blue', 'green', 'yellow', 'purple', 'cyan', 'orange', 'pink'];
 
@@ -56,6 +57,7 @@ export const GAME_PLAYER_CONSTRAINTS = {
   blind_test: { min: 1, max: 10 },
   poker: { min: 2, max: 8 },
   blackjack: { min: 1, max: 7 },
+  wild_rush: { min: 2, max: 4 },
 };
 
 export class RoomManager {
@@ -529,6 +531,10 @@ export class RoomManager {
         room.gameEngine = new ConnectFourEngine(room.players, onStateChange, onGameOver, room.settings);
         break;
       }
+      case 'wild_rush': {
+        room.gameEngine = new WildRushEngine(room.players, onStateChange, onGameOver, room.settings);
+        break;
+      }
       default: {
         room.gameEngine = new LudoEngine(room.players, onStateChange, onGameOver);
         break;
@@ -682,6 +688,16 @@ export class RoomManager {
       case 'quick_game_action':
         if (room.gameId === 'quick_games' && room.gameEngine) {
           room.gameEngine.handlePlayerAction(player.id, payload.action, payload);
+        }
+        break;
+      case 'wild_rush_choice':
+        if (room.gameId === 'wild_rush' && room.gameEngine) {
+          room.gameEngine.submitChoice(player.id, payload.choiceId);
+        }
+        break;
+      case 'wild_rush_cheer':
+        if (room.gameId === 'wild_rush' && room.gameEngine) {
+          room.gameEngine.cheer(player.id);
         }
         break;
       default:
@@ -891,6 +907,26 @@ export class RoomManager {
         break;
       }
 
+      case 'wild_rush': {
+        tieByScore = false;
+        if (Array.isArray(gs.finishedPlayers) && gs.finishedPlayers.length > 0) {
+          const finishedIds = gs.finishedPlayers.map((p) => p.id);
+          const unfinished = (gs.players || [])
+            .filter((p) => !finishedIds.includes(p.id))
+            .sort((a, b) => (b.distance || 0) - (a.distance || 0))
+            .map((p) => p.id);
+          ordered = [...finishedIds, ...unfinished].map((id) => ({
+            id,
+            score: gs.players?.find((p) => p.id === id)?.score || 0,
+          }));
+        } else if (Array.isArray(gs.players)) {
+          ordered = [...gs.players]
+            .sort((a, b) => (b.distance || 0) - (a.distance || 0))
+            .map((p) => ({ id: p.id, score: p.score || 0 }));
+        }
+        break;
+      }
+
       default: {
         // Repli générique défensif : scores connus puis ordre du salon
         const scores = gs.scores || {};
@@ -951,6 +987,10 @@ export class RoomManager {
     if (room.gameId === 'werewolf') {
       if (gs.winnerTeam === 'werewolves') return 'Victoire des Loups-Garous 🐺';
       if (gs.winnerTeam === 'villagers') return 'Victoire du Village 👨‍🌾';
+    }
+    if (room.gameId === 'wild_rush') {
+      const winner = room.players.find(p => p.id === gs.winnerId);
+      return winner ? `${winner.name} franchit la ligne d'arrivée en tête ! 🏆` : 'Course Wild Rush terminée !';
     }
     return null;
   }

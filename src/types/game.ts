@@ -21,7 +21,8 @@ export type GameId =
   | 'bomb_party'
   | 'naval_battle'
   | 'meme_factory'
-  | 'connect_four';
+  | 'connect_four'
+  | 'wild_rush';
 
 export type PlayerColor = 'red' | 'blue' | 'green' | 'yellow' | 'purple' | 'cyan' | 'orange' | 'pink';
 
@@ -842,6 +843,85 @@ export interface ConnectFourGameState {
 }
 
 // ----------------------------------------------------
+// WILD RUSH GAME STATE (Course 3D Multijoueur)
+// ----------------------------------------------------
+export interface WildRushChoice {
+  id: string;
+  name: string;
+  emoji: string;
+  tagline: string;
+  description: string;
+  efficiency: 'optimal' | 'adapted' | 'risky' | 'bad';
+  points: number;
+  speedMultiplier: number;
+  animalModel: string;
+}
+
+export interface WildRushEnvironment {
+  id: string;
+  name: string;
+  theme: 'river' | 'jungle' | 'desert' | 'arctic' | 'volcano' | 'ocean' | 'savannah' | 'mountain';
+  trackStartDist: number;
+  trackEndDist: number;
+  weather: 'clear' | 'mist' | 'heat_haze' | 'snow' | 'embers' | 'rain' | 'sun';
+  ambientColor: string;
+  skyColor: string;
+  groundColor: string;
+  obstacleTitle: string;
+  obstacleDescription: string;
+  choices: WildRushChoice[];
+}
+
+export interface WildRushPlayerState {
+  id: string;
+  name: string;
+  color: string;
+  avatar: string;
+  isBot: boolean;
+  distance: number;
+  progressPercent: number;
+  lane: number;
+  currentSpeed: number;
+  baseSpeed: number;
+  rank: number;
+  comboCount: number;
+  boostActive: boolean;
+  boostTimeLeft: number;
+  activeAnimal: string;
+  activeAnimalModel: string;
+  lastDecision?: {
+    choiceId: string;
+    animalName: string;
+    efficiency: 'optimal' | 'adapted' | 'risky' | 'bad';
+    bonusText: string;
+    submittedAt: number;
+  } | null;
+  hasChosenCurrent: boolean;
+  isFinished: boolean;
+  finishRank?: number;
+  finishTime?: number;
+  optimalChoicesCount: number;
+  score: number;
+}
+
+export interface WildRushGameState {
+  phase: 'countdown' | 'racing' | 'challenge' | 'obstacle_reaction' | 'finished';
+  countdown: number;
+  totalTrackLength: number;
+  currentEnvIndex: number;
+  currentEnvironment: WildRushEnvironment;
+  environments: WildRushEnvironment[];
+  players: WildRushPlayerState[];
+  challengeTimeLeft: number;
+  challengeTotalTime: number;
+  winnerId: string | null;
+  finishedPlayers: { id: string; name: string; rank: number; time: number; score: number }[];
+  cameraMode: 'follow_pack' | 'focus_leader' | 'challenge_zoom' | 'finish_cinematic';
+  myChoiceId?: string | null;
+  myChoiceConfirmed?: boolean;
+}
+
+// ----------------------------------------------------
 // ROOM STATE
 // ----------------------------------------------------
 export interface FinalRankingEntry {
@@ -885,6 +965,7 @@ export interface RoomState {
     | NavalBattleGameState
     | MemeFactoryGameState
     | ConnectFourGameState
+    | WildRushGameState
     | null;
   serverLanIp?: string;
   serverPort?: number;

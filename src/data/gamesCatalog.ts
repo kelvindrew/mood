@@ -2,6 +2,35 @@ import { GameCatalogItem } from '../types/game';
 
 export const GAMES_CATALOG: GameCatalogItem[] = [
   {
+    id: 'wild_rush',
+    title: 'WILD RUSH : COURSE 3D',
+    tagline: 'La grande course 3D multijoueur où chaque décision transforme votre animal',
+    description: 'Affrontez jusqu’à 4 joueurs dans une course 3D spectaculaire à travers 8 environnements sauvages (Rivière, Jungle, Désert, Banquise, Volcan, Océan, Savane, Montagne). Observez le terrain sur la TV, choisissez l’animal parfait sur votre smartphone en moins de 8 secondes, activez des boosts dévastateurs et franchissez la ligne d’arrivée en tête !',
+    category: 'popular',
+    minPlayers: 1,
+    maxPlayers: 4,
+    durationMinutes: '3–5 min',
+    difficulty: 'Moyen',
+    badge: 'EXCLUSIF 3D',
+    coverImage: '/games/wild_rush.jpg',
+    heroImage: '/games/wild_rush.jpg',
+    features: [
+      'Scène 3D temps réel avec caméra dynamique et météo animée',
+      '8 environnements vivants : Rivière, Jungle, Banquise, Volcan, etc.',
+      'Métamorphoses animales instantanées selon vos décisions',
+      'Système de combos (x2, x3, BOOST, PERFECT RUN) avec traînées lumineuses',
+      'Manette tactile ultra-réactive sur smartphone avec verrouillage instantané',
+      'Arrivée cinématographique avec podium et statistiques complètes'
+    ],
+    rules: [
+      'Observez l’environnement et l’obstacle annoncé sur la Smart TV.',
+      'Sur votre smartphone, choisissez rapidement l’animal le plus adapté parmi 4 options.',
+      'Choix optimal = boost majeur (+200 pts), choix inadapté = ralentissement.',
+      'Enchaînez les bons choix pour déclencher les modes COMBO et BOOST.',
+      'Le premier joueur à franchir l’arche d’arrivée remporte la couronne Wild Rush !'
+    ]
+  },
+  {
     id: 'spy',
     title: 'L’ESPION : UNDERCOVER',
     tagline: 'Le grand jeu de déduction sociale, de bluff et de mots secrets',
