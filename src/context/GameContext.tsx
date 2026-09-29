@@ -254,7 +254,12 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   }, []);
 
   const createRoom = async (gameId: GameId, settings: unknown = {}) => {
-    const res = await socketService.createRoom(gameId, settings);
+    const gameItem = GAMES_CATALOG.find((g) => g.id === gameId);
+    const resolvedSettings = {
+      maxPlayers: (settings as Record<string, unknown>)?.maxPlayers || gameItem?.maxPlayers || 4,
+      ...(settings as Record<string, unknown> || {}),
+    };
+    const res = await socketService.createRoom(gameId, resolvedSettings);
     if (res.success && res.room) {
       if (res.localIp && res.localIp !== 'localhost') {
         setServerLanIp(res.localIp);

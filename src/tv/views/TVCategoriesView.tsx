@@ -57,7 +57,7 @@ export const TVCategoriesView: React.FC = () => {
 
   const handlePlayGame = async (game: GameCatalogItem) => {
     setSelectedGame(game);
-    await createRoom(game.id);
+    await createRoom(game.id, { maxPlayers: game.maxPlayers });
   };
 
   const handleSelectGame = (game: GameCatalogItem) => {

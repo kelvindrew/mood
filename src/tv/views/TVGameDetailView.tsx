@@ -84,23 +84,47 @@ const CreateRoomModal: React.FC<CreateModalProps> = ({
         <div className="space-y-4">
           <div>
             <label className="text-xs font-black text-gray-300 uppercase tracking-wider block mb-2">Nombre Maximum de Joueurs</label>
-            <div className="grid grid-cols-4 gap-2">
-              {[2, 3, 4, game.maxPlayers > 4 ? game.maxPlayers : 4].map((num, i) => (
-                <button
-                  key={i}
-                  data-tv-focus
-                  tabIndex={0}
-                  onClick={() => onMaxPlayers(num)}
-                  className={`py-2.5 rounded-xl font-black text-sm border transition-all outline-none ${
-                    maxPlayers === num
-                      ? 'bg-mood-coral border-mood-coral text-white shadow-lg'
-                      : 'bg-black/40 border-white/10 text-gray-300 hover:border-white/30 focus:ring-2 focus:ring-mood-coral'
-                  }`}
-                >
-                  {num} Joueurs
-                </button>
-              ))}
-            </div>
+            {(() => {
+              const validCounts = (() => {
+                if (game.minPlayers === game.maxPlayers) return [game.maxPlayers];
+                const list: number[] = [];
+                for (let n = Math.max(1, game.minPlayers); n <= game.maxPlayers; n++) {
+                  list.push(n);
+                }
+                if (list.length > 4) {
+                  return Array.from(new Set([
+                    game.minPlayers,
+                    Math.round(game.minPlayers + (game.maxPlayers - game.minPlayers) * 0.33),
+                    Math.round(game.minPlayers + (game.maxPlayers - game.minPlayers) * 0.66),
+                    game.maxPlayers
+                  ])).sort((a, b) => a - b);
+                }
+                return list;
+              })();
+
+              const gridClass = validCounts.length === 1 ? 'grid-cols-1' : validCounts.length === 2 ? 'grid-cols-2' : validCounts.length === 3 ? 'grid-cols-3' : 'grid-cols-4';
+
+              return (
+                <div className={`grid ${gridClass} gap-2`}>
+                  {validCounts.map((num) => (
+                    <button
+                      key={num}
+                      data-tv-focus
+                      tabIndex={0}
+                      onClick={() => onMaxPlayers(num)}
+                      className={`py-2.5 rounded-xl font-black text-sm border transition-all outline-none ${
+                        maxPlayers === num
+                          ? 'bg-mood-coral border-mood-coral text-white shadow-lg'
+                          : 'bg-black/40 border-white/10 text-gray-300 hover:border-white/30 focus:ring-2 focus:ring-mood-coral'
+                      }`}
+                    >
+                      {num} {num > 1 ? 'Joueurs' : 'Joueur'}
+                      {game.minPlayers === game.maxPlayers && ' (Règle officielle)'}
+                    </button>
+                  ))}
+                </div>
+              );
+            })()}
           </div>
 
           <div>

@@ -34,6 +34,30 @@ const PARTY_GAGES = [
   { title: 'Mode Statut', challenge: 'Reste totalement immobile comme une statue pendant tout le prochain tour !' },
 ];
 
+export const GAME_PLAYER_CONSTRAINTS = {
+  ludo: { min: 2, max: 4 },
+  connect_four: { min: 2, max: 2 },
+  naval_battle: { min: 2, max: 2 },
+  scrabble: { min: 2, max: 4 },
+  president: { min: 3, max: 6 },
+  werewolf: { min: 3, max: 12 },
+  spy: { min: 3, max: 10 },
+  petit_bac: { min: 1, max: 12 },
+  fake_news: { min: 2, max: 12 },
+  bomb_party: { min: 2, max: 12 },
+  meme_factory: { min: 2, max: 12 },
+  quick_games: { min: 1, max: 12 },
+  four_pics: { min: 1, max: 12 },
+  menteur: { min: 2, max: 8 },
+  inter: { min: 2, max: 8 },
+  card_party: { min: 2, max: 8 },
+  quiz: { min: 1, max: 10 },
+  draw_and_guess: { min: 2, max: 10 },
+  blind_test: { min: 1, max: 10 },
+  poker: { min: 2, max: 8 },
+  blackjack: { min: 1, max: 7 },
+};
+
 export class RoomManager {
   constructor(io, localIp = 'localhost') {
     this.io = io;
@@ -51,13 +75,19 @@ export class RoomManager {
 
   createRoom(hostSocketId, gameId = 'ludo', settings = {}) {
     const code = this.generateRoomCode();
+    const constraints = GAME_PLAYER_CONSTRAINTS[gameId] || { min: 1, max: 6 };
+    const rawMax = Number(settings.maxPlayers);
+    const maxPlayers = (!isNaN(rawMax) && rawMax > 0)
+      ? Math.min(rawMax, constraints.max)
+      : constraints.max;
+
     const room = {
       code,
       gameId,
       status: 'lobby',
       hostId: hostSocketId,
       settings: {
-        maxPlayers: settings.maxPlayers || 6,
+        maxPlayers,
         gameMode: settings.gameMode || 'standard',
         turnDuration: settings.turnDuration || 30,
         difficulty: settings.difficulty || 'normal',
@@ -123,8 +153,11 @@ export class RoomManager {
       return { success: true, room: this.getPublicRoomState(room), player: existingPlayer };
     }
 
-    if (room.players.length >= room.settings.maxPlayers) {
-      return { success: false, error: 'Le salon est complet !' };
+    const constraints = GAME_PLAYER_CONSTRAINTS[room.gameId] || { min: 1, max: 6 };
+    const maxAllowed = Math.min(room.settings.maxPlayers || constraints.max, constraints.max);
+
+    if (room.players.length >= maxAllowed) {
+      return { success: false, error: `Le salon est complet pour ce jeu ! (${room.players.length}/${maxAllowed} joueurs max)` };
     }
 
     const takenColors = room.players.map(p => p.color);
@@ -187,7 +220,9 @@ export class RoomManager {
   addBot(code, difficulty = 'medium') {
     const room = this.getRoom(code);
     if (!room) return;
-    if (room.players.length >= room.settings.maxPlayers) return;
+    const constraints = GAME_PLAYER_CONSTRAINTS[room.gameId] || { min: 1, max: 6 };
+    const maxAllowed = Math.min(room.settings.maxPlayers || constraints.max, constraints.max);
+    if (room.players.length >= maxAllowed) return;
 
     const takenColors = room.players.map(p => p.color);
     const assignedColor = AVAILABLE_COLORS.find(c => !takenColors.includes(c)) || 'red';
@@ -280,12 +315,34 @@ export class RoomManager {
     const room = this.getRoom(code);
     if (!room) return;
     room.gameId = gameId;
+    const constraints = GAME_PLAYER_CONSTRAINTS[gameId] || { min: 1, max: 6 };
+    if (!room.settings.maxPlayers || room.settings.maxPlayers > constraints.max) {
+      room.settings.maxPlayers = constraints.max;
+    }
+    // Règle stricte : si le nombre actuel dépasse la limite du nouveau jeu
+    if (room.players.length > room.settings.maxPlayers) {
+      while (room.players.length > room.settings.maxPlayers && room.players.some(p => p.isBot)) {
+        const lastBotIdx = room.players.map(p => p.isBot).lastIndexOf(true);
+        if (lastBotIdx !== -1) room.players.splice(lastBotIdx, 1);
+      }
+      while (room.players.length > room.settings.maxPlayers) {
+        const excess = room.players.pop();
+        if (excess) {
+          excess.isSpectator = true;
+          room.spectators.push(excess);
+        }
+      }
+    }
     this.broadcastRoomUpdate(room);
   }
 
   startGame(code) {
     const room = this.getRoom(code);
     if (!room) return { success: false, error: 'Salon introuvable' };
+
+    const constraints = GAME_PLAYER_CONSTRAINTS[room.gameId] || { min: 1, max: 8 };
+    const maxAllowed = Math.min(room.settings.maxPlayers || constraints.max, constraints.max);
+
     if (room.players.length === 0) {
       // Auto-création d'un joueur hôte pour permettre le lancement immédiat sur PC/TV sans attendre de smartphone
       const defaultHostPlayer = {
@@ -304,6 +361,47 @@ export class RoomManager {
         connected: true,
       };
       room.players.push(defaultHostPlayer);
+      this.broadcastRoomUpdate(room);
+    }
+
+    // Règle stricte au lancement : éliminer tout dépassement de maxPlayers
+    if (room.players.length > maxAllowed) {
+      while (room.players.length > maxAllowed && room.players.some(p => p.isBot)) {
+        const lastBotIdx = room.players.map(p => p.isBot).lastIndexOf(true);
+        if (lastBotIdx !== -1) room.players.splice(lastBotIdx, 1);
+      }
+      while (room.players.length > maxAllowed) {
+        const excess = room.players.pop();
+        if (excess) {
+          excess.isSpectator = true;
+          room.spectators.push(excess);
+        }
+      }
+      this.broadcastRoomUpdate(room);
+    }
+
+    // Règle stricte au lancement : compléter automatiquement avec des Bots IA si minPlayers non atteint
+    while (room.players.length < constraints.min && room.players.length < maxAllowed) {
+      const takenColors = room.players.map(p => p.color);
+      const assignedColor = AVAILABLE_COLORS.find(c => !takenColors.includes(c)) || 'red';
+      const botCount = room.players.filter(p => p.isBot).length;
+      const bot = {
+        id: `bot_${Date.now()}_${Math.floor(Math.random() * 1000)}_${botCount}`,
+        socketId: `bot_socket_${Date.now()}_${Math.floor(Math.random() * 1000)}_${botCount}`,
+        name: BOT_NAMES[botCount % BOT_NAMES.length] || `🤖 Bot ${botCount + 1}`,
+        avatar: BOT_AVATARS[botCount % BOT_AVATARS.length] || '🤖',
+        color: assignedColor,
+        buzzerSound: 'laser',
+        isHost: false,
+        isReady: true,
+        isBot: true,
+        botDifficulty: room.settings.difficulty || 'medium',
+        score: 0,
+        chips: 1000,
+        isSpectator: false,
+        connected: true,
+      };
+      room.players.push(bot);
       this.broadcastRoomUpdate(room);
     }
 

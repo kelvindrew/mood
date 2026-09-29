@@ -160,7 +160,7 @@ export const TVNavbar: React.FC<TVNavbarProps> = ({ onSelectCategory, activeCate
         }}
         onPlayGame={async (g) => {
           setSelectedGame(g);
-          await createRoom(g.id);
+          await createRoom(g.id, { maxPlayers: g.maxPlayers });
         }}
       />
     </>

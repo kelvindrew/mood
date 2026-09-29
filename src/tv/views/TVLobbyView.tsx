@@ -61,9 +61,13 @@ export const TVLobbyView: React.FC = () => {
     }, 1000);
   };
 
-  const totalSlots = room.settings.maxPlayers || 6;
+  const maxAllowed = Math.min(room.settings.maxPlayers || selectedGame.maxPlayers, selectedGame.maxPlayers);
+  const minRequired = selectedGame.minPlayers || 1;
+  const totalSlots = maxAllowed;
   const filledPlayers = room.players || [];
   const emptySlotsCount = Math.max(0, totalSlots - filledPlayers.length);
+  const isFull = filledPlayers.length >= totalSlots;
+  const needsMorePlayers = filledPlayers.length < minRequired;
   const botCount = filledPlayers.filter(p => p.isBot).length;
 
   return (
@@ -175,11 +179,16 @@ export const TVLobbyView: React.FC = () => {
                 <h3 className="text-xl font-black font-display text-white tracking-wide">
                   JOUEURS CONNECTÉS ({filledPlayers.length}/{totalSlots})
                 </h3>
+                {isFull && (
+                  <span className="px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[10px] font-black uppercase tracking-wider">
+                    COMPLET
+                  </span>
+                )}
               </div>
 
               {/* Add & Remove Bot Buttons */}
               <div className="flex items-center space-x-2">
-                {emptySlotsCount > 0 && (
+                {!isFull ? (
                   <button
                     data-tv-focus
                     tabIndex={0}
@@ -192,6 +201,10 @@ export const TVLobbyView: React.FC = () => {
                     <Bot className="w-4 h-4" />
                     <span>+ AJOUTER UN BOT IA</span>
                   </button>
+                ) : (
+                  <div className="px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 text-gray-400 text-xs font-bold">
+                    Salon complet ({totalSlots} max)
+                  </div>
                 )}
 
                 {botCount > 0 && (
@@ -294,9 +307,9 @@ export const TVLobbyView: React.FC = () => {
             <div className="text-xs text-[#B8C2D8] flex items-center space-x-2 font-bold">
               <span className="w-2.5 h-2.5 rounded-full bg-[#10B981] animate-pulse" />
               <span>
-                {filledPlayers.length >= 1
-                  ? `${filledPlayers.length} joueur(s) connecté(s). Vous pouvez lancer la partie.`
-                  : 'Scannez le QR Code ou ajoutez un Bot pour démarrer.'}
+                {needsMorePlayers
+                  ? `Min. ${minRequired} joueur(s) requis pour ${selectedGame.title} (complété automatiquement avec des Bots IA).`
+                  : `${filledPlayers.length} joueur(s) prêt(s). La partie peut commencer !`}
               </span>
             </div>
 
