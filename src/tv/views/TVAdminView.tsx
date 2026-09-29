@@ -32,7 +32,7 @@ export const TVAdminView: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(adminCms.isAuthenticated());
   const [passwordInput, setPasswordInput] = useState<string>('');
   const [authError, setAuthError] = useState<string>('');
-  const [activeTab, setActiveTab] = useState<'ai_studio' | 'catalog' | 'four_pics' | 'branding' | 'security'>('ai_studio');
+  const [activeTab, setActiveTab] = useState<'catalog' | 'ai_studio' | 'four_pics' | 'branding' | 'security'>('catalog');
 
   // Live CMS State
   const [games, setGames] = useState<GameCatalogItem[]>(adminCms.getGamesCatalog());
@@ -276,9 +276,9 @@ export const TVAdminView: React.FC = () => {
         {/* Dashboard Tabs */}
         <div className="flex items-center space-x-2 border-b border-white/10 pb-3 overflow-x-auto scrollbar-none">
           {[
-            { id: 'ai_studio', label: '🤖 AI Content Studio (Gemini)', icon: Sparkles },
-            { id: 'four_pics', label: '🖼️ Énigmes 4 Images 1 Mot', icon: Image },
             { id: 'catalog', label: '🎮 Catalogue des Jeux', icon: Gamepad2 },
+            { id: 'four_pics', label: '🖼️ Énigmes 4 Images 1 Mot', icon: Image },
+            { id: 'ai_studio', label: '🤖 AI Content Studio (Gemini)', icon: Sparkles },
             { id: 'branding', label: '⚙️ Branding & Paramètres', icon: Settings },
             { id: 'security', label: '🔐 Sécurité & Sauvegardes', icon: Shield },
           ].map((tab) => {
@@ -411,6 +411,64 @@ export const TVAdminView: React.FC = () => {
                     />
                   </div>
 
+                  <div>
+                    <label className="text-[10px] font-black uppercase text-gray-400 block mb-1">Catégorie de Jeu</label>
+                    <select
+                      value={editingGame.category}
+                      onChange={(e) => setEditingGame({ ...editingGame, category: e.target.value as any })}
+                      className="w-full px-3 py-2 rounded-xl bg-surface-dark border border-white/15 text-white text-xs"
+                    >
+                      <option value="popular">Populaire</option>
+                      <option value="party">Party Game</option>
+                      <option value="cards">Cartes & Poker</option>
+                      <option value="reflexion">Réflexion & Société</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="text-[10px] font-black uppercase text-gray-400 block mb-1">Difficulté</label>
+                    <select
+                      value={editingGame.difficulty}
+                      onChange={(e) => setEditingGame({ ...editingGame, difficulty: e.target.value as any })}
+                      className="w-full px-3 py-2 rounded-xl bg-surface-dark border border-white/15 text-white text-xs"
+                    >
+                      <option value="Facile">Facile</option>
+                      <option value="Moyen">Moyen</option>
+                      <option value="Difficile">Difficile</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="text-[10px] font-black uppercase text-gray-400 block mb-1">Joueurs Min - Max & Durée</label>
+                    <div className="flex space-x-2">
+                      <input
+                        type="number"
+                        min={1}
+                        max={16}
+                        value={editingGame.minPlayers}
+                        onChange={(e) => setEditingGame({ ...editingGame, minPlayers: Number(e.target.value) })}
+                        className="w-1/3 px-2 py-2 rounded-xl bg-surface-dark border border-white/15 text-white text-xs text-center"
+                        title="Joueurs Min"
+                      />
+                      <input
+                        type="number"
+                        min={1}
+                        max={16}
+                        value={editingGame.maxPlayers}
+                        onChange={(e) => setEditingGame({ ...editingGame, maxPlayers: Number(e.target.value) })}
+                        className="w-1/3 px-2 py-2 rounded-xl bg-surface-dark border border-white/15 text-white text-xs text-center"
+                        title="Joueurs Max"
+                      />
+                      <input
+                        type="text"
+                        value={editingGame.durationMinutes}
+                        onChange={(e) => setEditingGame({ ...editingGame, durationMinutes: e.target.value })}
+                        className="w-1/3 px-2 py-2 rounded-xl bg-surface-dark border border-white/15 text-white text-xs text-center"
+                        title="Durée"
+                      />
+                    </div>
+                  </div>
+
                   <div className="col-span-3">
                     <label className="text-[10px] font-black uppercase text-gray-400 block mb-1">Description Complète</label>
                     <textarea
@@ -423,7 +481,7 @@ export const TVAdminView: React.FC = () => {
 
                   <div className="col-span-3 grid grid-cols-2 gap-4">
                     <ImageUploader
-                      label="Image de Couverture (Vignette)"
+                      label="Image de Couverture (Affiche TV)"
                       value={editingGame.coverImage}
                       onChange={(val) => setEditingGame({ ...editingGame, coverImage: val })}
                       aspectRatio="video"
@@ -437,34 +495,6 @@ export const TVAdminView: React.FC = () => {
                       aspectRatio="banner"
                       placeholder="https://..."
                     />
-                  </div>
-
-                  <div>
-                    <label className="text-[10px] font-black uppercase text-gray-400 block mb-1">Joueurs Min - Max & Durée</label>
-                    <div className="flex space-x-2">
-                      <input
-                        type="number"
-                        min={1}
-                        max={16}
-                        value={editingGame.minPlayers}
-                        onChange={(e) => setEditingGame({ ...editingGame, minPlayers: Number(e.target.value) })}
-                        className="w-1/3 px-2 py-2 rounded-xl bg-surface-dark border border-white/15 text-white text-xs text-center"
-                      />
-                      <input
-                        type="number"
-                        min={1}
-                        max={16}
-                        value={editingGame.maxPlayers}
-                        onChange={(e) => setEditingGame({ ...editingGame, maxPlayers: Number(e.target.value) })}
-                        className="w-1/3 px-2 py-2 rounded-xl bg-surface-dark border border-white/15 text-white text-xs text-center"
-                      />
-                      <input
-                        type="text"
-                        value={editingGame.durationMinutes}
-                        onChange={(e) => setEditingGame({ ...editingGame, durationMinutes: e.target.value })}
-                        className="w-1/3 px-2 py-2 rounded-xl bg-surface-dark border border-white/15 text-white text-xs text-center"
-                      />
-                    </div>
                   </div>
                 </div>
 
@@ -506,12 +536,21 @@ export const TVAdminView: React.FC = () => {
                   </div>
 
                   <div className="flex items-center justify-between pt-2 border-t border-white/5">
-                    <button
-                      onClick={() => setEditingGame(g)}
-                      className="px-3 py-1.5 rounded-lg bg-surface-light hover:bg-white hover:text-gray-950 text-xs font-bold transition-all"
-                    >
-                      ✏️ Modifier
-                    </button>
+                    <div className="flex items-center space-x-2">
+                      <button
+                        onClick={() => setEditingGame(g)}
+                        className="px-3 py-1.5 rounded-lg bg-surface-light hover:bg-white hover:text-gray-950 text-xs font-bold transition-all"
+                      >
+                        ✏️ Modifier
+                      </button>
+                      <button
+                        onClick={() => setEditingGame(g)}
+                        className="px-2.5 py-1.5 rounded-lg bg-purple-900/60 hover:bg-purple-700 text-purple-200 text-xs font-bold transition-all flex items-center space-x-1"
+                      >
+                        <Image className="w-3.5 h-3.5 text-amber-300" />
+                        <span>Changer Image</span>
+                      </button>
+                    </div>
                     <button
                       onClick={() => handleDeleteGame(g.id)}
                       className="px-2.5 py-1.5 rounded-lg bg-rose-950/60 text-rose-400 hover:bg-rose-900 text-xs font-bold transition-all"

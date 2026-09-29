@@ -29,9 +29,9 @@ const CATEGORY_ICONS: Record<string, React.ReactNode> = {
 };
 
 export const TVCategoriesView: React.FC = () => {
-  const { setSelectedGame, setTvView, createRoom } = useGame();
+  const { setSelectedGame, setTvView, createRoom, games } = useGame();
   const [selectedCat, setSelectedCat] = useState('all');
-  const [spotlightGame, setSpotlightGame] = useState<GameCatalogItem>(GAMES_CATALOG[0]);
+  const [spotlightGame, setSpotlightGame] = useState<GameCatalogItem>(games[0] || GAMES_CATALOG[0]);
 
   // M5 — Back télécommande = retour à l'accueil
   useTvBack(() => {
@@ -45,8 +45,8 @@ export const TVCategoriesView: React.FC = () => {
 
   const filteredGames =
     selectedCat === 'all'
-      ? GAMES_CATALOG
-      : GAMES_CATALOG.filter((g) => g.category === selectedCat);
+      ? games
+      : games.filter((g) => g.category === selectedCat);
 
   // Met à jour le jeu vedette lorsque la catégorie change
   useEffect(() => {
@@ -88,8 +88,8 @@ export const TVCategoriesView: React.FC = () => {
             const isActive = selectedCat === cat.id;
             const count =
               cat.id === 'all'
-                ? GAMES_CATALOG.length
-                : GAMES_CATALOG.filter((g) => g.category === cat.id).length;
+                ? games.length
+                : games.filter((g) => g.category === cat.id).length;
 
             return (
               <button

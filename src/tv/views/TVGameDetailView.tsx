@@ -215,7 +215,8 @@ const CreateRoomModal: React.FC<CreateModalProps> = ({
 };
 
 export const TVGameDetailView: React.FC = () => {
-  const { selectedGame, setSelectedGame, setTvView, createRoom } = useGame();
+  const { selectedGame: contextGame, setSelectedGame, setTvView, createRoom, games } = useGame();
+  const selectedGame = games.find((g) => g.id === contextGame.id) || contextGame;
   const [isFavorite, setIsFavorite] = useState(false);
   const [showRulesModal, setShowRulesModal] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -261,7 +262,7 @@ export const TVGameDetailView: React.FC = () => {
     }
   };
 
-  const similarGames = GAMES_CATALOG.filter((g) => g.id !== selectedGame.id);
+  const similarGames = games.filter((g) => g.id !== selectedGame.id);
 
   return (
     <div className="relative min-h-screen pt-20 px-12 pb-24 select-none bg-transparent text-white">

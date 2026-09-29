@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { GameId, GameCatalogItem, RoomState, Player, PlayerColor } from '../types/game';
 import { GAMES_CATALOG } from '../data/gamesCatalog';
+import { adminCms } from '../services/adminCmsService';
 import { socketService } from '../services/socket';
 import { audio } from '../services/audio';
 
@@ -20,6 +21,7 @@ interface GameContextType {
   setTvView: (view: TVView) => void;
   mobileView: MobileView;
   setMobileView: (view: MobileView) => void;
+  games: GameCatalogItem[];
   selectedGame: GameCatalogItem;
   setSelectedGame: (game: GameCatalogItem) => void;
   moodTheme: MoodThemeId;
@@ -50,7 +52,17 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [appMode, setAppMode] = useState<AppMode>('tv');
   const [tvView, setTvView] = useState<TVView>('home');
   const [mobileView, setMobileView] = useState<MobileView>('join');
-  const [selectedGame, setSelectedGame] = useState<GameCatalogItem>(GAMES_CATALOG[0]);
+  const [games, setGames] = useState<GameCatalogItem[]>(() => adminCms.getGamesCatalog());
+  const [selectedGame, setSelectedGame] = useState<GameCatalogItem>(() => adminCms.getGamesCatalog()[0] || GAMES_CATALOG[0]);
+
+  useEffect(() => {
+    const unsub = adminCms.subscribe(() => {
+      const updated = adminCms.getGamesCatalog();
+      setGames(updated);
+      setSelectedGame((prev) => updated.find((g) => g.id === prev.id) || updated[0]);
+    });
+    return () => unsub();
+  }, []);
   const [moodTheme, setMoodThemeState] = useState<MoodThemeId>(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('mood_theme') as MoodThemeId | null;
@@ -353,6 +365,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         setTvView,
         mobileView,
         setMobileView,
+        games,
         selectedGame,
         setSelectedGame,
         moodTheme,

@@ -1,5 +1,30 @@
 import React, { useRef, useState } from 'react';
-import { Upload, Link as LinkIcon, Trash2, Image as ImageIcon, Check } from 'lucide-react';
+import { Upload, Link as LinkIcon, Trash2, Image as ImageIcon, Check, Sparkles } from 'lucide-react';
+
+export const GAME_POSTERS = [
+  { id: 'wild_rush', title: 'Wild Rush 3D', path: '/games/wild_rush.jpg' },
+  { id: 'spy', title: "L'Espion", path: '/games/spy.jpg' },
+  { id: 'bomb_party', title: 'Bomb Party', path: '/games/bomb_party.jpg' },
+  { id: 'petit_bac', title: 'Petit Bac', path: '/games/petit_bac.jpg' },
+  { id: 'fake_news', title: 'Fake News', path: '/games/fake_news.jpg' },
+  { id: 'werewolf', title: 'Loup-Garou', path: '/games/werewolf.jpg' },
+  { id: 'ludo', title: 'Ludo Royale', path: '/games/ludo.jpg' },
+  { id: 'scrabble', title: 'Scrabble Express', path: '/games/scrabble.jpg' },
+  { id: 'connect_four', title: 'Puissance 4', path: '/games/connect_four.jpg' },
+  { id: 'naval_battle', title: 'Bataille Navale', path: '/games/naval_battle.jpg' },
+  { id: 'poker', title: 'Poker Texas', path: '/games/poker.jpg' },
+  { id: 'blackjack', title: 'Blackjack 21', path: '/games/blackjack.jpg' },
+  { id: 'president', title: 'Président', path: '/games/president.jpg' },
+  { id: 'menteur', title: 'Jeu du Menteur', path: '/games/menteur.jpg' },
+  { id: 'card_party', title: 'Card Party', path: '/games/card_party.jpg' },
+  { id: 'blind_test', title: 'Blind Test', path: '/games/blind_test.jpg' },
+  { id: 'quiz', title: 'Grand Quiz', path: '/games/quiz.jpg' },
+  { id: 'four_pics', title: '4 Images 1 Mot', path: '/games/four_pics.jpg' },
+  { id: 'draw_and_guess', title: "Dessiner c'est Gagné", path: '/games/draw_and_guess.jpg' },
+  { id: 'meme_factory', title: 'Meme Factory', path: '/games/meme_factory.jpg' },
+  { id: 'quick_games', title: 'Mini-Jeux Flash', path: '/games/quick_games.jpg' },
+  { id: 'inter', title: 'Interrupteur', path: '/games/inter.jpg' },
+];
 
 interface ImageUploaderProps {
   label: string;
@@ -19,7 +44,7 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
   required = false,
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [mode, setMode] = useState<'upload' | 'url'>('upload');
+  const [mode, setMode] = useState<'presets' | 'upload' | 'url'>('presets');
   const [urlInput, setUrlInput] = useState<string>(value && !value.startsWith('data:') ? value : '');
   const [isDragging, setIsDragging] = useState<boolean>(false);
 
@@ -120,6 +145,16 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
         <div className="flex items-center space-x-1 bg-surface-card p-0.5 rounded-lg border border-white/10 text-[9px] font-bold">
           <button
             type="button"
+            onClick={() => setMode('presets')}
+            className={`px-2 py-0.5 rounded transition-all flex items-center space-x-1 ${
+              mode === 'presets' ? 'bg-purple-600 text-white' : 'text-gray-400 hover:text-white'
+            }`}
+          >
+            <Sparkles className="w-2.5 h-2.5 text-amber-300" />
+            <span>Affiches MOOD</span>
+          </button>
+          <button
+            type="button"
             onClick={() => setMode('upload')}
             className={`px-2 py-0.5 rounded transition-all flex items-center space-x-1 ${
               mode === 'upload' ? 'bg-brand-red text-white' : 'text-gray-400 hover:text-white'
@@ -164,8 +199,43 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
         )}
 
         {/* Action Controls */}
-        <div className="flex-1 space-y-2">
-          {mode === 'upload' ? (
+        <div className="flex-1 min-w-0 space-y-2">
+          {mode === 'presets' ? (
+            <div className="space-y-1">
+              <span className="text-[9px] font-bold text-gray-400 block">
+                Choisissez parmi les affiches officielles MOOD :
+              </span>
+              <div className="max-h-36 overflow-y-auto pr-1 grid grid-cols-3 sm:grid-cols-4 gap-1.5 scrollbar-thin">
+                {GAME_POSTERS.map((poster) => {
+                  const isSelected = value === poster.path;
+                  return (
+                    <button
+                      key={poster.id}
+                      type="button"
+                      onClick={() => onChange(poster.path)}
+                      className={`relative group rounded-lg overflow-hidden border text-left p-1 flex items-center space-x-1.5 transition-all ${
+                        isSelected
+                          ? 'border-purple-400 bg-purple-950/60 ring-1 ring-purple-400'
+                          : 'border-white/10 hover:border-white/30 bg-surface-card'
+                      }`}
+                    >
+                      <img
+                        src={poster.path}
+                        alt={poster.title}
+                        className="w-7 h-7 rounded object-cover flex-shrink-0"
+                      />
+                      <span className="text-[9px] font-bold text-white truncate">
+                        {poster.title}
+                      </span>
+                      {isSelected && (
+                        <Check className="w-2.5 h-2.5 text-emerald-400 absolute top-1 right-1" />
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ) : mode === 'upload' ? (
             <div
               onDragOver={handleDragOver}
               onDragLeave={handleDragLeave}

@@ -11,7 +11,7 @@ interface TVNavbarProps {
 }
 
 export const TVNavbar: React.FC<TVNavbarProps> = ({ onSelectCategory, activeCategory = 'all' }) => {
-  const { tvView, setTvView, isSimulatorOpen, setIsSimulatorOpen, setSelectedGame, createRoom } = useGame();
+  const { tvView, setTvView, isSimulatorOpen, setIsSimulatorOpen, setSelectedGame, createRoom, games } = useGame();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   const handleNav = (view: TVView, cat?: string) => {
@@ -153,7 +153,7 @@ export const TVNavbar: React.FC<TVNavbarProps> = ({ onSelectCategory, activeCate
       <TVSearchModal
         isOpen={isSearchOpen}
         onClose={() => setIsSearchOpen(false)}
-        games={GAMES_CATALOG}
+        games={games}
         onSelectGame={(g) => {
           setSelectedGame(g);
           setTvView('detail');
