@@ -63,7 +63,7 @@ export const TVApp: React.FC = () => {
     }
   };
 
-  const isFullScreenGame = tvView === 'playing' || tvView === 'gameplay';
+  const isFullScreenGame = tvView === 'playing' || tvView === 'gameplay' || tvView === 'admin';
 
   return (
     <div className="relative min-h-screen bg-transparent text-white overflow-x-hidden font-sans select-none">

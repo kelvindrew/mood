@@ -41,6 +41,7 @@ export const TVAdminView: React.FC = () => {
 
   // Editing Sub-states
   const [editingGame, setEditingGame] = useState<GameCatalogItem | null>(null);
+  const [imageEditingGame, setImageEditingGame] = useState<GameCatalogItem | null>(null);
   const [editingPuzzle, setEditingPuzzle] = useState<FourPicsPuzzleItem | null>(null);
   const [newPassword, setNewPassword] = useState<string>('');
   const [saveSuccessMsg, setSaveSuccessMsg] = useState<string>('');
@@ -84,8 +85,18 @@ export const TVAdminView: React.FC = () => {
     e.preventDefault();
     if (!editingGame) return;
     adminCms.saveGame(editingGame);
+    const title = editingGame.title;
     setEditingGame(null);
-    triggerToast(`Jeu "${editingGame.title}" enregistré avec succès !`);
+    triggerToast(`Jeu "${title}" enregistré avec succès !`);
+    audio.playSelect();
+  };
+
+  const handleSaveImages = () => {
+    if (!imageEditingGame) return;
+    adminCms.saveGame(imageEditingGame);
+    const title = imageEditingGame.title;
+    setImageEditingGame(null);
+    triggerToast(`Images de "${title}" enregistrées avec succès !`);
     audio.playSelect();
   };
 
@@ -365,164 +376,248 @@ export const TVAdminView: React.FC = () => {
 
             {/* Editing Form Modal */}
             {editingGame && (
-              <form onSubmit={handleSaveGame} className="p-6 rounded-3xl bg-surface-card border-2 border-brand-gold/50 shadow-2xl space-y-4 animate-scale-in">
-                <div className="flex items-center justify-between border-b border-white/10 pb-3">
-                  <h3 className="text-base font-black text-brand-gold uppercase">
-                    Modifier / Éditer : {editingGame.title}
-                  </h3>
-                  <button
-                    type="button"
-                    onClick={() => setEditingGame(null)}
-                    className="text-xs text-gray-400 hover:text-white font-bold"
-                  >
-                    Fermer ✕
-                  </button>
-                </div>
-
-                <div className="grid grid-cols-3 gap-4">
-                  <div>
-                    <label className="text-[10px] font-black uppercase text-gray-400 block mb-1">Titre du Jeu</label>
-                    <input
-                      type="text"
-                      value={editingGame.title}
-                      onChange={(e) => setEditingGame({ ...editingGame, title: e.target.value })}
-                      className="w-full px-3 py-2 rounded-xl bg-surface-dark border border-white/15 text-white text-xs"
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label className="text-[10px] font-black uppercase text-gray-400 block mb-1">Sous-titre (Tagline)</label>
-                    <input
-                      type="text"
-                      value={editingGame.tagline}
-                      onChange={(e) => setEditingGame({ ...editingGame, tagline: e.target.value })}
-                      className="w-full px-3 py-2 rounded-xl bg-surface-dark border border-white/15 text-white text-xs"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="text-[10px] font-black uppercase text-gray-400 block mb-1">Badge (ex: POPULAIRE, NOUVEAU, PARTY)</label>
-                    <input
-                      type="text"
-                      value={editingGame.badge || ''}
-                      onChange={(e) => setEditingGame({ ...editingGame, badge: e.target.value })}
-                      className="w-full px-3 py-2 rounded-xl bg-surface-dark border border-white/15 text-white text-xs"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="text-[10px] font-black uppercase text-gray-400 block mb-1">Catégorie de Jeu</label>
-                    <select
-                      value={editingGame.category}
-                      onChange={(e) => setEditingGame({ ...editingGame, category: e.target.value as any })}
-                      className="w-full px-3 py-2 rounded-xl bg-surface-dark border border-white/15 text-white text-xs"
+              <div className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-6 bg-black/85 backdrop-blur-xl animate-fade-in">
+                <div className="w-full max-w-4xl max-h-[92vh] bg-[#0E1322] border-2 border-brand-gold/60 rounded-3xl p-6 shadow-2xl flex flex-col overflow-hidden">
+                  <div className="flex items-center justify-between border-b border-white/10 pb-3 flex-shrink-0">
+                    <h3 className="text-base font-black text-brand-gold uppercase flex items-center space-x-2">
+                      <Gamepad2 className="w-5 h-5 text-amber-400" />
+                      <span>Modifier / Éditer : {editingGame.title}</span>
+                    </h3>
+                    <button
+                      type="button"
+                      onClick={() => setEditingGame(null)}
+                      className="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-xs text-gray-300 hover:text-white font-bold transition-all"
                     >
-                      <option value="popular">Populaire</option>
-                      <option value="party">Party Game</option>
-                      <option value="cards">Cartes & Poker</option>
-                      <option value="reflexion">Réflexion & Société</option>
-                    </select>
+                      Fermer ✕
+                    </button>
                   </div>
 
-                  <div>
-                    <label className="text-[10px] font-black uppercase text-gray-400 block mb-1">Difficulté</label>
-                    <select
-                      value={editingGame.difficulty}
-                      onChange={(e) => setEditingGame({ ...editingGame, difficulty: e.target.value as any })}
-                      className="w-full px-3 py-2 rounded-xl bg-surface-dark border border-white/15 text-white text-xs"
-                    >
-                      <option value="Facile">Facile</option>
-                      <option value="Moyen">Moyen</option>
-                      <option value="Difficile">Difficile</option>
-                    </select>
-                  </div>
+                  <form onSubmit={handleSaveGame} className="flex-1 overflow-y-auto pr-2 py-4 space-y-4 scrollbar-thin">
+                    <div className="grid grid-cols-3 gap-4">
+                      <div>
+                        <label className="text-[10px] font-black uppercase text-gray-400 block mb-1">Titre du Jeu</label>
+                        <input
+                          type="text"
+                          value={editingGame.title}
+                          onChange={(e) => setEditingGame({ ...editingGame, title: e.target.value })}
+                          className="w-full px-3 py-2 rounded-xl bg-surface-dark border border-white/15 text-white text-xs"
+                          required
+                        />
+                      </div>
 
-                  <div>
-                    <label className="text-[10px] font-black uppercase text-gray-400 block mb-1">Joueurs Min - Max & Durée</label>
-                    <div className="flex space-x-2">
-                      <input
-                        type="number"
-                        min={1}
-                        max={16}
-                        value={editingGame.minPlayers}
-                        onChange={(e) => setEditingGame({ ...editingGame, minPlayers: Number(e.target.value) })}
-                        className="w-1/3 px-2 py-2 rounded-xl bg-surface-dark border border-white/15 text-white text-xs text-center"
-                        title="Joueurs Min"
-                      />
-                      <input
-                        type="number"
-                        min={1}
-                        max={16}
-                        value={editingGame.maxPlayers}
-                        onChange={(e) => setEditingGame({ ...editingGame, maxPlayers: Number(e.target.value) })}
-                        className="w-1/3 px-2 py-2 rounded-xl bg-surface-dark border border-white/15 text-white text-xs text-center"
-                        title="Joueurs Max"
-                      />
-                      <input
-                        type="text"
-                        value={editingGame.durationMinutes}
-                        onChange={(e) => setEditingGame({ ...editingGame, durationMinutes: e.target.value })}
-                        className="w-1/3 px-2 py-2 rounded-xl bg-surface-dark border border-white/15 text-white text-xs text-center"
-                        title="Durée"
-                      />
+                      <div>
+                        <label className="text-[10px] font-black uppercase text-gray-400 block mb-1">Sous-titre (Tagline)</label>
+                        <input
+                          type="text"
+                          value={editingGame.tagline}
+                          onChange={(e) => setEditingGame({ ...editingGame, tagline: e.target.value })}
+                          className="w-full px-3 py-2 rounded-xl bg-surface-dark border border-white/15 text-white text-xs"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="text-[10px] font-black uppercase text-gray-400 block mb-1">Badge (ex: POPULAIRE, NOUVEAU, PARTY)</label>
+                        <input
+                          type="text"
+                          value={editingGame.badge || ''}
+                          onChange={(e) => setEditingGame({ ...editingGame, badge: e.target.value })}
+                          className="w-full px-3 py-2 rounded-xl bg-surface-dark border border-white/15 text-white text-xs"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="text-[10px] font-black uppercase text-gray-400 block mb-1">Catégorie de Jeu</label>
+                        <select
+                          value={editingGame.category}
+                          onChange={(e) => setEditingGame({ ...editingGame, category: e.target.value as any })}
+                          className="w-full px-3 py-2 rounded-xl bg-surface-dark border border-white/15 text-white text-xs"
+                        >
+                          <option value="popular">Populaire</option>
+                          <option value="party">Party Game</option>
+                          <option value="cards">Cartes & Poker</option>
+                          <option value="reflexion">Réflexion & Société</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="text-[10px] font-black uppercase text-gray-400 block mb-1">Difficulté</label>
+                        <select
+                          value={editingGame.difficulty}
+                          onChange={(e) => setEditingGame({ ...editingGame, difficulty: e.target.value as any })}
+                          className="w-full px-3 py-2 rounded-xl bg-surface-dark border border-white/15 text-white text-xs"
+                        >
+                          <option value="Facile">Facile</option>
+                          <option value="Moyen">Moyen</option>
+                          <option value="Difficile">Difficile</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="text-[10px] font-black uppercase text-gray-400 block mb-1">Joueurs Min - Max & Durée</label>
+                        <div className="flex space-x-2">
+                          <input
+                            type="number"
+                            min={1}
+                            max={16}
+                            value={editingGame.minPlayers}
+                            onChange={(e) => setEditingGame({ ...editingGame, minPlayers: Number(e.target.value) })}
+                            className="w-1/3 px-2 py-2 rounded-xl bg-surface-dark border border-white/15 text-white text-xs text-center"
+                            title="Joueurs Min"
+                          />
+                          <input
+                            type="number"
+                            min={1}
+                            max={16}
+                            value={editingGame.maxPlayers}
+                            onChange={(e) => setEditingGame({ ...editingGame, maxPlayers: Number(e.target.value) })}
+                            className="w-1/3 px-2 py-2 rounded-xl bg-surface-dark border border-white/15 text-white text-xs text-center"
+                            title="Joueurs Max"
+                          />
+                          <input
+                            type="text"
+                            value={editingGame.durationMinutes}
+                            onChange={(e) => setEditingGame({ ...editingGame, durationMinutes: e.target.value })}
+                            className="w-1/3 px-2 py-2 rounded-xl bg-surface-dark border border-white/15 text-white text-xs text-center"
+                            title="Durée"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="col-span-3">
+                        <label className="text-[10px] font-black uppercase text-gray-400 block mb-1">Description Complète</label>
+                        <textarea
+                          rows={2}
+                          value={editingGame.description}
+                          onChange={(e) => setEditingGame({ ...editingGame, description: e.target.value })}
+                          className="w-full px-3 py-2 rounded-xl bg-surface-dark border border-white/15 text-white text-xs"
+                        />
+                      </div>
+
+                      <div className="col-span-3 grid grid-cols-2 gap-4">
+                        <ImageUploader
+                          label="Image de Couverture (Affiche TV)"
+                          value={editingGame.coverImage}
+                          onChange={(val) => setEditingGame({ ...editingGame, coverImage: val })}
+                          aspectRatio="video"
+                          placeholder="/games/wild_rush.jpg ou https://..."
+                        />
+
+                        <ImageUploader
+                          label="Image Hero (Bannière Fond)"
+                          value={editingGame.heroImage}
+                          onChange={(val) => setEditingGame({ ...editingGame, heroImage: val })}
+                          aspectRatio="banner"
+                          placeholder="/games/wild_rush.jpg ou https://..."
+                        />
+                      </div>
                     </div>
+
+                    <div className="flex justify-end space-x-3 pt-3 border-t border-white/10 flex-shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => setEditingGame(null)}
+                        className="px-4 py-2 rounded-xl bg-surface-dark border border-white/15 text-xs font-bold text-gray-300 hover:text-white"
+                      >
+                        Annuler
+                      </button>
+                      <button
+                        type="submit"
+                        className="flex items-center space-x-1.5 px-6 py-2 rounded-xl bg-gradient-to-r from-brand-red to-amber-500 text-white font-black text-xs uppercase shadow-glow-red hover:scale-105 active:scale-95 transition-all"
+                      >
+                        <Save className="w-4 h-4" />
+                        <span>Enregistrer les modifications</span>
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            )}
+
+            {/* Dedicated Image Editing Modal */}
+            {imageEditingGame && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-6 bg-black/85 backdrop-blur-xl animate-fade-in">
+                <div className="w-full max-w-3xl max-h-[92vh] bg-[#0E1322] border-2 border-purple-500/80 rounded-3xl p-6 shadow-2xl flex flex-col overflow-hidden">
+                  <div className="flex items-center justify-between border-b border-white/10 pb-3 flex-shrink-0">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-10 h-10 rounded-xl bg-purple-600/30 border border-purple-400/50 flex items-center justify-center text-purple-300">
+                        <Image className="w-5 h-5 text-amber-300" />
+                      </div>
+                      <div>
+                        <h3 className="text-base font-black text-white uppercase tracking-wide">
+                          Changer les Images : {imageEditingGame.title}
+                        </h3>
+                        <p className="text-[11px] text-gray-400">
+                          Sélectionnez une affiche officielle MOOD, importez depuis votre PC, ou collez une URL.
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setImageEditingGame(null)}
+                      className="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-xs text-gray-300 hover:text-white font-bold transition-all"
+                    >
+                      Fermer ✕
+                    </button>
                   </div>
 
-                  <div className="col-span-3">
-                    <label className="text-[10px] font-black uppercase text-gray-400 block mb-1">Description Complète</label>
-                    <textarea
-                      rows={2}
-                      value={editingGame.description}
-                      onChange={(e) => setEditingGame({ ...editingGame, description: e.target.value })}
-                      className="w-full px-3 py-2 rounded-xl bg-surface-dark border border-white/15 text-white text-xs"
-                    />
-                  </div>
-
-                  <div className="col-span-3 grid grid-cols-2 gap-4">
+                  <div className="flex-1 overflow-y-auto pr-2 py-4 space-y-4 scrollbar-thin">
                     <ImageUploader
-                      label="Image de Couverture (Affiche TV)"
-                      value={editingGame.coverImage}
-                      onChange={(val) => setEditingGame({ ...editingGame, coverImage: val })}
+                      label="Image de Couverture (Affiche TV / Vignette)"
+                      value={imageEditingGame.coverImage}
+                      onChange={(val) => setImageEditingGame({ ...imageEditingGame, coverImage: val })}
                       aspectRatio="video"
-                      placeholder="https://..."
+                      placeholder="/games/wild_rush.jpg ou https://..."
                     />
 
                     <ImageUploader
                       label="Image Hero (Bannière Fond)"
-                      value={editingGame.heroImage}
-                      onChange={(val) => setEditingGame({ ...editingGame, heroImage: val })}
+                      value={imageEditingGame.heroImage}
+                      onChange={(val) => setImageEditingGame({ ...imageEditingGame, heroImage: val })}
                       aspectRatio="banner"
-                      placeholder="https://..."
+                      placeholder="/games/wild_rush.jpg ou https://..."
                     />
                   </div>
-                </div>
 
-                <div className="flex justify-end space-x-3 pt-2">
-                  <button
-                    type="button"
-                    onClick={() => setEditingGame(null)}
-                    className="px-4 py-2 rounded-xl bg-surface-dark border border-white/15 text-xs font-bold text-gray-300"
-                  >
-                    Annuler
-                  </button>
-                  <button
-                    type="submit"
-                    className="flex items-center space-x-1.5 px-6 py-2 rounded-xl bg-gradient-to-r from-brand-red to-amber-500 text-white font-black text-xs uppercase shadow-glow-red"
-                  >
-                    <Save className="w-4 h-4" />
-                    <span>Enregistrer les modifications</span>
-                  </button>
+                  <div className="flex justify-end space-x-3 pt-3 border-t border-white/10 flex-shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => setImageEditingGame(null)}
+                      className="px-4 py-2 rounded-xl bg-surface-dark border border-white/15 text-xs font-bold text-gray-300 hover:text-white"
+                    >
+                      Annuler
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleSaveImages}
+                      className="flex items-center space-x-1.5 px-6 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-black text-xs uppercase shadow-[0_0_20px_rgba(147,51,234,0.5)] hover:scale-105 active:scale-95 transition-all"
+                    >
+                      <Save className="w-4 h-4" />
+                      <span>Appliquer et Enregistrer</span>
+                    </button>
+                  </div>
                 </div>
-              </form>
+              </div>
             )}
 
             {/* Games Grid Listing */}
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {games.map((g) => (
-                <div key={g.id} className="p-4 rounded-2xl bg-surface-card border border-white/10 space-y-3 flex flex-col justify-between">
+                <div key={g.id} className="p-4 rounded-2xl bg-surface-card border border-white/10 space-y-3 flex flex-col justify-between hover:border-white/20 transition-all shadow-md">
                   <div className="flex space-x-3">
-                    <img src={g.coverImage} alt={g.title} className="w-20 h-20 rounded-xl object-cover border border-white/15 flex-shrink-0" />
+                    <div
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        audio.playSelect();
+                        setImageEditingGame({ ...g });
+                      }}
+                      className="relative cursor-pointer group/img flex-shrink-0 rounded-xl overflow-hidden"
+                      title="Cliquer pour changer l'image"
+                    >
+                      <img src={g.coverImage} alt={g.title} className="w-20 h-20 rounded-xl object-cover border border-white/15 group-hover/img:scale-105 group-hover/img:border-purple-400 transition-all" />
+                      <div className="absolute inset-0 bg-black/50 opacity-0 group-hover/img:opacity-100 rounded-xl flex items-center justify-center transition-opacity">
+                        <Image className="w-5 h-5 text-amber-300" />
+                      </div>
+                    </div>
                     <div className="overflow-hidden">
                       <div className="flex items-center space-x-2">
                         <h3 className="font-black text-sm text-white truncate">{g.title}</h3>
@@ -538,22 +633,36 @@ export const TVAdminView: React.FC = () => {
                   <div className="flex items-center justify-between pt-2 border-t border-white/5">
                     <div className="flex items-center space-x-2">
                       <button
-                        onClick={() => setEditingGame(g)}
-                        className="px-3 py-1.5 rounded-lg bg-surface-light hover:bg-white hover:text-gray-950 text-xs font-bold transition-all"
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          audio.playSelect();
+                          setEditingGame({ ...g });
+                        }}
+                        className="px-3 py-1.5 rounded-lg bg-surface-light hover:bg-white hover:text-gray-950 text-xs font-bold transition-all cursor-pointer shadow-sm active:scale-95"
                       >
                         ✏️ Modifier
                       </button>
                       <button
-                        onClick={() => setEditingGame(g)}
-                        className="px-2.5 py-1.5 rounded-lg bg-purple-900/60 hover:bg-purple-700 text-purple-200 text-xs font-bold transition-all flex items-center space-x-1"
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          audio.playSelect();
+                          setImageEditingGame({ ...g });
+                        }}
+                        className="px-2.5 py-1.5 rounded-lg bg-purple-900/70 hover:bg-purple-600 text-purple-200 hover:text-white text-xs font-bold transition-all flex items-center space-x-1 cursor-pointer shadow-sm active:scale-95"
                       >
                         <Image className="w-3.5 h-3.5 text-amber-300" />
                         <span>Changer Image</span>
                       </button>
                     </div>
                     <button
-                      onClick={() => handleDeleteGame(g.id)}
-                      className="px-2.5 py-1.5 rounded-lg bg-rose-950/60 text-rose-400 hover:bg-rose-900 text-xs font-bold transition-all"
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteGame(g.id);
+                      }}
+                      className="px-2.5 py-1.5 rounded-lg bg-rose-950/60 text-rose-400 hover:bg-rose-900 text-xs font-bold transition-all cursor-pointer active:scale-95"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
@@ -613,97 +722,102 @@ export const TVAdminView: React.FC = () => {
               </div>
             </div>
 
-            {/* Edit / Add Puzzle Form */}
+            {/* Edit / Add Puzzle Form Modal */}
             {editingPuzzle && (
-              <form onSubmit={handleSavePuzzle} className="p-6 rounded-3xl bg-surface-card border-2 border-brand-gold/50 shadow-2xl space-y-4 animate-scale-in">
-                <div className="flex items-center justify-between border-b border-white/10 pb-3">
-                  <h3 className="text-base font-black text-brand-gold uppercase">
-                    Édition de l'Énigme : "{editingPuzzle.word}"
-                  </h3>
-                  <button
-                    type="button"
-                    onClick={() => setEditingPuzzle(null)}
-                    className="text-xs text-gray-400 hover:text-white font-bold"
-                  >
-                    Fermer ✕
-                  </button>
+              <div className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-6 bg-black/85 backdrop-blur-xl animate-fade-in">
+                <div className="w-full max-w-4xl max-h-[92vh] bg-[#0E1322] border-2 border-brand-gold/60 rounded-3xl p-6 shadow-2xl flex flex-col overflow-hidden">
+                  <div className="flex items-center justify-between border-b border-white/10 pb-3 flex-shrink-0">
+                    <h3 className="text-base font-black text-brand-gold uppercase flex items-center space-x-2">
+                      <Image className="w-5 h-5 text-amber-300" />
+                      <span>Édition de l'Énigme : "{editingPuzzle.word}"</span>
+                    </h3>
+                    <button
+                      type="button"
+                      onClick={() => setEditingPuzzle(null)}
+                      className="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-xs text-gray-300 hover:text-white font-bold transition-all"
+                    >
+                      Fermer ✕
+                    </button>
+                  </div>
+
+                  <form onSubmit={handleSavePuzzle} className="flex-1 overflow-y-auto pr-2 py-4 space-y-4 scrollbar-thin">
+                    <div className="grid grid-cols-3 gap-4">
+                      <div>
+                        <label className="text-[10px] font-black uppercase text-gray-400 block mb-1">Mot Cible (MAJUSCULES SANS ESPACES)</label>
+                        <input
+                          type="text"
+                          value={editingPuzzle.word}
+                          onChange={(e) => setEditingPuzzle({ ...editingPuzzle, word: e.target.value.toUpperCase().trim() })}
+                          className="w-full px-3 py-2 rounded-xl bg-surface-dark border border-white/15 text-white font-display font-black text-base tracking-widest uppercase"
+                          required
+                        />
+                      </div>
+
+                      <div>
+                        <label className="text-[10px] font-black uppercase text-gray-400 block mb-1">Catégorie</label>
+                        <input
+                          type="text"
+                          value={editingPuzzle.category}
+                          onChange={(e) => setEditingPuzzle({ ...editingPuzzle, category: e.target.value })}
+                          className="w-full px-3 py-2 rounded-xl bg-surface-dark border border-white/15 text-white text-xs"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="text-[10px] font-black uppercase text-gray-400 block mb-1">Indice / Hint</label>
+                        <input
+                          type="text"
+                          value={editingPuzzle.hint || ''}
+                          onChange={(e) => setEditingPuzzle({ ...editingPuzzle, hint: e.target.value })}
+                          className="w-full px-3 py-2 rounded-xl bg-surface-dark border border-white/15 text-white text-xs"
+                        />
+                      </div>
+
+                      {/* 4 Image Inputs with File Upload from PC and Live Previews */}
+                      <div className="col-span-3 grid grid-cols-2 gap-3">
+                        {[0, 1, 2, 3].map((imgIdx) => (
+                          <ImageUploader
+                            key={`puzzle_img_${imgIdx}`}
+                            label={`Indice Image #${imgIdx + 1}`}
+                            value={editingPuzzle.images[imgIdx]}
+                            onChange={(val) => {
+                              const updatedImgs = [...editingPuzzle.images] as [string, string, string, string];
+                              updatedImgs[imgIdx] = val;
+                              setEditingPuzzle({ ...editingPuzzle, images: updatedImgs });
+                            }}
+                            aspectRatio="square"
+                            placeholder="https://..."
+                            required
+                          />
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="flex justify-end space-x-3 pt-3 border-t border-white/10 flex-shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => setEditingPuzzle(null)}
+                        className="px-4 py-2 rounded-xl bg-surface-dark border border-white/15 text-xs font-bold text-gray-300 hover:text-white"
+                      >
+                        Annuler
+                      </button>
+                      <button
+                        type="submit"
+                        className="flex items-center space-x-1.5 px-6 py-2 rounded-xl bg-gradient-to-r from-brand-red to-amber-500 text-white font-black text-xs uppercase shadow-glow-red hover:scale-105 active:scale-95 transition-all"
+                      >
+                        <Save className="w-4 h-4" />
+                        <span>Sauvegarder l'énigme</span>
+                      </button>
+                    </div>
+                  </form>
                 </div>
-
-                <div className="grid grid-cols-3 gap-4">
-                  <div>
-                    <label className="text-[10px] font-black uppercase text-gray-400 block mb-1">Mot Cible (MAJUSCULES SANS ESPACES)</label>
-                    <input
-                      type="text"
-                      value={editingPuzzle.word}
-                      onChange={(e) => setEditingPuzzle({ ...editingPuzzle, word: e.target.value.toUpperCase().trim() })}
-                      className="w-full px-3 py-2 rounded-xl bg-surface-dark border border-white/15 text-white font-display font-black text-base tracking-widest uppercase"
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label className="text-[10px] font-black uppercase text-gray-400 block mb-1">Catégorie</label>
-                    <input
-                      type="text"
-                      value={editingPuzzle.category}
-                      onChange={(e) => setEditingPuzzle({ ...editingPuzzle, category: e.target.value })}
-                      className="w-full px-3 py-2 rounded-xl bg-surface-dark border border-white/15 text-white text-xs"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="text-[10px] font-black uppercase text-gray-400 block mb-1">Indice / Hint</label>
-                    <input
-                      type="text"
-                      value={editingPuzzle.hint || ''}
-                      onChange={(e) => setEditingPuzzle({ ...editingPuzzle, hint: e.target.value })}
-                      className="w-full px-3 py-2 rounded-xl bg-surface-dark border border-white/15 text-white text-xs"
-                    />
-                  </div>
-
-                  {/* 4 Image Inputs with File Upload from PC and Live Previews */}
-                  <div className="col-span-3 grid grid-cols-2 gap-3">
-                    {[0, 1, 2, 3].map((imgIdx) => (
-                      <ImageUploader
-                        key={`puzzle_img_${imgIdx}`}
-                        label={`Indice Image #${imgIdx + 1}`}
-                        value={editingPuzzle.images[imgIdx]}
-                        onChange={(val) => {
-                          const updatedImgs = [...editingPuzzle.images] as [string, string, string, string];
-                          updatedImgs[imgIdx] = val;
-                          setEditingPuzzle({ ...editingPuzzle, images: updatedImgs });
-                        }}
-                        aspectRatio="square"
-                        placeholder="https://..."
-                        required
-                      />
-                    ))}
-                  </div>
-                </div>
-
-                <div className="flex justify-end space-x-3 pt-2">
-                  <button
-                    type="button"
-                    onClick={() => setEditingPuzzle(null)}
-                    className="px-4 py-2 rounded-xl bg-surface-dark border border-white/15 text-xs font-bold text-gray-300"
-                  >
-                    Annuler
-                  </button>
-                  <button
-                    type="submit"
-                    className="flex items-center space-x-1.5 px-6 py-2 rounded-xl bg-gradient-to-r from-brand-red to-amber-500 text-white font-black text-xs uppercase shadow-glow-red"
-                  >
-                    <Save className="w-4 h-4" />
-                    <span>Sauvegarder l'énigme</span>
-                  </button>
-                </div>
-              </form>
+              </div>
             )}
 
             {/* Puzzles Listing Cards */}
             <div className="grid grid-cols-2 gap-4">
               {puzzles.map((p) => (
-                <div key={p.id} className="p-4 rounded-2xl bg-surface-card border border-white/10 space-y-3">
+                <div key={p.id} className="p-4 rounded-2xl bg-surface-card border border-white/10 space-y-3 shadow-md hover:border-white/20 transition-all">
                   <div className="flex items-center justify-between">
                     <div>
                       <span className="font-display font-black text-lg text-brand-gold tracking-widest">
@@ -714,14 +828,23 @@ export const TVAdminView: React.FC = () => {
 
                     <div className="flex items-center space-x-2">
                       <button
-                        onClick={() => setEditingPuzzle(p)}
-                        className="px-2.5 py-1 rounded-lg bg-surface-light hover:bg-white hover:text-gray-950 text-xs font-bold"
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          audio.playSelect();
+                          setEditingPuzzle({ ...p });
+                        }}
+                        className="px-2.5 py-1 rounded-lg bg-surface-light hover:bg-white hover:text-gray-950 text-xs font-bold transition-all cursor-pointer active:scale-95"
                       >
                         ✏️ Éditer
                       </button>
                       <button
-                        onClick={() => handleDeletePuzzle(p.id)}
-                        className="p-1 rounded-lg bg-rose-950/50 text-rose-400 hover:bg-rose-900"
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeletePuzzle(p.id);
+                        }}
+                        className="p-1 rounded-lg bg-rose-950/50 text-rose-400 hover:bg-rose-900 transition-all cursor-pointer active:scale-95"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
