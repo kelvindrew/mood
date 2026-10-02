@@ -64,6 +64,14 @@
         "B"
       ],
       "correctIndex": 0
+    },
+    {
+      "question": "Capitale ?",
+      "options": [
+        "A",
+        "B"
+      ],
+      "correctIndex": 0
     }
   ],
   "menteur": [],

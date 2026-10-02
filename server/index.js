@@ -26,10 +26,24 @@ function corsOriginValidator(origin, callback) {
     return callback(new Error('Origine non autorisée par CORS'));
   }
 
-  // Local development fallback: allow localhost, 127.0.0.1, and private LAN subnets
+  // Default allowed origins for production deployment & local development
   try {
     const url = new URL(origin);
     const host = url.hostname;
+
+    // Production deployment domains (Cloudflare, Render, Vercel, Netlify)
+    if (
+      host === 'mood.kalvinec.workers.dev' ||
+      host.endsWith('.workers.dev') ||
+      host.endsWith('.pages.dev') ||
+      host.endsWith('.onrender.com') ||
+      host.endsWith('.vercel.app') ||
+      host.endsWith('.netlify.app')
+    ) {
+      return callback(null, true);
+    }
+
+    // Local development fallback: allow localhost, 127.0.0.1, and private LAN subnets
     if (
       host === 'localhost' ||
       host === '127.0.0.1' ||
