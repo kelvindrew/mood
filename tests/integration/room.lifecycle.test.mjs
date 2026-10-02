@@ -147,7 +147,7 @@ describe('cycle de vie du salon', () => {
     let gotPublic = false, gotPrivate = false;
     phone2.on('game_state_update', () => { gotPublic = true; });
     phone2.on('private_state', () => { gotPrivate = true; });
-    phone2.emit('reconnect_player', { code, playerId: join.player.id, playerData: join.player });
+    phone2.emit('reconnect_player', { code, playerId: join.player.id, sessionToken: join.sessionToken, playerData: join.player });
     await wait(700);
 
     const me = lastRoom.players.find((p) => p.name === 'Nina');

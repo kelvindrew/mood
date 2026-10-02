@@ -8,6 +8,7 @@ import { tvNav } from '../../services/tvNavigation';
 export const TVLobbyView: React.FC = () => {
   const { room, selectedGame, startGame, setTvView, serverLanIp, addBot, removeBot } = useGame();
   const [countdown, setCountdown] = useState<number | null>(null);
+  const [isStarting, setIsStarting] = useState(false);
 
   useEffect(() => {
     tvNav.setInitialFocus('button');
@@ -46,19 +47,14 @@ export const TVLobbyView: React.FC = () => {
   }
 
   const handleStartGame = async () => {
+    if (isStarting) return;
+    setIsStarting(true);
     audio.playSelect();
-    setCountdown(3);
-    const countInterval = setInterval(() => {
-      setCountdown((prev) => {
-        if (prev === null || prev <= 1) {
-          clearInterval(countInterval);
-          startGame();
-          return null;
-        }
-        audio.playDiceRoll();
-        return prev - 1;
-      });
-    }, 1000);
+    setCountdown(1);
+    setTimeout(() => {
+      setCountdown(null);
+      startGame();
+    }, 500);
   };
 
   const maxAllowed = Math.min(room.settings.maxPlayers || selectedGame.maxPlayers, selectedGame.maxPlayers);

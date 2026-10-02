@@ -66,9 +66,9 @@ class SocketService {
     try {
       const savedSession = localStorage.getItem('playflix_session');
       if (savedSession) {
-        const { code, player } = JSON.parse(savedSession);
-        if (code && player?.id) {
-          this.socket?.emit('reconnect_player', { code, playerId: player.id, playerData: player });
+        const { code, player, sessionToken } = JSON.parse(savedSession);
+        if (code && player?.id && sessionToken) {
+          this.socket?.emit('reconnect_player', { code, playerId: player.id, sessionToken, playerData: player });
         }
       }
     } catch {}
@@ -79,7 +79,7 @@ class SocketService {
   }
 
   // Room Actions
-  public createRoom(gameId: string, settings: unknown): Promise<{ success: boolean; room?: RoomState; localIp?: string; error?: string }> {
+  public createRoom(gameId: string, settings: unknown): Promise<{ success: boolean; room?: RoomState; hostToken?: string; localIp?: string; error?: string }> {
     return new Promise((resolve) => {
       const socket = this.connect();
       let resolved = false;
@@ -92,10 +92,15 @@ class SocketService {
       }, 10000);
 
       const doEmit = () => {
-        socket.emit('create_room', { gameId, settings }, (res: { success: boolean; room?: RoomState; localIp?: string; error?: string }) => {
+        socket.emit('create_room', { gameId, settings }, (res: { success: boolean; room?: RoomState; hostToken?: string; localIp?: string; error?: string }) => {
           if (!resolved) {
             resolved = true;
             clearTimeout(timer);
+            if (res?.success && res?.room && res?.hostToken) {
+              try {
+                localStorage.setItem('playflix_host_session', JSON.stringify({ code: res.room.code, hostToken: res.hostToken }));
+              } catch {}
+            }
             resolve(res || { success: false, error: 'Réponse vide du serveur' });
           }
         });
@@ -111,7 +116,7 @@ class SocketService {
     });
   }
 
-  public joinRoom(code: string, playerData: Partial<Player>, isSpectator = false): Promise<{ success: boolean; room?: RoomState; player?: Player; error?: string }> {
+  public joinRoom(code: string, playerData: Partial<Player>, isSpectator = false): Promise<{ success: boolean; room?: RoomState; player?: Player; sessionToken?: string; error?: string }> {
     return new Promise((resolve) => {
       const socket = this.connect();
       let resolved = false;
@@ -124,13 +129,24 @@ class SocketService {
       }, 10000);
 
       const doEmit = () => {
-        socket.emit('join_room', { code, playerData, isSpectator }, (res: { success: boolean; room?: RoomState; player?: Player; error?: string }) => {
+        let existingSessionToken: string | undefined;
+        try {
+          const saved = localStorage.getItem('playflix_session');
+          if (saved) {
+            const parsed = JSON.parse(saved);
+            if (parsed?.code === code && parsed?.player?.id === playerData.id) {
+              existingSessionToken = parsed.sessionToken;
+            }
+          }
+        } catch {}
+
+        socket.emit('join_room', { code, playerData, isSpectator, sessionToken: existingSessionToken }, (res: { success: boolean; room?: RoomState; player?: Player; sessionToken?: string; error?: string }) => {
           if (!resolved) {
             resolved = true;
             clearTimeout(timer);
             if (res?.success && res?.player) {
               try {
-                localStorage.setItem('playflix_session', JSON.stringify({ code, player: res.player }));
+                localStorage.setItem('playflix_session', JSON.stringify({ code, player: res.player, sessionToken: res.sessionToken }));
               } catch {}
             }
             resolve(res || { success: false, error: 'Réponse vide du serveur' });

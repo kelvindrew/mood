@@ -81,4 +81,46 @@ describe('ConnectFourEngine', () => {
 
     engine.destroy();
   });
+
+  it('prioritizes human player as p1 and red chip when playing against a bot', () => {
+    // Bot was added first, human joined second
+    const players = [
+      { id: 'bot_1', name: 'Robo', color: 'yellow', isBot: true },
+      { id: 'p_human', name: 'Landry', color: 'red', isBot: false },
+    ];
+    const engine = new ConnectFourEngine(players, () => {}, () => {});
+
+    expect(engine.p1.id).toBe('p_human');
+    expect(engine.p1.chipColor).toBe('red');
+    expect(engine.p1.isBot).toBe(false);
+    expect(engine.p2.id).toBe('bot_1');
+    expect(engine.p2.chipColor).toBe('yellow');
+    expect(engine.currentTurnPlayerId).toBe('p_human');
+
+    engine.destroy();
+  });
+
+  it('drops chip through RoomManager.handleGameAction when mobile controller sends c4_drop_chip', async () => {
+    const { RoomManager } = await import('../../server/rooms.js');
+    const mockIo = {
+      to: () => ({ emit: () => {} }),
+    };
+    const roomManager = new RoomManager(mockIo, '127.0.0.1');
+    const room = roomManager.createRoom('socket_tv', 'connect_four');
+    const joinRes = roomManager.joinRoom(room.code, 'socket_phone', { name: 'Player1' });
+
+    expect(joinRes.success).toBe(true);
+
+    // Start game (adds bot as second player, human is p1)
+    const startRes = roomManager.startGame(room.code, 'socket_tv');
+    expect(startRes.success).toBe(true);
+    expect(room.gameEngine).toBeDefined();
+
+    // Mobile player sends c4_drop_chip
+    const actionRes = roomManager.handleGameAction(room.code, 'socket_phone', 'c4_drop_chip', { col: 3 });
+    expect(actionRes.success).toBe(true);
+    expect(room.gameEngine.board[5][3]).toBe('red');
+
+    room.gameEngine.destroy();
+  });
 });

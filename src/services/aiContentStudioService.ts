@@ -43,6 +43,8 @@ export interface AIGenerateResponse {
   charades?: AIStudioItem[];
 }
 
+import { adminCms } from './adminCmsService';
+
 class AIContentStudioService {
   private getBaseUrl(): string {
     if (typeof window !== 'undefined') {
@@ -51,9 +53,19 @@ class AIContentStudioService {
     return 'http://localhost:3001';
   }
 
+  private getAuthHeaders(): Record<string, string> {
+    const password = adminCms.getAdminPassword();
+    return {
+      'Content-Type': 'application/json',
+      'x-admin-key': password || 'admin',
+    };
+  }
+
   async checkStatus(): Promise<{ configured: boolean; stats: any }> {
     try {
-      const res = await fetch(`${this.getBaseUrl()}/api/ai/status`);
+      const res = await fetch(`${this.getBaseUrl()}/api/ai/status`, {
+        headers: this.getAuthHeaders(),
+      });
       if (res.ok) {
         return await res.json();
       }
@@ -67,7 +79,7 @@ class AIContentStudioService {
     try {
       const res = await fetch(`${this.getBaseUrl()}/api/ai/config`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: this.getAuthHeaders(),
         body: JSON.stringify({ apiKey }),
       });
       const data = await res.json();
@@ -81,7 +93,7 @@ class AIContentStudioService {
   async generateContent(params: AIGenerateRequest): Promise<AIGenerateResponse> {
     const res = await fetch(`${this.getBaseUrl()}/api/ai/generate`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: this.getAuthHeaders(),
       body: JSON.stringify(params),
     });
 
@@ -96,7 +108,7 @@ class AIContentStudioService {
   async publishValidatedItems(gameType: string, items: AIStudioItem[]): Promise<{ success: boolean; publishedCount: number }> {
     const res = await fetch(`${this.getBaseUrl()}/api/ai/publish`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: this.getAuthHeaders(),
       body: JSON.stringify({ gameType, items }),
     });
 

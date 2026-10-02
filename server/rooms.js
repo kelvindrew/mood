@@ -1,4 +1,5 @@
 // Room State & Game Session Manager for PLAYFLIX
+import crypto from 'crypto';
 import { LudoEngine } from './games/ludoEngine.js';
 import { WordEngine } from './games/wordEngine.js';
 import { CardEngine } from './games/cardEngine.js';
@@ -75,8 +76,28 @@ export class RoomManager {
     return code;
   }
 
+  generateSessionToken() {
+    return crypto.randomBytes(32).toString('hex');
+  }
+
+  sanitizePlayer(p) {
+    if (!p) return null;
+    const { sessionToken, ...safe } = p;
+    return safe;
+  }
+
+  isHostAuthorized(room, socketId, hostToken = null) {
+    if (!room) return false;
+    if (hostToken && room.hostToken && hostToken === room.hostToken) return true;
+    if (socketId && socketId === room.hostId) return true;
+    const player = room.players.find(p => p.socketId === socketId && p.connected && !p.isBot);
+    if (player && player.isHost) return true;
+    return false;
+  }
+
   createRoom(hostSocketId, gameId = 'ludo', settings = {}) {
     const code = this.generateRoomCode();
+    const hostToken = this.generateSessionToken();
     const constraints = GAME_PLAYER_CONSTRAINTS[gameId] || { min: 1, max: 6 };
     const rawMax = Number(settings.maxPlayers);
     const maxPlayers = (!isNaN(rawMax) && rawMax > 0)
@@ -88,6 +109,7 @@ export class RoomManager {
       gameId,
       status: 'lobby',
       hostId: hostSocketId,
+      hostToken,
       settings: {
         maxPlayers,
         gameMode: settings.gameMode || 'standard',
@@ -119,15 +141,17 @@ export class RoomManager {
     return this.rooms.get(code.toString().trim());
   }
 
-  joinRoom(code, socketId, playerData = {}, isSpectator = false) {
+  joinRoom(code, socketId, playerData = {}, isSpectator = false, sessionToken = null) {
     const room = this.getRoom(code);
     if (!room) {
       return { success: false, error: 'Salon introuvable. Vérifiez le code à 4 chiffres.' };
     }
 
     if (isSpectator) {
+      const specToken = this.generateSessionToken();
       const spectator = {
-        id: playerData.id || socketId,
+        id: playerData.id || `spec_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
+        sessionToken: specToken,
         socketId,
         name: playerData.name || 'Spectateur',
         avatar: playerData.avatar || '👀',
@@ -142,17 +166,22 @@ export class RoomManager {
       };
       room.spectators.push(spectator);
       this.broadcastRoomUpdate(room);
-      return { success: true, room: this.getPublicRoomState(room), player: spectator };
+      return { success: true, room: this.getPublicRoomState(room), player: this.sanitizePlayer(spectator), sessionToken: specToken };
     }
 
-    // Reconnection of an existing player
-    const existingPlayer = room.players.find(p => p.id === playerData.id);
-    if (existingPlayer) {
-      existingPlayer.socketId = socketId;
-      existingPlayer.connected = true;
-      if (playerData.selfieImage) existingPlayer.selfieImage = playerData.selfieImage;
-      this.broadcastRoomUpdate(room);
-      return { success: true, room: this.getPublicRoomState(room), player: existingPlayer };
+    // Reconnexion éventuelle d'un joueur existant : vérification stricte du justificatif de session
+    if (playerData?.id) {
+      const existingPlayer = room.players.find(p => p.id === playerData.id);
+      if (existingPlayer) {
+        if (!sessionToken || sessionToken !== existingPlayer.sessionToken) {
+          return { success: false, error: 'Usurpation refusée : justificatif de session manquant ou invalide' };
+        }
+        existingPlayer.socketId = socketId;
+        existingPlayer.connected = true;
+        if (playerData.selfieImage) existingPlayer.selfieImage = playerData.selfieImage;
+        this.broadcastRoomUpdate(room);
+        return { success: true, room: this.getPublicRoomState(room), player: this.sanitizePlayer(existingPlayer), sessionToken: existingPlayer.sessionToken };
+      }
     }
 
     const constraints = GAME_PLAYER_CONSTRAINTS[room.gameId] || { min: 1, max: 6 };
@@ -165,8 +194,10 @@ export class RoomManager {
     const takenColors = room.players.map(p => p.color);
     const assignedColor = AVAILABLE_COLORS.find(c => !takenColors.includes(c)) || 'red';
 
+    const playerToken = this.generateSessionToken();
     const newPlayer = {
       id: playerData.id || `p_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
+      sessionToken: playerToken,
       socketId,
       name: playerData.name || `Joueur ${room.players.length + 1}`,
       avatar: playerData.avatar || '🦊',
@@ -184,47 +215,56 @@ export class RoomManager {
 
     room.players.push(newPlayer);
     this.broadcastRoomUpdate(room);
-    return { success: true, room: this.getPublicRoomState(room), player: newPlayer };
+    return { success: true, room: this.getPublicRoomState(room), player: this.sanitizePlayer(newPlayer), sessionToken: playerToken };
   }
 
-  reconnectPlayer(code, socketId, playerId, playerData = {}) {
+  reconnectPlayer(code, socketId, playerId, sessionToken, playerData = {}) {
     const room = this.getRoom(code);
     if (!room) return null;
 
-    let player = room.players.find(p => p.id === playerId);
-    if (player) {
-      player.socketId = socketId;
-      player.connected = true;
-    } else {
-      const res = this.joinRoom(code, socketId, { ...playerData, id: playerId });
-      if (res.success) player = res.player;
+    if (!playerId || !sessionToken) {
+      // Rejet : pas de sessionToken fourni
+      return null;
     }
+
+    const player = room.players.find(p => p.id === playerId);
+    if (!player || !player.sessionToken || player.sessionToken !== sessionToken) {
+      // Rejet : token manquant ou ne correspondant pas au joueur
+      return null;
+    }
+
+    player.socketId = socketId;
+    player.connected = true;
+    if (playerData?.selfieImage) player.selfieImage = playerData.selfieImage;
 
     this.broadcastRoomUpdate(room);
     if (room.gameState && room.gameEngine) {
-      // C1 — Reconnexion : état public + fragment privé ciblé (jamais l'état brut)
+      // C1 — Reconnexion : état public + fragment privé ciblé UNIQUEMENT au joueur authentifié
       this.io.to(socketId).emit(
         'game_state_update',
         typeof room.gameEngine.getPublicState === 'function'
           ? room.gameEngine.getPublicState()
           : room.gameState
       );
-      if (player && typeof room.gameEngine.getPrivateState === 'function') {
+      if (typeof room.gameEngine.getPrivateState === 'function') {
         const privateFragment = room.gameEngine.getPrivateState(player.id);
         if (privateFragment) {
           this.io.to(socketId).emit('private_state', privateFragment);
         }
       }
     }
-    return player;
+    return this.sanitizePlayer(player);
   }
 
-  addBot(code, difficulty = 'medium') {
+  addBot(code, socketId = null, difficulty = 'medium') {
     const room = this.getRoom(code);
-    if (!room) return;
+    if (!room) return { success: false, error: 'Salon introuvable' };
+    if (socketId && !this.isHostAuthorized(room, socketId)) {
+      return { success: false, error: 'Action réservée à l’hôte' };
+    }
     const constraints = GAME_PLAYER_CONSTRAINTS[room.gameId] || { min: 1, max: 6 };
     const maxAllowed = Math.min(room.settings.maxPlayers || constraints.max, constraints.max);
-    if (room.players.length >= maxAllowed) return;
+    if (room.players.length >= maxAllowed) return { success: false, error: 'Salon complet' };
 
     const takenColors = room.players.map(p => p.color);
     const assignedColor = AVAILABLE_COLORS.find(c => !takenColors.includes(c)) || 'red';
@@ -232,6 +272,7 @@ export class RoomManager {
 
     const bot = {
       id: `bot_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
+      sessionToken: null,
       socketId: `bot_socket_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
       name: BOT_NAMES[botCount % BOT_NAMES.length] || `🤖 Bot ${botCount + 1}`,
       avatar: BOT_AVATARS[botCount % BOT_AVATARS.length] || '🤖',
@@ -249,11 +290,15 @@ export class RoomManager {
 
     room.players.push(bot);
     this.broadcastRoomUpdate(room);
+    return { success: true };
   }
 
-  removeBot(code, botId) {
+  removeBot(code, socketId = null, botId = null) {
     const room = this.getRoom(code);
-    if (!room) return;
+    if (!room) return { success: false, error: 'Salon introuvable' };
+    if (socketId && !this.isHostAuthorized(room, socketId)) {
+      return { success: false, error: 'Action réservée à l’hôte' };
+    }
 
     if (botId) {
       const idx = room.players.findIndex(p => p.id === botId && p.isBot);
@@ -264,12 +309,13 @@ export class RoomManager {
     }
 
     this.broadcastRoomUpdate(room);
+    return { success: true };
   }
 
   toggleReady(code, socketId) {
     const room = this.getRoom(code);
     if (!room) return;
-    const player = room.players.find(p => p.socketId === socketId);
+    const player = room.players.find(p => p.socketId === socketId && p.connected && !p.isBot);
     if (player) {
       player.isReady = !player.isReady;
       this.broadcastRoomUpdate(room);
@@ -279,7 +325,7 @@ export class RoomManager {
   setSelfieImage(code, socketId, selfieImage) {
     const room = this.getRoom(code);
     if (!room) return;
-    const player = room.players.find(p => p.socketId === socketId);
+    const player = room.players.find(p => p.socketId === socketId && p.connected && !p.isBot);
     if (player) {
       player.selfieImage = selfieImage;
       this.broadcastRoomUpdate(room);
@@ -289,7 +335,7 @@ export class RoomManager {
   setBuzzerSound(code, socketId, sound) {
     const room = this.getRoom(code);
     if (!room) return;
-    const player = room.players.find(p => p.socketId === socketId);
+    const player = room.players.find(p => p.socketId === socketId && p.connected && !p.isBot);
     if (player) {
       player.buzzerSound = sound;
       this.broadcastRoomUpdate(room);
@@ -299,23 +345,30 @@ export class RoomManager {
   updatePlayerColor(code, socketId, newColor) {
     const room = this.getRoom(code);
     if (!room) return;
-    const player = room.players.find(p => p.socketId === socketId);
+    const player = room.players.find(p => p.socketId === socketId && p.connected && !p.isBot);
     if (player && !room.players.some(p => p.socketId !== socketId && p.color === newColor)) {
       player.color = newColor;
       this.broadcastRoomUpdate(room);
     }
   }
 
-  updateSettings(code, newSettings) {
+  updateSettings(code, socketId = null, newSettings = {}) {
     const room = this.getRoom(code);
-    if (!room) return;
+    if (!room) return { success: false, error: 'Salon introuvable' };
+    if (socketId && !this.isHostAuthorized(room, socketId)) {
+      return { success: false, error: 'Action réservée à l’hôte' };
+    }
     room.settings = { ...room.settings, ...newSettings };
     this.broadcastRoomUpdate(room);
+    return { success: true };
   }
 
-  selectGame(code, gameId) {
+  selectGame(code, socketId = null, gameId = 'ludo') {
     const room = this.getRoom(code);
-    if (!room) return;
+    if (!room) return { success: false, error: 'Salon introuvable' };
+    if (socketId && !this.isHostAuthorized(room, socketId)) {
+      return { success: false, error: 'Action réservée à l’hôte' };
+    }
     room.gameId = gameId;
     const constraints = GAME_PLAYER_CONSTRAINTS[gameId] || { min: 1, max: 6 };
     if (!room.settings.maxPlayers || room.settings.maxPlayers > constraints.max) {
@@ -336,19 +389,25 @@ export class RoomManager {
       }
     }
     this.broadcastRoomUpdate(room);
+    return { success: true };
   }
 
-  startGame(code) {
+  startGame(code, socketId = null) {
     const room = this.getRoom(code);
     if (!room) return { success: false, error: 'Salon introuvable' };
+    if (socketId && !this.isHostAuthorized(room, socketId)) {
+      return { success: false, error: 'Action réservée à l’hôte' };
+    }
 
     const constraints = GAME_PLAYER_CONSTRAINTS[room.gameId] || { min: 1, max: 8 };
     const maxAllowed = Math.min(room.settings.maxPlayers || constraints.max, constraints.max);
 
     if (room.players.length === 0) {
       // Auto-création d'un joueur hôte pour permettre le lancement immédiat sur PC/TV sans attendre de smartphone
+      const hostSessionToken = this.generateSessionToken();
       const defaultHostPlayer = {
         id: `p_host_${Date.now()}`,
+        sessionToken: hostSessionToken,
         socketId: room.hostId,
         name: 'Joueur 1 (Hôte)',
         avatar: '🦊',
@@ -549,18 +608,18 @@ export class RoomManager {
 
   handleGameAction(code, socketId, action, payload = {}) {
     const room = this.getRoom(code);
-    if (!room || !room.gameEngine) return;
+    if (!room || !room.gameEngine) return { success: false, error: 'Salon ou partie introuvable' };
 
-    // Resilient player resolution: by socketId OR by persistent playerId in payload OR host fallback
-    let player = room.players.find(p => p.socketId === socketId || (payload?.playerId && p.id === payload.playerId));
-    if (!player && (socketId === room.hostId || action.startsWith('four_pics_') || action.startsWith('quick_game_') || action === 'return_to_lobby')) {
-      player = room.players.find(p => p.isHost) || room.players[0];
+    // Les spectateurs ne doivent pas pouvoir envoyer d'actions de jeu
+    if (room.spectators.some(s => s.socketId === socketId)) {
+      return { success: false, error: 'Les spectateurs ne peuvent pas jouer' };
     }
-    if (!player) return;
 
-    // Make sure socket is bound to latest socketId
-    if (player.socketId !== socketId) {
-      player.socketId = socketId;
+    // Authentification stricte de l'acteur par son socket et son appartenance au salon
+    // Aucun recours à payload.playerId ni repli usurpateur
+    const player = room.players.find(p => p.socketId === socketId && p.connected && !p.isBot);
+    if (!player) {
+      return { success: false, error: 'Action refusée : joueur non authentifié dans le salon' };
     }
 
     switch (action) {
@@ -700,19 +759,74 @@ export class RoomManager {
           room.gameEngine.cheer(player.id);
         }
         break;
+      case 'c4_drop_chip':
+        if (room.gameId === 'connect_four' && room.gameEngine) {
+          return room.gameEngine.handleAction(action, payload, socketId, player.id);
+        }
+        break;
+      case 'bp_submit_word':
+        if (room.gameId === 'bomb_party' && room.gameEngine) {
+          return room.gameEngine.handleAction(action, payload, socketId, player.id);
+        }
+        break;
+      case 'nb_place_fleet':
+      case 'nb_auto_place':
+      case 'nb_fire':
+        if (room.gameId === 'naval_battle' && room.gameEngine) {
+          return room.gameEngine.handleAction(action, payload, socketId, player.id);
+        }
+        break;
+      case 'mf_submit_caption':
+      case 'mf_cast_vote':
+        if (room.gameId === 'meme_factory' && room.gameEngine) {
+          return room.gameEngine.handleAction(action, payload, socketId, player.id);
+        }
+        break;
+      case 'fn_submit_lie':
+      case 'fn_cast_vote':
+      case 'fn_restart':
+        if (room.gameId === 'fake_news' && room.gameEngine) {
+          return room.gameEngine.handleAction(player.id, action, payload);
+        }
+        break;
+      case 'bac_submit_answers':
+      case 'bac_cast_vote':
+      case 'bac_restart':
+        if (room.gameId === 'petit_bac' && room.gameEngine) {
+          return room.gameEngine.handleAction(player.id, action, payload);
+        }
+        break;
+      case 'spy_submit_clue':
+      case 'spy_vote':
+      case 'spy_guess_word':
+      case 'spy_restart':
+        if (room.gameId === 'spy' && room.gameEngine) {
+          return room.gameEngine.handleAction(player.id, action, payload);
+        }
+        break;
       default:
+        if (room.gameEngine && typeof room.gameEngine.handleAction === 'function') {
+          if (room.gameEngine.handleAction.length >= 3) {
+            return room.gameEngine.handleAction(action, payload, socketId, player.id);
+          } else {
+            return room.gameEngine.handleAction(player.id, action, payload);
+          }
+        }
         break;
     }
+    return { success: true };
   }
 
   sendReaction(code, socketId, emoji) {
     const room = this.getRoom(code);
     if (!room) return;
-    const player = room.players.find(p => p.socketId === socketId) || room.spectators.find(s => s.socketId === socketId);
+    const player = room.players.find(p => p.socketId === socketId && p.connected) ||
+                   room.spectators.find(s => s.socketId === socketId && s.connected);
+    if (!player) return; // Seuls les participants authentifiés du salon peuvent réagir
     const reaction = {
       id: Math.random().toString(36).substring(2, 9),
       emoji: emoji || '🔥',
-      playerName: player ? player.name : 'Spectateur',
+      playerName: player.name,
       timestamp: Date.now(),
     };
     room.reactions.push(reaction);
@@ -721,15 +835,21 @@ export class RoomManager {
     this.io.to(code).emit('reaction_received', reaction);
   }
 
-  replayGame(code) {
+  replayGame(code, socketId = null) {
     const room = this.getRoom(code);
-    if (!room) return;
-    this.startGame(code);
+    if (!room) return { success: false, error: 'Salon introuvable' };
+    if (socketId && !this.isHostAuthorized(room, socketId)) {
+      return { success: false, error: 'Action réservée à l’hôte' };
+    }
+    return this.startGame(code, socketId);
   }
 
-  returnToLobby(code) {
+  returnToLobby(code, socketId = null) {
     const room = this.getRoom(code);
-    if (!room) return;
+    if (!room) return { success: false, error: 'Salon introuvable' };
+    if (socketId && !this.isHostAuthorized(room, socketId)) {
+      return { success: false, error: 'Action réservée à l’hôte' };
+    }
     if (room.gameEngine) room.gameEngine.destroy();
     room.status = 'lobby';
     room.gameState = null;
@@ -741,6 +861,7 @@ export class RoomManager {
       if (!p.isBot) p.isReady = false;
     }
     this.broadcastRoomUpdate(room);
+    return { success: true };
   }
 
   handleDisconnect(socketId) {
@@ -796,7 +917,10 @@ export class RoomManager {
     let teamMap = null; // playerId -> 'villagers' | 'werewolves'
 
     switch (room.gameId) {
-      case 'scrabble': {
+      case 'scrabble':
+      case 'connect_four':
+      case 'naval_battle':
+      case 'meme_factory': {
         if (Array.isArray(gs.finalPodium) && gs.finalPodium.length > 0) {
           ordered = gs.finalPodium.map((pl) => ({ id: pl.id, score: pl.score || 0 }));
         }
@@ -992,6 +1116,10 @@ export class RoomManager {
       const winner = room.players.find(p => p.id === gs.winnerId);
       return winner ? `${winner.name} franchit la ligne d'arrivée en tête ! 🏆` : 'Course Wild Rush terminée !';
     }
+    if (room.gameId === 'connect_four') {
+      const winner = gs.finalPodium?.[0];
+      return winner ? `${winner.name} a aligné 4 pions victorieux ! 🔴🟡` : 'Match de Puissance 4 terminé !';
+    }
     return null;
   }
 
@@ -1014,8 +1142,8 @@ export class RoomManager {
       hostId: room.hostId,
       serverLanIp: this.localIp,
       settings: room.settings,
-      players: room.players,
-      spectators: room.spectators,
+      players: room.players.map((p) => this.sanitizePlayer(p)),
+      spectators: room.spectators.map((s) => this.sanitizePlayer(s)),
       gameState: publicGameState,
       reactions: room.reactions,
       activeGage: room.activeGage,

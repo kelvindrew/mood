@@ -224,7 +224,7 @@ export const WildRushBoardTV: React.FC = () => {
     window.addEventListener('resize', handleResize);
 
     // 10. Animation Loop
-    let clock = new THREE.Clock();
+    const clock = new THREE.Clock();
 
     const animate = () => {
       reqIdRef.current = requestAnimationFrame(animate);

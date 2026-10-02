@@ -753,7 +753,7 @@ export class WildRushEngine {
     runner.activeAnimalModel = choice.animalModel;
 
     // Calculate score, combo and boost effects
-    let bonusText = '';
+    let bonusText;
     if (choice.efficiency === 'optimal') {
       runner.comboCount += 1;
       runner.optimalChoicesCount += 1;

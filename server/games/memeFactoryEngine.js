@@ -431,9 +431,27 @@ export class MemeFactoryEngine {
     };
   }
 
+  // C1 — État PUBLIC : votes et identités des auteurs masqués pendant le vote
+  getPublicState() {
+    return this.getState(null);
+  }
+
+  // C1 — Fragment PRIVÉ : chaque joueur reçoit ses propres statuts (hasSubmitted, hasVoted, myCaption)
+  getPrivateState(playerId) {
+    const myPlayer = this.players.find((p) => p.id === playerId);
+    if (!myPlayer) return null;
+    return {
+      hasSubmitted: myPlayer.hasSubmitted ?? false,
+      hasVoted: myPlayer.hasVoted ?? false,
+      myCaption: myPlayer.currentCaption ?? '',
+      myVotedSubmissionId: this.votes[playerId] || null,
+      isMine: true,
+    };
+  }
+
   emitState() {
     if (this.onStateChange) {
-      this.onStateChange(this.getState());
+      this.onStateChange(this.getPublicState());
     }
   }
 }

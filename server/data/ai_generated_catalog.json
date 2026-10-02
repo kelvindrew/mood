@@ -1,0 +1,74 @@
+{
+  "four_pics": [],
+  "quiz": [
+    {
+      "question": "Capitale ?",
+      "options": [
+        "A",
+        "B"
+      ],
+      "correctIndex": 0
+    },
+    {
+      "question": "Capitale ?",
+      "options": [
+        "A",
+        "B"
+      ],
+      "correctIndex": 0
+    },
+    {
+      "question": "Capitale ?",
+      "options": [
+        "A",
+        "B"
+      ],
+      "correctIndex": 0
+    },
+    {
+      "question": "Capitale ?",
+      "options": [
+        "A",
+        "B"
+      ],
+      "correctIndex": 0
+    },
+    {
+      "question": "Capitale ?",
+      "options": [
+        "A",
+        "B"
+      ],
+      "correctIndex": 0
+    },
+    {
+      "question": "Capitale ?",
+      "options": [
+        "A",
+        "B"
+      ],
+      "correctIndex": 0
+    },
+    {
+      "question": "Capitale ?",
+      "options": [
+        "A",
+        "B"
+      ],
+      "correctIndex": 0
+    },
+    {
+      "question": "Capitale ?",
+      "options": [
+        "A",
+        "B"
+      ],
+      "correctIndex": 0
+    }
+  ],
+  "menteur": [],
+  "draw_and_guess": [],
+  "qui_suis_je": [],
+  "charades": [],
+  "themes": []
+}

@@ -327,11 +327,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const sendGameAction = (action: string, payload: Record<string, unknown> = {}) => {
     if (!canSend || !room) return;
-    const actionPayload = {
-      ...payload,
-      playerId: localPlayer?.id,
-    };
-    socketService.sendGameAction(room.code, action, actionPayload);
+    socketService.sendGameAction(room.code, action, payload);
   };
 
   const sendReaction = (emoji: string) => {

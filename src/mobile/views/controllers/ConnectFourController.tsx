@@ -37,9 +37,13 @@ export const ConnectFourController: React.FC = () => {
   const handleSelectCol = (colIdx: number) => {
     if (!isMyTurn || !isColAvailable(colIdx)) return;
 
-    triggerHaptic(hapticPatterns.tap);
-    audio.playSelect();
-    setSelectedCol(colIdx);
+    if (selectedCol === colIdx) {
+      handleDrop();
+    } else {
+      triggerHaptic(hapticPatterns.tap);
+      audio.playSelect();
+      setSelectedCol(colIdx);
+    }
   };
 
   const handleDrop = () => {

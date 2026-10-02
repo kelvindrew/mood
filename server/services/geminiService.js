@@ -92,14 +92,12 @@ export class GeminiService {
       payload.generationConfig.responseSchema = responseSchema;
     }
 
-    const urlWithKey = `${GEMINI_API_URL}?key=${encodeURIComponent(this.apiKey)}`;
-
     for (let attempt = 0; attempt <= retries; attempt++) {
       try {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 12000); // 12s timeout
 
-        const response = await fetch(urlWithKey, {
+        const response = await fetch(GEMINI_API_URL, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -112,8 +110,7 @@ export class GeminiService {
         clearTimeout(timeoutId);
 
         if (!response.ok) {
-          const errText = await response.text();
-          throw new Error(`Gemini HTTP ${response.status}: ${errText}`);
+          throw new Error(`Gemini API HTTP ${response.status}`);
         }
 
         const data = await response.json();
@@ -124,8 +121,8 @@ export class GeminiService {
 
         return JSON.parse(rawContent);
       } catch (err) {
-        console.warn(`[AI Service] Attempt ${attempt + 1} failed:`, err.message);
-        if (attempt === retries) throw err;
+        console.warn(`[AI Service] Attempt ${attempt + 1} failed:`, err.message?.replace(/key=[^&\s]+/gi, 'key=[REDACTED]'));
+        if (attempt === retries) throw new Error('Échec du service Gemini', { cause: err });
         await new Promise((res) => setTimeout(res, 1200 * (attempt + 1))); // Exponential backoff
       }
     }

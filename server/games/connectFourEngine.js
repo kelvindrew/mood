@@ -21,6 +21,13 @@ export class ConnectFourEngine {
         color: 'yellow',
         isBot: true,
       });
+    } else if (safePlayers.length >= 2) {
+      // If player 0 is bot and player 1 is human, swap them so human is p1 and starts first
+      if (safePlayers[0].isBot && !safePlayers[1].isBot) {
+        const temp = safePlayers[0];
+        safePlayers[0] = safePlayers[1];
+        safePlayers[1] = temp;
+      }
     }
 
     this.p1 = {
@@ -210,7 +217,7 @@ export class ConnectFourEngine {
       if (bestCol !== null) {
         this.dropChip(activePlayer.id, bestCol);
       }
-    }, 1500 + Math.random() * 1000);
+    }, 600 + Math.random() * 400);
   }
 
   findSmartBotCol(myChip) {

@@ -191,7 +191,7 @@ export class NavalBattleEngine {
       }
     }
 
-    let result = 'miss';
+    let result;
     let sunkShipName = null;
 
     if (hitShip) {
@@ -402,9 +402,33 @@ export class NavalBattleEngine {
     };
   }
 
+  // C1 — État PUBLIC : aucun placement de navire secret n'est diffusé publiquement
+  getPublicState() {
+    return this.getState(null);
+  }
+
+  // C1 — Fragment PRIVÉ : chaque joueur ne reçoit que l'état détaillé avec ses propres navires
+  getPrivateState(playerId) {
+    const isP1 = playerId === this.p1.id;
+    const isP2 = playerId === this.p2.id;
+    if (!isP1 && !isP2) return null;
+    return {
+      p1: {
+        ...this.p1,
+        ships: isP1 || this.isGameOver ? this.p1.ships : undefined,
+      },
+      p2: {
+        ...this.p2,
+        ships: isP2 || this.isGameOver ? this.p2.ships : undefined,
+      },
+      myRole: isP1 ? 'p1' : 'p2',
+      isMyTurn: (isP1 && this.turnPlayerId === this.p1.id) || (isP2 && this.turnPlayerId === this.p2.id),
+    };
+  }
+
   emitState() {
     if (this.onStateChange) {
-      this.onStateChange(this.getState());
+      this.onStateChange(this.getPublicState());
     }
   }
 }
