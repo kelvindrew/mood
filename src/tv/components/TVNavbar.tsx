@@ -1,9 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useGame, TVView } from '../../context/GameContext';
 import { Search } from 'lucide-react';
 import { audio } from '../../services/audio';
 import { TVSearchModal } from './TVSearchModal';
-import { GAMES_CATALOG } from '../../data/gamesCatalog';
 
 interface TVNavbarProps {
   onSelectCategory?: (category: string) => void;
@@ -11,7 +10,7 @@ interface TVNavbarProps {
 }
 
 export const TVNavbar: React.FC<TVNavbarProps> = ({ onSelectCategory, activeCategory = 'all' }) => {
-  const { tvView, setTvView, isSimulatorOpen, setIsSimulatorOpen, setSelectedGame, createRoom, games } = useGame();
+  const { tvView, setTvView, setSelectedGame, createRoom, games } = useGame();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   const handleNav = (view: TVView, cat?: string) => {
@@ -24,38 +23,35 @@ export const TVNavbar: React.FC<TVNavbarProps> = ({ onSelectCategory, activeCate
 
   return (
     <>
-      <header className="fixed top-0 left-0 right-0 z-40 px-8 md:px-12 pt-7 pb-4 flex items-center justify-between select-none pointer-events-auto bg-gradient-to-b from-[#07090E]/95 via-[#07090E]/60 to-transparent">
+      <header className="fixed top-0 left-0 right-0 z-40 px-8 md:px-12 pt-6 pb-4 flex items-center justify-between select-none pointer-events-auto bg-gradient-to-b from-black/95 via-black/70 to-transparent">
         {/* Left Navigation: Brand & Minimalist Streaming Links */}
-        <div className="flex items-center space-x-8 md:space-x-12">
+        <div className="flex items-center space-x-6 md:space-x-10">
           {/* Brand Logo */}
           <button
             data-tv-focus
             tabIndex={0}
             onClick={() => handleNav('home', 'all')}
             className="flex items-center space-x-2 text-white outline-none focus:scale-105 group"
-            title="Accueil MOOD"
+            title="Accueil PLAYFLIX"
           >
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-purple-600 via-indigo-600 to-purple-800 flex items-center justify-center shadow-[0_0_20px_rgba(124,58,237,0.5)] group-hover:scale-105 transition-transform">
-              <span className="font-display font-black text-white text-base tracking-tighter">M</span>
-            </div>
-            <span className="font-display font-black text-lg tracking-[0.25em] text-white">
-              MOOD
+            <span className="font-display font-black text-xl md:text-2xl tracking-tighter text-[#E50914] drop-shadow-[0_2px_12px_rgba(229,9,20,0.7)]">
+              PLAYFLIX
             </span>
           </button>
 
-          {/* Minimalist Uppercase Links (Inspired by reference image: DASHBOARD, MOVIES, SERIES, KIDS) */}
-          <nav className="flex items-center space-x-6 md:space-x-8 text-xs font-extrabold tracking-[0.2em] uppercase">
+          {/* Minimalist Uppercase Links (Netflix 10-foot TV UI) */}
+          <nav className="flex items-center space-x-5 md:space-x-7 text-xs md:text-sm font-bold tracking-normal">
             <button
               data-tv-focus
               tabIndex={0}
               onClick={() => handleNav('home', 'all')}
-              className={`transition-all outline-none py-1 focus:text-purple-400 focus:scale-105 ${
+              className={`transition-all outline-none py-1 focus:text-white focus:scale-105 ${
                 tvView === 'home' && activeCategory === 'all'
-                  ? 'text-white font-black drop-shadow-[0_0_12px_rgba(255,255,255,0.8)] border-b-2 border-purple-500'
-                  : 'text-white/70 hover:text-white'
+                  ? 'text-white font-extrabold border-b-2 border-[#E50914]'
+                  : 'text-gray-400 hover:text-gray-200'
               }`}
             >
-              Dashboard
+              Accueil
             </button>
 
             <button
@@ -69,13 +65,13 @@ export const TVNavbar: React.FC<TVNavbarProps> = ({ onSelectCategory, activeCate
                   handleNav('categories');
                 }
               }}
-              className={`transition-all outline-none py-1 focus:text-purple-400 focus:scale-105 ${
+              className={`transition-all outline-none py-1 focus:text-white focus:scale-105 ${
                 tvView === 'categories'
-                  ? 'text-white font-black drop-shadow-[0_0_12px_rgba(255,255,255,0.8)] border-b-2 border-purple-500'
-                  : 'text-white/70 hover:text-white'
+                  ? 'text-white font-extrabold border-b-2 border-[#E50914]'
+                  : 'text-gray-400 hover:text-gray-200'
               }`}
             >
-              Jeux (21)
+              Tous les Jeux
             </button>
 
             <button
@@ -87,13 +83,31 @@ export const TVNavbar: React.FC<TVNavbarProps> = ({ onSelectCategory, activeCate
                 }
                 handleNav('home', 'party');
               }}
-              className={`transition-all outline-none py-1 focus:text-purple-400 focus:scale-105 ${
+              className={`transition-all outline-none py-1 focus:text-white focus:scale-105 ${
                 activeCategory === 'party' && tvView === 'home'
-                  ? 'text-white font-black drop-shadow-[0_0_12px_rgba(255,255,255,0.8)] border-b-2 border-purple-500'
-                  : 'text-white/70 hover:text-white'
+                  ? 'text-white font-extrabold border-b-2 border-[#E50914]'
+                  : 'text-gray-400 hover:text-gray-200'
               }`}
             >
               Party
+            </button>
+
+            <button
+              data-tv-focus
+              tabIndex={0}
+              onClick={() => {
+                if (onSelectCategory) {
+                  onSelectCategory('cards');
+                }
+                handleNav('home', 'cards');
+              }}
+              className={`transition-all outline-none py-1 focus:text-white focus:scale-105 ${
+                activeCategory === 'cards' && tvView === 'home'
+                  ? 'text-white font-extrabold border-b-2 border-[#E50914]'
+                  : 'text-gray-400 hover:text-gray-200'
+              }`}
+            >
+              Cartes
             </button>
 
             <button
@@ -105,10 +119,10 @@ export const TVNavbar: React.FC<TVNavbarProps> = ({ onSelectCategory, activeCate
                 }
                 handleNav('home', 'reflexion');
               }}
-              className={`transition-all outline-none py-1 focus:text-purple-400 focus:scale-105 ${
+              className={`transition-all outline-none py-1 focus:text-white focus:scale-105 ${
                 activeCategory === 'reflexion' && tvView === 'home'
-                  ? 'text-white font-black drop-shadow-[0_0_12px_rgba(255,255,255,0.8)] border-b-2 border-purple-500'
-                  : 'text-white/70 hover:text-white'
+                  ? 'text-white font-extrabold border-b-2 border-[#E50914]'
+                  : 'text-gray-400 hover:text-gray-200'
               }`}
             >
               Société
@@ -116,8 +130,8 @@ export const TVNavbar: React.FC<TVNavbarProps> = ({ onSelectCategory, activeCate
           </nav>
         </div>
 
-        {/* Right Navigation: Minimalist Search & Profile Avatar (Reference Image Style: 🔍 + Avatar) */}
-        <div className="flex items-center space-x-5">
+        {/* Right Navigation: Minimalist Search, Profile Avatar & Red PLAYFLIX Badge (Exact Reference Style) */}
+        <div className="flex items-center space-x-4 md:space-x-5">
           {/* Quick Search Icon Button */}
           <button
             data-tv-focus
@@ -126,7 +140,7 @@ export const TVNavbar: React.FC<TVNavbarProps> = ({ onSelectCategory, activeCate
               audio.playSelect();
               setIsSearchOpen(true);
             }}
-            className="p-2 rounded-full text-white/80 hover:text-white hover:bg-white/10 transition-all outline-none focus:scale-125 focus:text-purple-400"
+            className="p-2 rounded-full text-white/80 hover:text-white hover:bg-white/10 transition-all outline-none focus:scale-125 focus:text-white"
             title="Rechercher un jeu"
           >
             <Search className="w-5 h-5" />
@@ -137,7 +151,7 @@ export const TVNavbar: React.FC<TVNavbarProps> = ({ onSelectCategory, activeCate
             data-tv-focus
             tabIndex={0}
             onClick={() => handleNav('profiles')}
-            className="w-8 h-8 rounded-full overflow-hidden border-2 border-white/30 hover:border-purple-400 focus:border-purple-400 focus:ring-4 focus:ring-purple-500/80 focus:scale-110 transition-all outline-none shadow-lg cursor-pointer"
+            className="w-8 h-8 rounded-sm overflow-hidden border border-white/30 hover:border-white focus:border-white focus:ring-2 focus:ring-white focus:scale-110 transition-all outline-none shadow-lg cursor-pointer"
             title="Profils & Joueurs"
           >
             <img
@@ -146,6 +160,11 @@ export const TVNavbar: React.FC<TVNavbarProps> = ({ onSelectCategory, activeCate
               className="w-full h-full object-cover"
             />
           </button>
+
+          {/* Iconic Red PLAYFLIX Badge in Top-Right Corner (Matches reference image) */}
+          <div className="bg-[#E50914] text-white px-3 py-1 rounded-sm font-black text-xs md:text-sm tracking-wider uppercase shadow-[0_2px_15px_rgba(229,9,20,0.6)] select-none pointer-events-none">
+            PLAYFLIX
+          </div>
         </div>
       </header>
 

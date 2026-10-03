@@ -125,42 +125,42 @@ export const TVHomeView: React.FC = () => {
     );
   }
 
-  // Cinematic Smart TV Mode (Reference Image: RAYA AND THE LAST DRAGON Style)
+  // Cinematic Smart TV Mode (Netflix 10-foot UI: Reference Image Style)
   return (
-    <div className="relative min-h-screen text-white select-none pb-20 overflow-x-hidden">
-      {/* 1. Dynamic Full-Bleed Background (Directly Inspired by Reference Image) */}
-      <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden select-none">
+    <div className="relative min-h-screen text-white select-none pb-20 overflow-x-hidden bg-black">
+      {/* 1. Dynamic Full-Bleed Background (Exact Netflix Cinema Style) */}
+      <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden select-none bg-black">
         <img
           key={spotlightGame.id}
           src={spotlightGame.heroImage || spotlightGame.coverImage}
           alt={spotlightGame.title}
-          className="w-full h-full object-cover object-right md:object-center filter brightness-[0.90] contrast-[1.05] transition-opacity duration-700 animate-fade-in"
+          className="w-full h-full object-cover object-right md:object-center filter brightness-[0.85] contrast-[1.10] transition-opacity duration-700 animate-fade-in"
         />
 
-        {/* Left Dark Gradient: Deep contrast for Title, Meta, and Buttons */}
-        <div className="absolute inset-0 bg-gradient-to-r from-[#07090E] via-[#07090E]/85 via-42% via-[#07090E]/30 to-transparent" />
+        {/* Netflix Left Dark Gradient: Deep solid black on left for crystal-clear readability */}
+        <div className="absolute inset-0 bg-gradient-to-r from-black via-black/95 via-38% via-black/40 via-70% to-transparent" />
 
         {/* Top Vignette under Navbar */}
-        <div className="absolute top-0 left-0 right-0 h-44 bg-gradient-to-b from-[#07090E] via-[#07090E]/60 to-transparent" />
+        <div className="absolute top-0 left-0 right-0 h-44 bg-gradient-to-b from-black via-black/80 to-transparent" />
 
-        {/* Bottom Vignette for the MY LIST carousel */}
-        <div className="absolute bottom-0 left-0 right-0 h-[48vh] bg-gradient-to-t from-[#07090E] via-[#07090E]/90 to-transparent" />
+        {/* Bottom Vignette for the carousel */}
+        <div className="absolute bottom-0 left-0 right-0 h-[52vh] bg-gradient-to-t from-black via-black/95 to-transparent" />
       </div>
 
-      {/* 2. Hero Title & Actions Section */}
+      {/* 2. Hero Title, Metadata, Stars, Synopsis, Accolade & Actions Section */}
       <TVHeroBanner
         game={spotlightGame}
         onPlay={handlePlayGame}
         onMoreInfo={handleMoreInfo}
       />
 
-      {/* 3. Bottom Shelves: MY LIST Carousel (Directly matching the reference image) */}
-      <div className="relative z-10 pt-4 pb-6 space-y-4">
+      {/* 3. Bottom Shelves: 16:9 Widescreen Carousels (Directly matching the reference image) */}
+      <div className="relative z-10 pt-2 pb-8 space-y-4">
         {selectedCat === 'all' ? (
           <>
-            {/* Shelf 1: Pure Clean MY LIST (Exact reference image style) */}
+            {/* Shelf 1: Popular on PLAYFLIX (Matches reference screenshot) */}
             <TVGameRow
-              title="MY LIST"
+              title="Populaire sur PLAYFLIX"
               games={partyGames}
               activeGameId={spotlightGame.id}
               onHighlightGame={(g) => setSpotlightGame(g)}
@@ -171,9 +171,22 @@ export const TVHomeView: React.FC = () => {
               onPlayGame={handlePlayGame}
             />
 
-            {/* Shelf 2: Card Games */}
+            {/* Shelf 2: Recommended for You */}
             <TVGameRow
-              title="JEUX DE CARTES DE SALON"
+              title="Recommandés pour vous"
+              games={boardGames}
+              activeGameId={spotlightGame.id}
+              onHighlightGame={(g) => setSpotlightGame(g)}
+              onSelectGame={(g) => {
+                setSpotlightGame(g);
+                handleMoreInfo(g);
+              }}
+              onPlayGame={handlePlayGame}
+            />
+
+            {/* Shelf 3: Card Games */}
+            <TVGameRow
+              title="Jeux de Cartes & Bluff"
               games={cardGames}
               activeGameId={spotlightGame.id}
               onHighlightGame={(g) => setSpotlightGame(g)}
@@ -184,10 +197,10 @@ export const TVHomeView: React.FC = () => {
               onPlayGame={handlePlayGame}
             />
 
-            {/* Shelf 3: Board & Words */}
+            {/* Shelf 4: All Games */}
             <TVGameRow
-              title="SOCIÉTÉ, MOTS & STRATÉGIE"
-              games={boardGames}
+              title="Tous les Jeux du Salon"
+              games={games}
               activeGameId={spotlightGame.id}
               onHighlightGame={(g) => setSpotlightGame(g)}
               onSelectGame={(g) => {
@@ -199,7 +212,7 @@ export const TVHomeView: React.FC = () => {
           </>
         ) : (
           <TVGameRow
-            title={`JEUX : ${CATEGORIES.find((c) => c.id === selectedCat)?.name || selectedCat}`}
+            title={`Jeux : ${CATEGORIES.find((c) => c.id === selectedCat)?.name || selectedCat}`}
             games={filteredGames}
             activeGameId={spotlightGame.id}
             onHighlightGame={(g) => setSpotlightGame(g)}
