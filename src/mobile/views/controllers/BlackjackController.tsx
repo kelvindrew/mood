@@ -6,6 +6,7 @@ import { ReactionFlinger } from '../../components/ReactionFlinger';
 import { triggerHaptic, hapticPatterns } from '../../components/HapticFeedback';
 import { audio } from '../../../services/audio';
 import { Plus, Hand, Zap, Sparkles } from 'lucide-react';
+import { StandardPlayingCard } from '../../../components/cards/StandardPlayingCard';
 
 const SUIT_ICONS: Record<string, { icon: string; color: string }> = {
   spades: { icon: '♠', color: 'text-gray-900' },
@@ -76,28 +77,15 @@ export const BlackjackController: React.FC = () => {
             </div>
           </div>
 
-          <div className="flex items-center justify-center space-x-2.5">
-            {myHand.cards.map((card: PlayingCard, idx: number) => {
-              const suitMeta = SUIT_ICONS[card.suit] || SUIT_ICONS.spades;
-              return (
-                <div
-                  key={card.id || idx}
-                  className="w-24 h-36 rounded-2xl bg-white text-gray-900 border-2 border-gray-300 shadow-2xl p-2 flex flex-col justify-between animate-scale-in"
-                >
-                  <div className="flex items-center justify-between font-black text-sm leading-none">
-                    <span>{card.rank}</span>
-                    <span className={`text-base ${suitMeta.color}`}>{suitMeta.icon}</span>
-                  </div>
-                  <div className={`text-3xl text-center font-black ${suitMeta.color}`}>
-                    {suitMeta.icon}
-                  </div>
-                  <div className="flex items-center justify-between font-black text-sm leading-none rotate-180">
-                    <span>{card.rank}</span>
-                    <span className={`text-base ${suitMeta.color}`}>{suitMeta.icon}</span>
-                  </div>
-                </div>
-              );
-            })}
+          <div className="flex items-center justify-center -space-x-2 overflow-x-auto py-2">
+            {myHand.cards.map((card: PlayingCard, idx: number) => (
+              <StandardPlayingCard
+                key={card.id || idx}
+                card={card}
+                size="lg"
+                className="shadow-2xl animate-scale-in"
+              />
+            ))}
           </div>
         </div>
 

@@ -6,6 +6,7 @@ import { ReactionFlinger } from '../../components/ReactionFlinger';
 import { triggerHaptic, hapticPatterns } from '../../components/HapticFeedback';
 import { audio } from '../../../services/audio';
 import { Eye, EyeOff, Coins, ArrowUpRight, Flame, ShieldAlert } from 'lucide-react';
+import { StandardPlayingCard } from '../../../components/cards/StandardPlayingCard';
 
 const SUIT_ICONS: Record<string, { icon: string; color: string }> = {
   spades: { icon: '♠', color: 'text-gray-900' },
@@ -82,27 +83,14 @@ export const PokerController: React.FC = () => {
         <div className="my-auto space-y-3">
           <div className="flex items-center justify-center space-x-4">
             {peekCards ? (
-              myHoleCards.map((card, idx) => {
-                const suitMeta = SUIT_ICONS[card.suit] || SUIT_ICONS.spades;
-                return (
-                  <div
-                    key={card.id || idx}
-                    className="w-32 h-44 rounded-3xl bg-white text-gray-900 border-2 border-gray-300 shadow-2xl p-3 flex flex-col justify-between animate-scale-in"
-                  >
-                    <div className="flex items-center justify-between font-black text-base leading-none">
-                      <span>{card.rank}</span>
-                      <span className={`text-lg ${suitMeta.color}`}>{suitMeta.icon}</span>
-                    </div>
-                    <div className={`text-4xl text-center font-black ${suitMeta.color}`}>
-                      {suitMeta.icon}
-                    </div>
-                    <div className="flex items-center justify-between font-black text-base leading-none rotate-180">
-                      <span>{card.rank}</span>
-                      <span className={`text-lg ${suitMeta.color}`}>{suitMeta.icon}</span>
-                    </div>
-                  </div>
-                );
-              })
+              myHoleCards.map((card, idx) => (
+                <StandardPlayingCard
+                  key={card.id || idx}
+                  card={card}
+                  size="xl"
+                  className="shadow-2xl animate-scale-in"
+                />
+              ))
             ) : (
               <div
                 onClick={() => setPeekCards(true)}

@@ -3,6 +3,7 @@ import { useGame } from '../../context/GameContext';
 import { MenteurGameState, PlayingCard, StandardSuit } from '../../types/game';
 import { Clock, Shield, AlertTriangle, CheckCircle2, User, Sparkles, Trophy, Flame } from 'lucide-react';
 import { audio } from '../../services/audio';
+import { StandardPlayingCard } from '../../components/cards/StandardPlayingCard';
 
 const SUIT_ICONS: Record<StandardSuit, { symbol: string; color: string }> = {
   spades: { symbol: '♠', color: 'text-gray-900' },
@@ -197,28 +198,17 @@ export const MenteurBoardTV: React.FC = () => {
             {/* Revealed Cards Fan */}
             <div className="flex items-center justify-center space-x-3 py-2">
               {gameState.accusationResult.realCards.map((card: PlayingCard, idx: number) => {
-                const suitCfg = SUIT_ICONS[card.suit] || { symbol: '♠', color: 'text-gray-900' };
                 const isMatch = card.rank === gameState.accusationResult?.claimedRank;
 
                 return (
-                  <div
+                  <StandardPlayingCard
                     key={`reveal_${card.id}_${idx}`}
-                    className={`w-24 h-36 rounded-2xl bg-white border-4 shadow-2xl flex flex-col justify-between p-2 transform transition-transform hover:scale-105 ${
-                      isMatch ? 'border-emerald-500 ring-4 ring-emerald-400/40' : 'border-rose-600 ring-4 ring-rose-500/50 animate-bounce'
+                    card={card}
+                    size="lg"
+                    className={`transform transition-transform hover:scale-105 shadow-2xl ${
+                      isMatch ? 'ring-4 ring-emerald-400/80 border-emerald-500' : 'ring-4 ring-rose-500/80 border-rose-500 animate-bounce'
                     }`}
-                  >
-                    <div className={`text-lg font-black font-mono leading-none ${suitCfg.color}`}>
-                      {card.rank}
-                      <span className="block text-xs">{suitCfg.symbol}</span>
-                    </div>
-                    <div className={`text-3xl font-black self-center ${suitCfg.color}`}>
-                      {suitCfg.symbol}
-                    </div>
-                    <div className={`text-lg font-black font-mono leading-none self-end rotate-180 ${suitCfg.color}`}>
-                      {card.rank}
-                      <span className="block text-xs">{suitCfg.symbol}</span>
-                    </div>
-                  </div>
+                  />
                 );
               })}
             </div>

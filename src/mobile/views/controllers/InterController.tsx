@@ -6,6 +6,7 @@ import { ReactionFlinger } from '../../components/ReactionFlinger';
 import { triggerHaptic, hapticPatterns } from '../../components/HapticFeedback';
 import { audio } from '../../../services/audio';
 import { Sparkles, Zap, Flame, Shield, ArrowDown, Target, Check } from 'lucide-react';
+import { StandardPlayingCard } from '../../../components/cards/StandardPlayingCard';
 
 const RANKS: StandardRank[] = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
 
@@ -128,17 +129,11 @@ export const InterController: React.FC = () => {
         {/* Current Table Top Card Info */}
         <div className="p-3 rounded-2xl bg-surface-card border border-white/10 flex items-center justify-between shadow-xl">
           <div className="flex items-center space-x-3">
-            <div className="w-12 h-16 rounded-xl bg-white border-2 border-brand-cyan shadow-md flex flex-col justify-between p-1 text-center">
-              <span className={`text-xs font-black font-mono leading-none ${topSuitCfg.color}`}>
-                {gameState.topCard.rank}
-              </span>
-              <span className={`text-lg font-black leading-none ${topSuitCfg.color}`}>
-                {topSuitCfg.symbol}
-              </span>
-              <span className={`text-xs font-black font-mono leading-none rotate-180 ${topSuitCfg.color}`}>
-                {gameState.topCard.rank}
-              </span>
-            </div>
+            <StandardPlayingCard
+              card={gameState.topCard}
+              size="xs"
+              className="shadow-md"
+            />
 
             <div>
               <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">
@@ -197,36 +192,21 @@ export const InterController: React.FC = () => {
                 else if (card.rank === 'JOKER') specialLabel = '+5';
 
                 return (
-                  <button
-                    key={card.id}
-                    disabled={!playable}
-                    onClick={() => handleSelectCard(card)}
-                    className={`w-18 min-w-[70px] h-32 rounded-2xl bg-white border-2 flex flex-col justify-between p-2 transform transition-all duration-200 flex-shrink-0 shadow-lg relative ${
-                      playable
-                        ? 'border-brand-cyan ring-4 ring-cyan-400/50 shadow-glow-cyan hover:-translate-y-3 cursor-pointer scale-105 animate-pulse'
-                        : 'border-gray-300 opacity-40 grayscale cursor-not-allowed'
-                    }`}
-                  >
+                  <div key={card.id} className="relative flex-shrink-0">
                     {specialLabel && (
-                      <div className="absolute -top-2 left-1/2 -translate-x-1/2 px-1.5 py-0.5 rounded-full bg-indigo-600 text-white font-black text-[8px] tracking-wider uppercase shadow-md">
+                      <div className="absolute -top-2 left-1/2 -translate-x-1/2 px-1.5 py-0.5 rounded-full bg-indigo-600 text-white font-black text-[8px] tracking-wider uppercase shadow-md z-30">
                         {specialLabel}
                       </div>
                     )}
-
-                    <div className={`text-sm font-black font-mono leading-none ${suitCfg.color}`}>
-                      {card.rank}
-                      <span className="block text-[10px]">{suitCfg.symbol}</span>
-                    </div>
-
-                    <div className={`text-2xl font-black self-center ${suitCfg.color}`}>
-                      {card.rank === 'JOKER' ? '🃏' : suitCfg.symbol}
-                    </div>
-
-                    <div className={`text-sm font-black font-mono leading-none self-end rotate-180 ${suitCfg.color}`}>
-                      {card.rank}
-                      <span className="block text-[10px]">{suitCfg.symbol}</span>
-                    </div>
-                  </button>
+                    <StandardPlayingCard
+                      card={card}
+                      size="sm"
+                      isPlayable={playable}
+                      isSelected={playable}
+                      onClick={playable ? () => handleSelectCard(card) : undefined}
+                      className={playable ? 'cursor-pointer animate-pulse' : 'cursor-not-allowed'}
+                    />
+                  </div>
                 );
               })
             )}

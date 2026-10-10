@@ -2,6 +2,7 @@ import React from 'react';
 import { useGame } from '../../context/GameContext';
 import { PresidentGameState, PlayingCard } from '../../types/game';
 import { Crown, Sparkles, Clock, Flame, Shield, ArrowUpRight } from 'lucide-react';
+import { StandardPlayingCard } from '../../components/cards/StandardPlayingCard';
 
 const SUIT_ICONS: Record<string, { icon: string; color: string }> = {
   spades: { icon: '♠', color: 'text-gray-200' },
@@ -79,29 +80,16 @@ export const PresidentBoardTV: React.FC = () => {
               🃏 Table vide • Le joueur actif peut poser n’importe quelle combinaison
             </div>
           ) : (
-            <div className="flex items-center justify-center -space-x-4 animate-scale-in">
-              {gameState.currentTrick.map((card: PlayingCard, idx) => {
-                const suitMeta = SUIT_ICONS[card.suit] || SUIT_ICONS.spades;
-                return (
-                  <div
-                    key={card.id || idx}
-                    className="w-24 h-36 rounded-2xl bg-white text-gray-900 border-2 border-gray-300 shadow-2xl p-2.5 flex flex-col justify-between transform hover:-translate-y-2 transition-transform select-none"
-                    style={{ transform: `rotate(${(idx - (gameState.currentTrick.length - 1) / 2) * 6}deg)` }}
-                  >
-                    <div className="flex items-center justify-between font-black text-lg leading-none">
-                      <span>{card.rank}</span>
-                      <span className={`text-xl ${suitMeta.color}`}>{suitMeta.icon}</span>
-                    </div>
-                    <div className={`text-4xl text-center font-black ${suitMeta.color}`}>
-                      {suitMeta.icon}
-                    </div>
-                    <div className="flex items-center justify-between font-black text-lg leading-none rotate-180">
-                      <span>{card.rank}</span>
-                      <span className={`text-xl ${suitMeta.color}`}>{suitMeta.icon}</span>
-                    </div>
-                  </div>
-                );
-              })}
+            <div className="flex items-center justify-center -space-x-5 animate-scale-in">
+              {gameState.currentTrick.map((card: PlayingCard, idx) => (
+                <StandardPlayingCard
+                  key={card.id || idx}
+                  card={card}
+                  size="lg"
+                  rotation={(idx - (gameState.currentTrick.length - 1) / 2) * 6}
+                  className="shadow-2xl"
+                />
+              ))}
             </div>
           )}
         </div>

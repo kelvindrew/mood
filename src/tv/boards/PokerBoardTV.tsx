@@ -2,6 +2,7 @@ import React from 'react';
 import { useGame } from '../../context/GameContext';
 import { PokerGameState, PlayingCard } from '../../types/game';
 import { Coins, Clock, Trophy, Sparkles, User, Shield } from 'lucide-react';
+import { StandardPlayingCard } from '../../components/cards/StandardPlayingCard';
 
 const SUIT_ICONS: Record<string, { icon: string; color: string }> = {
   spades: { icon: '♠', color: 'text-gray-900' },
@@ -72,24 +73,13 @@ export const PokerBoardTV: React.FC = () => {
               );
             }
 
-            const suitMeta = SUIT_ICONS[card.suit] || SUIT_ICONS.spades;
             return (
-              <div
+              <StandardPlayingCard
                 key={card.id || idx}
-                className="w-20 h-28 rounded-xl bg-white text-gray-900 border-2 border-gray-200 shadow-2xl p-2 flex flex-col justify-between animate-scale-in"
-              >
-                <div className="flex items-center justify-between font-black text-sm leading-none">
-                  <span>{card.rank}</span>
-                  <span className={`text-base ${suitMeta.color}`}>{suitMeta.icon}</span>
-                </div>
-                <div className={`text-3xl text-center font-black ${suitMeta.color}`}>
-                  {suitMeta.icon}
-                </div>
-                <div className="flex items-center justify-between font-black text-sm leading-none rotate-180">
-                  <span>{card.rank}</span>
-                  <span className={`text-base ${suitMeta.color}`}>{suitMeta.icon}</span>
-                </div>
-              </div>
+                card={card}
+                size="md"
+                className="shadow-2xl animate-scale-in"
+              />
             );
           })}
         </div>

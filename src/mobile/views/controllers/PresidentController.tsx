@@ -6,6 +6,7 @@ import { ReactionFlinger } from '../../components/ReactionFlinger';
 import { triggerHaptic, hapticPatterns } from '../../components/HapticFeedback';
 import { audio } from '../../../services/audio';
 import { Crown, Play, SkipForward, Sparkles, Check } from 'lucide-react';
+import { StandardPlayingCard } from '../../../components/cards/StandardPlayingCard';
 
 const SUIT_ICONS: Record<string, { icon: string; color: string }> = {
   spades: { icon: '♠', color: 'text-gray-900' },
@@ -96,33 +97,18 @@ export const PresidentController: React.FC = () => {
             )}
           </div>
 
-          <div className="grid grid-cols-4 gap-2 max-h-[260px] overflow-y-auto pr-1">
+          <div className="grid grid-cols-4 gap-2 max-h-[260px] overflow-y-auto pr-1 justify-items-center">
             {myHand.map((card) => {
               const isSelected = selectedCardIds.includes(card.id);
-              const suitMeta = SUIT_ICONS[card.suit] || SUIT_ICONS.spades;
-
               return (
-                <button
+                <StandardPlayingCard
                   key={card.id}
+                  card={card}
+                  size="sm"
+                  isSelected={isSelected}
                   onClick={() => toggleCard(card.id)}
-                  className={`h-28 rounded-2xl bg-white text-gray-900 border-2 p-2 flex flex-col justify-between transition-all transform ${
-                    isSelected
-                      ? '-translate-y-2 ring-4 ring-brand-gold border-brand-gold shadow-2xl scale-105'
-                      : 'border-gray-300 shadow-md'
-                  }`}
-                >
-                  <div className="flex items-center justify-between font-black text-sm leading-none">
-                    <span>{card.rank}</span>
-                    <span className={`text-base ${suitMeta.color}`}>{suitMeta.icon}</span>
-                  </div>
-                  <div className={`text-2xl text-center font-black ${suitMeta.color}`}>
-                    {suitMeta.icon}
-                  </div>
-                  <div className="flex items-center justify-between font-black text-xs leading-none rotate-180">
-                    <span>{card.rank}</span>
-                    <span className={`text-sm ${suitMeta.color}`}>{suitMeta.icon}</span>
-                  </div>
-                </button>
+                  className="cursor-pointer"
+                />
               );
             })}
           </div>

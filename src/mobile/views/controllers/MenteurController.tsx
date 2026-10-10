@@ -6,6 +6,7 @@ import { ReactionFlinger } from '../../components/ReactionFlinger';
 import { triggerHaptic, hapticPatterns } from '../../components/HapticFeedback';
 import { audio } from '../../../services/audio';
 import { AlertTriangle, Check, Shield, Flame, Sparkles } from 'lucide-react';
+import { StandardPlayingCard } from '../../../components/cards/StandardPlayingCard';
 
 const RANKS: StandardRank[] = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
 
@@ -162,32 +163,16 @@ export const MenteurController: React.FC = () => {
             ) : (
               myHand.map((card) => {
                 const isSelected = selectedCardIds.includes(card.id);
-                const suitCfg = SUIT_ICONS[card.suit] || { symbol: '♠', color: 'text-gray-900' };
 
                 return (
-                  <button
+                  <StandardPlayingCard
                     key={card.id}
+                    card={card}
+                    size="sm"
+                    isSelected={isSelected}
                     onClick={() => handleToggleSelectCard(card)}
-                    className={`w-16 h-28 rounded-2xl bg-white border-2 flex flex-col justify-between p-2 transform transition-all duration-200 flex-shrink-0 shadow-lg ${
-                      isSelected
-                        ? '-translate-y-4 border-amber-400 ring-4 ring-amber-400/50 shadow-glow-gold scale-105'
-                        : 'border-gray-200 hover:-translate-y-1'
-                    }`}
-                  >
-                    <div className={`text-sm font-black font-mono leading-none ${suitCfg.color}`}>
-                      {card.rank}
-                      <span className="block text-[10px]">{suitCfg.symbol}</span>
-                    </div>
-
-                    <div className={`text-2xl font-black self-center ${suitCfg.color}`}>
-                      {suitCfg.symbol}
-                    </div>
-
-                    <div className={`text-sm font-black font-mono leading-none self-end rotate-180 ${suitCfg.color}`}>
-                      {card.rank}
-                      <span className="block text-[10px]">{suitCfg.symbol}</span>
-                    </div>
-                  </button>
+                    className="cursor-pointer"
+                  />
                 );
               })
             )}

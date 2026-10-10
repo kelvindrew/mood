@@ -3,6 +3,7 @@ import { useGame } from '../../context/GameContext';
 import { InterGameState, PlayingCard, StandardSuit } from '../../types/game';
 import { Clock, Shield, RotateCw, RotateCcw, Zap, Sparkles, Trophy, AlertTriangle, Target, Flame } from 'lucide-react';
 import { audio } from '../../services/audio';
+import { StandardPlayingCard } from '../../components/cards/StandardPlayingCard';
 
 const SUIT_CONFIG: Record<StandardSuit, { symbol: string; name: string; color: string; bg: string }> = {
   spades: { symbol: '♠', name: 'Pique', color: 'text-gray-900', bg: 'bg-slate-900' },
@@ -91,33 +92,32 @@ export const InterBoardTV: React.FC = () => {
           <div className="relative flex items-center space-x-12 z-10">
             {/* Draw Deck */}
             <div className="flex flex-col items-center space-y-2">
-              <div className="relative w-32 h-48 rounded-2xl bg-gradient-to-br from-indigo-900 to-blue-950 border-4 border-indigo-400/40 shadow-2xl flex items-center justify-center transform -rotate-3 hover:scale-105 transition-transform">
-                <div className="w-24 h-36 rounded-xl border border-white/20 flex flex-col items-center justify-center space-y-1 bg-surface-dark/40">
-                  <Sparkles className="w-6 h-6 text-brand-cyan" />
-                  <span className="font-mono font-black text-white text-lg">{gameState.drawDeckCount}</span>
-                  <span className="text-[9px] font-bold text-gray-400 uppercase">Pioche</span>
+              <div className="relative">
+                <StandardPlayingCard
+                  isFacedown
+                  size="xl"
+                  rotation={-3}
+                  className="hover:scale-105 transition-transform shadow-2xl"
+                />
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                  <div className="px-3 py-1 rounded-full bg-black/75 border border-white/20 text-white font-mono font-black text-sm">
+                    {gameState.drawDeckCount}
+                  </div>
                 </div>
               </div>
+              <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">
+                Pioche
+              </span>
             </div>
 
             {/* Active Discard Top Card */}
             <div className="flex flex-col items-center space-y-2">
               {gameState.topCard ? (
-                <div className="relative w-36 h-52 rounded-2xl bg-white border-4 border-brand-cyan shadow-[0_0_50px_rgba(6,182,212,0.6)] flex flex-col justify-between p-3 transform scale-105 animate-scale-in">
-                  <div className={`text-2xl font-black font-mono leading-none ${suitCfg.color}`}>
-                    {gameState.topCard.rank}
-                    <span className="block text-sm">{suitCfg.symbol}</span>
-                  </div>
-
-                  <div className={`text-5xl font-black self-center ${suitCfg.color} animate-pulse`}>
-                    {gameState.topCard.rank === 'JOKER' ? '🃏' : suitCfg.symbol}
-                  </div>
-
-                  <div className={`text-2xl font-black font-mono leading-none self-end rotate-180 ${suitCfg.color}`}>
-                    {gameState.topCard.rank}
-                    <span className="block text-sm">{suitCfg.symbol}</span>
-                  </div>
-                </div>
+                <StandardPlayingCard
+                  card={gameState.topCard}
+                  size="xl"
+                  className="shadow-[0_0_50px_rgba(6,182,212,0.6)] animate-scale-in"
+                />
               ) : null}
               <span className="text-xs font-black text-brand-cyan tracking-wider uppercase">
                 DÉFAUSSE CENTRALE

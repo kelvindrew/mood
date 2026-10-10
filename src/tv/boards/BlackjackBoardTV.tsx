@@ -2,6 +2,7 @@ import React from 'react';
 import { useGame } from '../../context/GameContext';
 import { BlackjackGameState, PlayingCard } from '../../types/game';
 import { Clock, Shield, Trophy, Coins, Sparkles } from 'lucide-react';
+import { StandardPlayingCard } from '../../components/cards/StandardPlayingCard';
 
 const SUIT_ICONS: Record<string, { icon: string; color: string }> = {
   spades: { icon: '♠', color: 'text-gray-900' },
@@ -58,33 +59,22 @@ export const BlackjackBoardTV: React.FC = () => {
               const isHoleHidden = idx === 1 && dealer.hideHoleCard;
               if (isHoleHidden) {
                 return (
-                  <div
+                  <StandardPlayingCard
                     key={`dealer_hidden`}
-                    className="w-20 h-28 rounded-xl bg-gradient-to-tr from-brand-red to-rose-900 border-2 border-white shadow-xl flex items-center justify-center text-white font-black text-2xl"
-                  >
-                    🂠
-                  </div>
+                    isFacedown
+                    size="md"
+                    className="shadow-xl"
+                  />
                 );
               }
 
-              const suitMeta = SUIT_ICONS[card.suit] || SUIT_ICONS.spades;
               return (
-                <div
+                <StandardPlayingCard
                   key={card.id || idx}
-                  className="w-20 h-28 rounded-xl bg-white text-gray-900 border-2 border-gray-200 shadow-2xl p-2 flex flex-col justify-between animate-scale-in"
-                >
-                  <div className="flex items-center justify-between font-black text-sm leading-none">
-                    <span>{card.rank}</span>
-                    <span className={`text-base ${suitMeta.color}`}>{suitMeta.icon}</span>
-                  </div>
-                  <div className={`text-3xl text-center font-black ${suitMeta.color}`}>
-                    {suitMeta.icon}
-                  </div>
-                  <div className="flex items-center justify-between font-black text-sm leading-none rotate-180">
-                    <span>{card.rank}</span>
-                    <span className={`text-base ${suitMeta.color}`}>{suitMeta.icon}</span>
-                  </div>
-                </div>
+                  card={card}
+                  size="md"
+                  className="shadow-2xl animate-scale-in"
+                />
               );
             })}
           </div>
@@ -118,20 +108,15 @@ export const BlackjackBoardTV: React.FC = () => {
                 </div>
 
                 {/* Hand Cards */}
-                <div className="flex items-center justify-center -space-x-3 py-1">
-                  {hand.cards.map((card: PlayingCard, idx: number) => {
-                    const suitMeta = SUIT_ICONS[card.suit] || SUIT_ICONS.spades;
-                    return (
-                      <div
-                        key={card.id || idx}
-                        className="w-14 h-20 rounded-lg bg-white text-gray-900 border border-gray-300 shadow-md p-1 flex flex-col justify-between"
-                      >
-                        <div className="font-black text-[10px] leading-none">{card.rank}</div>
-                        <div className={`text-lg text-center font-black ${suitMeta.color}`}>{suitMeta.icon}</div>
-                        <div className="font-black text-[10px] leading-none rotate-180 text-right">{card.rank}</div>
-                      </div>
-                    );
-                  })}
+                <div className="flex items-center justify-center -space-x-4 py-1">
+                  {hand.cards.map((card: PlayingCard, idx: number) => (
+                    <StandardPlayingCard
+                      key={card.id || idx}
+                      card={card}
+                      size="xs"
+                      className="shadow-md"
+                    />
+                  ))}
                 </div>
 
                 {/* Status or Action Badge */}
