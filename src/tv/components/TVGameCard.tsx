@@ -67,31 +67,31 @@ export const TVGameCard: React.FC<TVGameCardProps> = ({
       />
 
       {/* 2. Subtle Vignette at bottom for title legibility */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 via-40% to-transparent opacity-90 group-hover:opacity-95 transition-opacity" />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 via-45% to-transparent opacity-90 group-hover:opacity-95 transition-opacity" />
 
       {/* 3. Top Badges (Category & Tag) */}
-      <div className="absolute top-2 left-2 right-2 flex items-center justify-between pointer-events-none">
+      <div className="absolute top-3 left-3 right-3 flex items-center justify-between pointer-events-none">
         {game.badge ? (
-          <span className="px-1.5 py-0.5 rounded-sm bg-[#E50914] text-[9px] font-black uppercase tracking-wider text-white shadow-sm">
+          <span className="px-2.5 py-1 rounded-sm bg-[#E50914] text-[10px] sm:text-xs font-black uppercase tracking-wider text-white shadow-md">
             {game.badge}
           </span>
         ) : (
-          <span className="px-1.5 py-0.5 rounded-sm bg-black/70 text-[9px] font-bold uppercase tracking-wider text-gray-300 border border-white/10">
+          <span className="px-2 py-0.5 rounded-sm bg-black/80 text-[10px] sm:text-xs font-black uppercase tracking-wider text-gray-200 border border-white/15">
             {game.category}
           </span>
         )}
 
-        <span className="px-1.5 py-0.5 rounded-sm bg-black/70 text-[9px] font-mono font-bold text-gray-200 border border-white/10">
-          {game.minPlayers}–{game.maxPlayers}j
+        <span className="px-2 py-0.5 rounded-sm bg-black/80 text-[10px] sm:text-xs font-mono font-bold text-gray-200 border border-white/15">
+          {game.minPlayers}–{game.maxPlayers} joueurs
         </span>
       </div>
 
       {/* 4. Bottom Content Title */}
-      <div className="absolute bottom-0 left-0 right-0 p-2.5 flex flex-col justify-end pointer-events-none">
-        <h4 className="text-xs sm:text-sm font-extrabold font-display text-white uppercase tracking-tight leading-tight drop-shadow truncate">
+      <div className="absolute bottom-0 left-0 right-0 p-3.5 sm:p-4 md:p-5 flex flex-col justify-end pointer-events-none">
+        <h4 className="text-sm sm:text-base md:text-lg lg:text-xl font-black font-display text-white uppercase tracking-tight leading-tight drop-shadow truncate">
           {game.title}
         </h4>
-        <span className="text-[10px] text-gray-300 font-medium truncate mt-0.5">
+        <span className="text-xs sm:text-sm text-gray-300 font-medium truncate mt-1">
           {game.tagline}
         </span>
       </div>

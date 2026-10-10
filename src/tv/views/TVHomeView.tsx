@@ -5,11 +5,13 @@ import { TVHeroBanner } from '../components/TVHeroBanner';
 import { TVGameRow } from '../components/TVGameRow';
 import { GameCatalogItem } from '../../types/game';
 import { tvNav } from '../../services/tvNavigation';
+import { Sparkles, Users, Layers, Trophy } from 'lucide-react';
 
 export const TVHomeView: React.FC = () => {
   const { setSelectedGame, createRoom } = useGame();
   const [games, setGames] = useState<GameCatalogItem[]>(adminCms.getGamesCatalog());
   const [spotlightGame, setSpotlightGame] = useState<GameCatalogItem>(games[0]);
+  const [selectedFilter, setSelectedFilter] = useState<'all' | 'party' | 'board' | 'cards'>('all');
 
   useEffect(() => {
     tvNav.setInitialFocus('button');
@@ -34,18 +36,39 @@ export const TVHomeView: React.FC = () => {
     setSelectedGame(game);
   };
 
-  // Groupes de jeux épurés
+  // Groupes de jeux
   const partyGames = useMemo(() => {
     return games.filter((g) =>
       ['spy', 'bomb_party', 'petit_bac', 'fake_news', 'meme_factory', 'connect_four', 'quick_games', 'wild_rush'].includes(g.id)
     );
   }, [games]);
 
-  const boardAndCards = useMemo(() => {
+  const boardGames = useMemo(() => {
     return games.filter((g) =>
-      ['ludo', 'scrabble', 'card_party', 'president', 'poker', 'blackjack', 'menteur', 'inter', 'four_pics', 'naval_battle', 'werewolf', 'quiz', 'blind_test', 'draw_and_guess'].includes(g.id)
+      ['ludo', 'scrabble', 'four_pics', 'naval_battle', 'werewolf', 'quiz', 'blind_test', 'draw_and_guess'].includes(g.id)
     );
   }, [games]);
+
+  const cardGames = useMemo(() => {
+    return games.filter((g) =>
+      ['card_party', 'president', 'poker', 'blackjack', 'menteur', 'inter'].includes(g.id)
+    );
+  }, [games]);
+
+  // Jeux affichés selon le filtre sélectionné
+  const displayedGames = useMemo(() => {
+    if (selectedFilter === 'party') return partyGames;
+    if (selectedFilter === 'board') return boardGames;
+    if (selectedFilter === 'cards') return cardGames;
+    return games;
+  }, [selectedFilter, games, partyGames, boardGames, cardGames]);
+
+  const filterTitle = useMemo(() => {
+    if (selectedFilter === 'party') return "JEUX D'AMBIANCE & FÊTE";
+    if (selectedFilter === 'board') return "SOCIÉTÉ, MOTS & RÉFLEXION";
+    if (selectedFilter === 'cards') return "JEUX DE CARTES & BLUFF";
+    return "CATALOGUE COMPLET DES JEUX";
+  }, [selectedFilter]);
 
   return (
     <div className="relative min-h-screen text-white select-none pb-12 overflow-x-hidden bg-black">
@@ -72,22 +95,63 @@ export const TVHomeView: React.FC = () => {
         onPlay={handlePlayGame}
       />
 
-      {/* 3. Carrousels Horizontaux 16:9 Widescreen */}
-      <div className="relative z-10 pt-4 pb-6 space-y-4">
-        {/* Ligne 1 : Jeux d'Ambiance & Fête */}
-        <TVGameRow
-          title="JEUX D'AMBIANCE & FÊTE"
-          games={partyGames}
-          activeGameId={spotlightGame.id}
-          onHighlightGame={handleHighlightGame}
-          onSelectGame={handlePlayGame}
-          onPlayGame={handlePlayGame}
-        />
+      {/* 3. Filtres de Catégories épurés & Disposition Grand Format */}
+      <div className="relative z-10 pt-2 pb-6 space-y-4">
+        {/* Pilules de filtres pour naviguer sans encombrement */}
+        <div className="flex items-center space-x-3 px-8 md:px-12 overflow-x-auto scrollbar-none py-1">
+          <button
+            onClick={() => setSelectedFilter('all')}
+            className={`px-4 py-2 rounded-full text-xs md:text-sm font-black uppercase tracking-wider flex items-center space-x-2 transition-all outline-none cursor-pointer ${
+              selectedFilter === 'all'
+                ? 'bg-white text-black shadow-lg scale-105'
+                : 'bg-white/10 text-gray-300 hover:bg-white/20 hover:text-white'
+            }`}
+          >
+            <Sparkles className="w-4 h-4" />
+            <span>Tous les Jeux ({games.length})</span>
+          </button>
 
-        {/* Ligne 2 : Société, Cartes & Stratégie */}
+          <button
+            onClick={() => setSelectedFilter('party')}
+            className={`px-4 py-2 rounded-full text-xs md:text-sm font-black uppercase tracking-wider flex items-center space-x-2 transition-all outline-none cursor-pointer ${
+              selectedFilter === 'party'
+                ? 'bg-white text-black shadow-lg scale-105'
+                : 'bg-white/10 text-gray-300 hover:bg-white/20 hover:text-white'
+            }`}
+          >
+            <Users className="w-4 h-4" />
+            <span>Ambiance & Fête</span>
+          </button>
+
+          <button
+            onClick={() => setSelectedFilter('board')}
+            className={`px-4 py-2 rounded-full text-xs md:text-sm font-black uppercase tracking-wider flex items-center space-x-2 transition-all outline-none cursor-pointer ${
+              selectedFilter === 'board'
+                ? 'bg-white text-black shadow-lg scale-105'
+                : 'bg-white/10 text-gray-300 hover:bg-white/20 hover:text-white'
+            }`}
+          >
+            <Trophy className="w-4 h-4" />
+            <span>Société & Mots</span>
+          </button>
+
+          <button
+            onClick={() => setSelectedFilter('cards')}
+            className={`px-4 py-2 rounded-full text-xs md:text-sm font-black uppercase tracking-wider flex items-center space-x-2 transition-all outline-none cursor-pointer ${
+              selectedFilter === 'cards'
+                ? 'bg-white text-black shadow-lg scale-105'
+                : 'bg-white/10 text-gray-300 hover:bg-white/20 hover:text-white'
+            }`}
+          >
+            <Layers className="w-4 h-4" />
+            <span>Cartes & Casino</span>
+          </button>
+        </div>
+
+        {/* Le Grand Carrousel 16:9 Widescreen Agrandit */}
         <TVGameRow
-          title="SOCIÉTÉ, CARTES & STRATÉGIE"
-          games={boardAndCards}
+          title={filterTitle}
+          games={displayedGames}
           activeGameId={spotlightGame.id}
           onHighlightGame={handleHighlightGame}
           onSelectGame={handlePlayGame}
