@@ -11,8 +11,8 @@ const TVResultsView = React.lazy(() => import('./views/TVResultsView').then(m =>
 const TVAdminView = React.lazy(() => import('./views/TVAdminView').then(m => ({ default: m.TVAdminView })));
 
 const ViewLoader: React.FC = () => (
-  <div className="flex items-center justify-center min-h-screen bg-black">
-    <Loader2 className="w-8 h-8 text-[#E50914] animate-spin" />
+  <div className="flex items-center justify-center min-h-screen bg-[#0A0F1D]">
+    <Loader2 className="w-8 h-8 text-cyan-400 animate-spin" />
   </div>
 );
 
@@ -48,7 +48,7 @@ export const TVApp: React.FC = () => {
   const isFullScreenGame = tvView === 'playing' || tvView === 'gameplay' || tvView === 'admin';
 
   return (
-    <div className="relative min-h-screen bg-black text-white overflow-x-hidden font-sans select-none">
+    <div className="relative min-h-screen bg-[#0A0F1D] text-white overflow-x-hidden font-sans select-none">
       {/* Top TV Header (discreet logo and status) */}
       {!isFullScreenGame && <TVNavbar />}
 

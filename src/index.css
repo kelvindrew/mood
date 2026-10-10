@@ -11,7 +11,7 @@
   body {
     margin: 0;
     padding: 0;
-    background-color: #07090E;
+    background-color: #0A0F1D;
     color: #FFFFFF;
     font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
     user-select: none;
@@ -48,10 +48,10 @@
 }
 
 .tv-focus-glow:focus {
-  transform: scale(1.10);
+  transform: scale(1.03);
   z-index: 30;
   border-color: #FFFFFF !important;
-  box-shadow: 0 0 0 4px #FFFFFF, 0 0 40px 10px rgba(229, 9, 20, 0.75) !important;
+  box-shadow: 0 0 0 3px #FFFFFF, 0 0 24px 6px rgba(6, 182, 212, 0.45) !important;
 }
 
 /* ============================================================
@@ -174,10 +174,10 @@ html.tv-ui .animate-bounce {
 .mood-focus-ring:focus,
 [data-tv-focus]:focus {
   outline: none;
-  transform: scale(1.06);
+  transform: scale(1.025);
   z-index: 35;
-  border-color: #FFFFFF !important;
-  box-shadow: 0 0 0 3px #FFFFFF, 0 0 45px 12px rgba(255, 71, 87, 0.70) !important;
+  border-color: #38BDF8 !important;
+  box-shadow: 0 0 0 3px #FFFFFF, 0 0 30px 6px rgba(6, 182, 212, 0.45) !important;
 }
 
 /* Boutons d'action géants Smart TV */

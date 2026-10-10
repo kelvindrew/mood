@@ -10,30 +10,37 @@ interface TVHeroBannerProps {
 
 export const TVHeroBanner: React.FC<TVHeroBannerProps> = ({ game, onPlay }) => {
   return (
-    <div className="relative w-full pt-20 md:pt-28 pb-6 px-8 md:px-12 select-none z-10">
-      <div className="max-w-3xl flex flex-col space-y-4 animate-fade-in">
-        {/* Catégorie et métadonnées */}
+    <div className="relative w-full pt-16 md:pt-20 pb-3 px-8 md:px-12 select-none z-10">
+      <div className="max-w-2xl flex flex-col space-y-3 animate-fade-in">
+        {/* Catégorie et métadonnées hiérarchisées */}
         <div className="flex items-center space-x-3">
-          <span className="px-2.5 py-0.5 rounded bg-[#E50914] text-white text-[11px] font-black uppercase tracking-wider shadow-sm">
-            {game.badge || game.category.toUpperCase()}
+          <span className="px-2.5 py-0.5 rounded-full bg-cyan-950/70 border border-cyan-400/30 text-cyan-300 text-[11px] font-bold uppercase tracking-wider">
+            {game.category}
           </span>
-          <span className="text-gray-300 text-xs md:text-sm font-semibold">
-            {game.minPlayers}–{game.maxPlayers} Joueurs • {game.durationMinutes}
+          {game.badge && (
+            <span className="px-2.5 py-0.5 rounded-full bg-amber-500/20 border border-amber-400/40 text-amber-300 text-[11px] font-black uppercase tracking-wider">
+              {game.badge}
+            </span>
+          )}
+          <span className="text-slate-300 text-xs sm:text-sm font-semibold flex items-center space-x-1.5">
+            <span>{game.minPlayers}–{game.maxPlayers} Joueurs</span>
+            <span className="text-slate-500">•</span>
+            <span>{game.durationMinutes}</span>
           </span>
         </div>
 
-        {/* Titre Display Widescreen */}
-        <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black font-display tracking-tight text-white leading-[1.05] drop-shadow-[0_4px_25px_rgba(0,0,0,0.95)]">
+        {/* Titre Display proportionné */}
+        <h1 className="text-3xl sm:text-4xl md:text-5xl font-black font-display tracking-tight text-white leading-tight drop-shadow-[0_2px_15px_rgba(0,0,0,0.85)]">
           {game.title}
         </h1>
 
-        {/* Description Épurée */}
-        <p className="text-sm md:text-base lg:text-lg text-gray-200/90 font-sans leading-relaxed max-w-2xl drop-shadow line-clamp-3">
+        {/* Description Épurée et concise */}
+        <p className="text-xs sm:text-sm md:text-base text-slate-300 font-sans leading-relaxed max-w-xl line-clamp-2 drop-shadow">
           {game.description || game.tagline}
         </p>
 
-        {/* Bouton Unique : JOUER (qui ouvre le salon avec le Code QR) */}
-        <div className="flex items-center space-x-4 pt-3">
+        {/* Bouton Unique : JOUER (lancement / salon QR) */}
+        <div className="flex items-center space-x-4 pt-1">
           <button
             data-tv-focus
             tabIndex={0}
@@ -41,9 +48,9 @@ export const TVHeroBanner: React.FC<TVHeroBannerProps> = ({ game, onPlay }) => {
               audio.playSelect();
               onPlay(game);
             }}
-            className="px-9 py-3.5 rounded-lg bg-white hover:bg-gray-200 text-black font-black text-sm md:text-base uppercase tracking-wider flex items-center space-x-3 transition-transform active:scale-95 outline-none focus:ring-4 focus:ring-[#E50914] shadow-[0_4px_25px_rgba(255,255,255,0.35)] cursor-pointer"
+            className="px-8 py-3 rounded-xl bg-cyan-400 hover:bg-cyan-300 text-slate-950 font-black text-xs sm:text-sm md:text-base uppercase tracking-wider flex items-center space-x-2.5 transition-all outline-none focus:scale-105 focus:ring-4 focus:ring-white focus:bg-white shadow-[0_4px_20px_rgba(6,182,212,0.35)] cursor-pointer"
           >
-            <Play className="w-5 h-5 fill-black" />
+            <Play className="w-4 h-4 sm:w-5 sm:h-5 fill-current" />
             <span>JOUER</span>
           </button>
         </div>
