@@ -630,17 +630,41 @@ export class RoomManager {
         if (room.gameId === 'ludo') room.gameEngine.movePawn(player.color, payload.pawnId);
         break;
       case 'word_play_word':
-        if (room.gameId === 'scrabble') room.gameEngine.playWord(player.id, payload.tilesPlaced);
+        if (room.gameId === 'scrabble') {
+          const res = room.gameEngine.playWord(player.id, payload.tilesPlaced);
+          if (res && !res.success) {
+            this.io.to(socketId).emit('game_action_error', {
+              action,
+              error: res.error || 'Coup invalide',
+              word: res.word,
+            });
+            return res;
+          }
+          return res || { success: true };
+        }
         break;
       case 'word_swap_tiles':
-        if (room.gameId === 'scrabble') room.gameEngine.swapLetters(player.id, payload.tileIds);
+        if (room.gameId === 'scrabble') {
+          const res = room.gameEngine.swapLetters(player.id, payload.tileIds);
+          if (res && !res.success) {
+            this.io.to(socketId).emit('game_action_error', {
+              action,
+              error: res.error || 'Échange impossible',
+            });
+            return res;
+          }
+          return res || { success: true };
+        }
         break;
       case 'word_pass_turn':
-        if (room.gameId === 'scrabble') room.gameEngine.passTurn(player.id);
+        if (room.gameId === 'scrabble') {
+          const res = room.gameEngine.passTurn(player.id);
+          return res || { success: true };
+        }
         break;
       case 'word_restart':
       case 'word_replay':
-        if (room.gameId === 'scrabble') this.startGame(code);
+        if (room.gameId === 'scrabble') return this.startGame(code);
         break;
       case 'card_play_card':
         if (room.gameId === 'card_party') room.gameEngine.playCard(player.id, payload.cardId, payload.chosenColor);

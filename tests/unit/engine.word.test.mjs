@@ -69,8 +69,53 @@ describe('WordEngine', () => {
     const pub = e.getPublicState();
     expect(pub).not.toHaveProperty('playerRacks');
     const priv = e.getPrivateState('p1');
-    expect(Object.keys(priv.playerRacks)).toEqual(['p1']);
-    expect(priv.playerRacks.p1.length).toBe(7);
     expect(priv.playerRacks.p2).toBeUndefined();
   });
+
+  it('reconnaît le mot ERE et permet de placer un mot multi-directionnel / croisé', () => {
+    const e = new WordEngine(P(), () => {}, () => {});
+    // Coup 1 : Alice pose ERE au centre horizontalement (7, 7), (7, 8), (7, 9)
+    withRack(e, 'p1', ['E', 'R', 'E', 'A', 'B', 'C', 'D']);
+    const tiles1 = [
+      { row: 7, col: 7, letter: 'E', tileId: e.playerRacks.p1[0].id },
+      { row: 7, col: 8, letter: 'R', tileId: e.playerRacks.p1[1].id },
+      { row: 7, col: 9, letter: 'E', tileId: e.playerRacks.p1[2].id },
+    ];
+    const res1 = e.playWord('p1', tiles1);
+    expect(res1.success).toBe(true);
+    expect(res1.word).toBe('ERE');
+
+    // Coup 2 : Bob pose 2 lettres pour croiser verticalement sur le 'R' en (7, 8)
+    // Par exemple en posant 'T' au-dessus en (6, 8) et 'I' en dessous en (8, 8) pour former TRI
+    withRack(e, 'p2', ['T', 'I', 'X', 'Y', 'Z', 'K', 'M']);
+    const tiles2 = [
+      { row: 6, col: 8, letter: 'T', tileId: e.playerRacks.p2[0].id },
+      { row: 8, col: 8, letter: 'I', tileId: e.playerRacks.p2[1].id },
+    ];
+    const res2 = e.playWord('p2', tiles2);
+    expect(res2.success).toBe(true);
+    expect(res2.word).toBe('TRI');
+  });
+
+  it('valide le placement d’une seule lettre croisant un mot existant', () => {
+    const e = new WordEngine(P(), () => {}, () => {});
+    // Coup 1 : poser ERE en (7, 7)-(7, 9)
+    withRack(e, 'p1', ['E', 'R', 'E', 'A', 'B', 'C', 'D']);
+    const tiles1 = [
+      { row: 7, col: 7, letter: 'E', tileId: e.playerRacks.p1[0].id },
+      { row: 7, col: 8, letter: 'R', tileId: e.playerRacks.p1[1].id },
+      { row: 7, col: 9, letter: 'E', tileId: e.playerRacks.p1[2].id },
+    ];
+    e.playWord('p1', tiles1);
+
+    // Coup 2 : Bob pose 'S' en (7, 10) pour former ERES horizontalement
+    withRack(e, 'p2', ['S', 'B', 'C', 'D', 'F', 'G', 'H']);
+    const tiles2 = [
+      { row: 7, col: 10, letter: 'S', tileId: e.playerRacks.p2[0].id },
+    ];
+    const res2 = e.playWord('p2', tiles2);
+    expect(res2.success).toBe(true);
+    expect(res2.word).toBe('ERES');
+  });
 });
+

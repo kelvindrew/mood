@@ -85,6 +85,8 @@ export const FRENCH_DEFINITIONS = {
   YU: { nature: 'nom masculin', def: 'Instrument à vent traditionnel chinois en bambou.' },
 
   // --- Common 3-8 Letter Scrabble Words ---
+  ERE: { nature: 'nom féminin', def: 'Période historique caractérisée par un état de choses nouveau ; grande division des temps géologiques.' },
+  ERES: { nature: 'nom féminin pluriel', def: 'Pluriel de ère ; grandes périodes ou époques marquantes.' },
   CHAT: { nature: 'nom masculin', def: 'Petit mammifère carnivore domestique de la famille des félidés.' },
   CHIEN: { nature: 'nom masculin', def: 'Mammifère carnivore domestique, fidèle compagnon de l’homme.' },
   SALON: { nature: 'nom masculin', def: 'Pièce de réception et de détente principale d’une habitation ; exposition périodique.' },

@@ -341,77 +341,120 @@ export class WordEngine {
 
     // 6. Extract ALL Formed Words (Main Word + All Perpendicular Cross Words)
     const allFormedWords = [];
+    const addedWordKeys = new Set();
 
-    // 6A. Extract Main Word
-    if (isHorizontal) {
-      const r = tilesPlaced[0].row;
-      let minCol = Math.min(...tilesPlaced.map(t => t.col));
-      let maxCol = Math.max(...tilesPlaced.map(t => t.col));
-      while (minCol > 0 && simBoard[r][minCol - 1] !== null) minCol--;
-      while (maxCol < 14 && simBoard[r][maxCol + 1] !== null) maxCol++;
-
-      const tiles = [];
-      let str = '';
-      for (let c = minCol; c <= maxCol; c++) {
-        const cell = simBoard[r][c];
-        tiles.push({ ...cell, row: r, col: c });
-        str += cell.letter;
+    const addWordIfValid = (wordStr, tiles, isMain) => {
+      if (wordStr.length < 2) return;
+      const key = `${wordStr}_${tiles[0].row}_${tiles[0].col}_${tiles[tiles.length - 1].row}_${tiles[tiles.length - 1].col}`;
+      if (!addedWordKeys.has(key)) {
+        addedWordKeys.add(key);
+        allFormedWords.push({ word: wordStr.toUpperCase(), tiles, isMain });
       }
-      if (str.length >= 2 || (emptyBoard && str.length >= 2)) {
-        allFormedWords.push({ word: str.toUpperCase(), tiles, isMain: true });
+    };
+
+    if (tilesPlaced.length === 1) {
+      // Placing a SINGLE tile can form BOTH a horizontal word and a vertical word!
+      const t = tilesPlaced[0];
+
+      // Check horizontal line through t
+      let minCol = t.col;
+      let maxCol = t.col;
+      while (minCol > 0 && simBoard[t.row][minCol - 1] !== null) minCol--;
+      while (maxCol < 14 && simBoard[t.row][maxCol + 1] !== null) maxCol++;
+      if (minCol !== maxCol) {
+        const hTiles = [];
+        let hStr = '';
+        for (let c = minCol; c <= maxCol; c++) {
+          const cell = simBoard[t.row][c];
+          hTiles.push({ ...cell, row: t.row, col: c });
+          hStr += cell.letter;
+        }
+        addWordIfValid(hStr, hTiles, true);
+      }
+
+      // Check vertical line through t
+      let minRow = t.row;
+      let maxRow = t.row;
+      while (minRow > 0 && simBoard[minRow - 1][t.col] !== null) minRow--;
+      while (maxRow < 14 && simBoard[maxRow + 1][t.col] !== null) maxRow++;
+      if (minRow !== maxRow) {
+        const vTiles = [];
+        let vStr = '';
+        for (let r = minRow; r <= maxRow; r++) {
+          const cell = simBoard[r][t.col];
+          vTiles.push({ ...cell, row: r, col: t.col });
+          vStr += cell.letter;
+        }
+        addWordIfValid(vStr, vTiles, allFormedWords.length === 0);
       }
     } else {
-      const c = tilesPlaced[0].col;
-      let minRow = Math.min(...tilesPlaced.map(t => t.row));
-      let maxRow = Math.max(...tilesPlaced.map(t => t.row));
-      while (minRow > 0 && simBoard[minRow - 1][c] !== null) minRow--;
-      while (maxRow < 14 && simBoard[maxRow + 1][c] !== null) maxRow++;
-
-      const tiles = [];
-      let str = '';
-      for (let r = minRow; r <= maxRow; r++) {
-        const cell = simBoard[r][c];
-        tiles.push({ ...cell, row: r, col: c });
-        str += cell.letter;
-      }
-      if (str.length >= 2 || (emptyBoard && str.length >= 2)) {
-        allFormedWords.push({ word: str.toUpperCase(), tiles, isMain: true });
-      }
-    }
-
-    // 6B. Extract Cross Words (perpendicular to each newly placed tile)
-    for (const t of tilesPlaced) {
+      // 6A. Extract Main Word along the placement axis
       if (isHorizontal) {
-        let minR = t.row;
-        let maxR = t.row;
-        while (minR > 0 && simBoard[minR - 1][t.col] !== null) minR--;
-        while (maxR < 14 && simBoard[maxR + 1][t.col] !== null) maxR++;
+        const r = tilesPlaced[0].row;
+        let minCol = Math.min(...tilesPlaced.map(t => t.col));
+        let maxCol = Math.max(...tilesPlaced.map(t => t.col));
+        while (minCol > 0 && simBoard[r][minCol - 1] !== null) minCol--;
+        while (maxCol < 14 && simBoard[r][maxCol + 1] !== null) maxCol++;
 
-        if (minR !== maxR) {
-          const crossTiles = [];
-          let crossStr = '';
-          for (let r = minR; r <= maxR; r++) {
-            const cell = simBoard[r][t.col];
-            crossTiles.push({ ...cell, row: r, col: t.col });
-            crossStr += cell.letter;
-          }
-          allFormedWords.push({ word: crossStr.toUpperCase(), tiles: crossTiles, isMain: false });
+        const tiles = [];
+        let str = '';
+        for (let c = minCol; c <= maxCol; c++) {
+          const cell = simBoard[r][c];
+          tiles.push({ ...cell, row: r, col: c });
+          str += cell.letter;
         }
+        addWordIfValid(str, tiles, true);
       } else {
-        let minC = t.col;
-        let maxC = t.col;
-        while (minC > 0 && simBoard[t.row][minC - 1] !== null) minC--;
-        while (maxC < 14 && simBoard[t.row][maxC + 1] !== null) maxC++;
+        const c = tilesPlaced[0].col;
+        let minRow = Math.min(...tilesPlaced.map(t => t.row));
+        let maxRow = Math.max(...tilesPlaced.map(t => t.row));
+        while (minRow > 0 && simBoard[minRow - 1][c] !== null) minRow--;
+        while (maxRow < 14 && simBoard[maxRow + 1][c] !== null) maxRow++;
 
-        if (minC !== maxC) {
-          const crossTiles = [];
-          let crossStr = '';
-          for (let c = minC; c <= maxC; c++) {
-            const cell = simBoard[t.row][c];
-            crossTiles.push({ ...cell, row: t.row, col: c });
-            crossStr += cell.letter;
+        const tiles = [];
+        let str = '';
+        for (let r = minRow; r <= maxRow; r++) {
+          const cell = simBoard[r][c];
+          tiles.push({ ...cell, row: r, col: c });
+          str += cell.letter;
+        }
+        addWordIfValid(str, tiles, true);
+      }
+
+      // 6B. Extract Cross Words (perpendicular to each newly placed tile)
+      for (const t of tilesPlaced) {
+        if (isHorizontal) {
+          let minR = t.row;
+          let maxR = t.row;
+          while (minR > 0 && simBoard[minR - 1][t.col] !== null) minR--;
+          while (maxR < 14 && simBoard[maxR + 1][t.col] !== null) maxR++;
+
+          if (minR !== maxR) {
+            const crossTiles = [];
+            let crossStr = '';
+            for (let r = minR; r <= maxR; r++) {
+              const cell = simBoard[r][t.col];
+              crossTiles.push({ ...cell, row: r, col: t.col });
+              crossStr += cell.letter;
+            }
+            addWordIfValid(crossStr, crossTiles, false);
           }
-          allFormedWords.push({ word: crossStr.toUpperCase(), tiles: crossTiles, isMain: false });
+        } else {
+          let minC = t.col;
+          let maxC = t.col;
+          while (minC > 0 && simBoard[t.row][minC - 1] !== null) minC--;
+          while (maxC < 14 && simBoard[t.row][maxC + 1] !== null) maxC++;
+
+          if (minC !== maxC) {
+            const crossTiles = [];
+            let crossStr = '';
+            for (let c = minC; c <= maxC; c++) {
+              const cell = simBoard[t.row][c];
+              crossTiles.push({ ...cell, row: t.row, col: c });
+              crossStr += cell.letter;
+            }
+            addWordIfValid(crossStr, crossTiles, false);
+          }
         }
       }
     }

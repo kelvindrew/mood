@@ -20,6 +20,7 @@ import {
   Hand,
   AlertCircle,
   HelpCircle,
+  Type,
 } from 'lucide-react';
 
 function getMultiplier(r: number, c: number): string {
@@ -99,6 +100,8 @@ export const WordController: React.FC = () => {
   const [selectedSwapIds, setSelectedSwapIds] = useState<string[]>([]);
   const [localError, setLocalError] = useState<string>('');
   const [dragState, setDragState] = useState<DragState | null>(null);
+  const [showTypeModal, setShowTypeModal] = useState<boolean>(false);
+  const [typedWord, setTypedWord] = useState<string>('');
 
   const boardContainerRef = useRef<HTMLDivElement | null>(null);
   const rackContainerRef = useRef<HTMLDivElement | null>(null);
@@ -354,19 +357,113 @@ export const WordController: React.FC = () => {
     setLocalError('');
   };
 
-  // Place a tile on a specific board cell
-  const placeTileAtCell = (tile: TileItem, r: number, c: number) => {
+  // Place a tile on a specific board cell (with optional cursor auto-advance along direction)
+  const placeTileAtCell = (tile: TileItem, r: number, c: number, autoAdvance = true) => {
     if (gameState.board[r]?.[c] !== null) return false;
     setPlacedTiles((prev) => {
       const filtered = prev.filter((p) => p.tile.id !== tile.id);
       return [...filtered, { tile, row: r, col: c }];
     });
-    setFocusedCell({ row: r, col: c });
     setSelectedRackTileId(null);
     triggerHaptic(hapticPatterns.tap);
     audio.playSelect();
     setLocalError('');
+
+    if (autoAdvance) {
+      // Find next free cell along selected direction
+      let nextR = r;
+      let nextC = c;
+      for (let step = 1; step < 15; step++) {
+        const tr = direction === 'vertical' ? r + step : r;
+        const tc = direction === 'horizontal' ? c + step : c;
+        if (tr > 14 || tc > 14) break;
+        // Skip cells already locked on board or placed in this turn
+        const isOccupiedOnBoard = gameState.board[tr]?.[tc] !== null;
+        const isAlreadyPlaced = placedTiles.some((p) => p.row === tr && p.col === tc && p.tile.id !== tile.id);
+        if (!isOccupiedOnBoard && !isAlreadyPlaced) {
+          nextR = tr;
+          nextC = tc;
+          break;
+        }
+      }
+      setFocusedCell({ row: nextR, col: nextC });
+    } else {
+      setFocusedCell({ row: r, col: c });
+    }
+
     return true;
+  };
+
+  // Quick word typing helper: places letters sequentially from focused cell along direction
+  const handleApplyTypedWord = () => {
+    if (!typedWord.trim() || !isMyTurn || isGameOver) return;
+    const clean = typedWord.trim().toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^A-Z]/g, '');
+    if (!clean) return;
+
+    // Available letters in rack (excluding already placed tiles)
+    const availableRack = [...orderedRack];
+    const newPlacements: PlacedTile[] = [...placedTiles];
+    let currR = focusedCell.row;
+    let currC = focusedCell.col;
+    let placedCount = 0;
+
+    for (let i = 0; i < clean.length; i++) {
+      if (currR > 14 || currC > 14) break;
+      const char = clean[i];
+
+      // If board cell already has this exact letter locked, continue over it
+      const existingBoard = gameState.board[currR]?.[currC];
+      if (existingBoard) {
+        if (existingBoard.letter.toUpperCase() === char) {
+          // Cross-letter matches board
+          if (direction === 'horizontal') currC++;
+          else currR++;
+          continue;
+        } else {
+          setLocalError(`Conflit à la case (${currR + 1}, ${currC + 1}) : '${existingBoard.letter}' au lieu de '${char}'`);
+          triggerHaptic(hapticPatterns.error);
+          return;
+        }
+      }
+
+      // Check if already placed in this turn
+      const existingTurnTile = newPlacements.find((p) => p.row === currR && p.col === currC);
+      if (existingTurnTile) {
+        if (existingTurnTile.tile.letter === char) {
+          if (direction === 'horizontal') currC++;
+          else currR++;
+          continue;
+        }
+      }
+
+      // Need tile from rack
+      const rackIdx = availableRack.findIndex(
+        (r) => r.letter === char && !newPlacements.some((p) => p.tile.id === r.id)
+      );
+
+      if (rackIdx === -1) {
+        setLocalError(`Vous n'avez pas la lettre '${char}' dans votre chevalet pour former "${clean}"`);
+        triggerHaptic(hapticPatterns.error);
+        return;
+      }
+
+      const tileToUse = availableRack[rackIdx];
+      newPlacements.push({ tile: tileToUse, row: currR, col: currC });
+      placedCount++;
+
+      if (direction === 'horizontal') currC++;
+      else currR++;
+    }
+
+    if (placedCount > 0) {
+      setPlacedTiles(newPlacements);
+      setFocusedCell({ row: Math.min(14, currR), col: Math.min(14, currC) });
+      setShowTypeModal(false);
+      setTypedWord('');
+      setLocalError('');
+      triggerHaptic(hapticPatterns.success);
+      audio.playSelect();
+    }
   };
 
   // HCI Research: Mathematical Bounding Box Snapping for high-density 15x15 board
@@ -446,14 +543,24 @@ export const WordController: React.FC = () => {
       return;
     }
 
-    // Tap on rack tile: select/toggle selection for fast tap-to-place
+    // Tap on rack tile: immediately place at focusedCell with auto-advance!
     if (!isMyTurn) return;
+
+    const { row, col } = focusedCell;
+    const isTargetOccupied = gameState.board[row]?.[col] !== null || placedTileMap.has(`${row}_${col}`);
+
+    if (!isTargetOccupied) {
+      // Place directly at cursor and advance cursor along direction!
+      placeTileAtCell(tile, row, col, true);
+      return;
+    }
+
+    // If focusedCell is already occupied, select/toggle selection
     triggerHaptic(hapticPatterns.tap);
     audio.playFocus();
     setLocalError('');
 
     if (selectedRackTileId === tile.id) {
-      // Toggle off
       setSelectedRackTileId(null);
     } else {
       setSelectedRackTileId(tile.id);
@@ -870,17 +977,32 @@ export const WordController: React.FC = () => {
               </span>
             </div>
 
-            <button
-              onClick={handleToggleDirection}
-              className="px-2.5 py-1 rounded-xl bg-white/10 border border-white/15 text-xs font-bold text-[#38BDF8] flex items-center space-x-1 active:scale-95 transition-all"
-            >
-              {direction === 'horizontal' ? (
-                <ArrowRight className="w-3.5 h-3.5" />
-              ) : (
-                <ArrowDown className="w-3.5 h-3.5" />
-              )}
-              <span>{direction === 'horizontal' ? 'Horizontal' : 'Vertical'}</span>
-            </button>
+            <div className="flex items-center space-x-1.5">
+              <button
+                onClick={() => {
+                  setLocalError('');
+                  setShowTypeModal(true);
+                  triggerHaptic(hapticPatterns.tap);
+                }}
+                className="px-2.5 py-1 rounded-xl bg-amber-500/20 border border-amber-400/40 text-xs font-bold text-amber-300 flex items-center space-x-1 active:scale-95 transition-all"
+                title="Saisir un mot directement au clavier"
+              >
+                <Type className="w-3.5 h-3.5" />
+                <span>Saisir mot</span>
+              </button>
+
+              <button
+                onClick={handleToggleDirection}
+                className="px-2.5 py-1 rounded-xl bg-white/10 border border-white/15 text-xs font-bold text-[#38BDF8] flex items-center space-x-1 active:scale-95 transition-all"
+              >
+                {direction === 'horizontal' ? (
+                  <ArrowRight className="w-3.5 h-3.5" />
+                ) : (
+                  <ArrowDown className="w-3.5 h-3.5" />
+                )}
+                <span>{direction === 'horizontal' ? 'Horizontal' : 'Vertical'}</span>
+              </button>
+            </div>
           </div>
 
           {/* 15x15 Mini Grid with ref for bounding-box calculation */}
@@ -1228,6 +1350,72 @@ export const WordController: React.FC = () => {
                 </button>
                 <button
                   onClick={() => setShowSwapModal(false)}
+                  className="px-4 py-3 rounded-2xl bg-white/10 text-gray-300 font-bold text-xs"
+                >
+                  Annuler
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Modal : Saisie Rapide de Mot */}
+        {showTypeModal && (
+          <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in">
+            <div className="w-full max-w-sm rounded-3xl bg-[#1A1410] border-2 border-amber-500/50 p-5 space-y-4 shadow-2xl">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <Type className="w-5 h-5 text-amber-400" />
+                  <h3 className="text-base font-black font-display text-white">Saisir un mot</h3>
+                </div>
+                <button
+                  onClick={() => setShowTypeModal(false)}
+                  className="p-1 rounded-full bg-white/10 text-gray-400 hover:text-white"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <p className="text-xs text-gray-300">
+                Tapez le mot à poser depuis la case viseur (L.{focusedCell.row + 1}, C.{focusedCell.col + 1}) en direction <strong className="text-amber-300">{direction === 'horizontal' ? 'Horizontale ➡️' : 'Verticale ⬇️'}</strong> :
+              </p>
+
+              <div className="space-y-2">
+                <input
+                  type="text"
+                  autoFocus
+                  value={typedWord}
+                  onChange={(e) => setTypedWord(e.target.value.toUpperCase())}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') handleApplyTypedWord();
+                  }}
+                  placeholder="Ex: ERE, TRAIN, MAISON..."
+                  maxLength={15}
+                  className="w-full px-4 py-3 rounded-2xl bg-black/60 border-2 border-amber-400/40 text-amber-200 text-lg font-mono font-black uppercase tracking-widest placeholder-gray-600 focus:outline-none focus:border-amber-400"
+                />
+
+                <div className="flex items-center justify-between text-[11px] text-gray-400 px-1">
+                  <span>Direction :</span>
+                  <button
+                    onClick={handleToggleDirection}
+                    className="font-bold text-[#38BDF8] flex items-center space-x-1 hover:underline"
+                  >
+                    {direction === 'horizontal' ? <ArrowRight className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />}
+                    <span>{direction === 'horizontal' ? 'Horizontale' : 'Verticale'}</span>
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex space-x-2 pt-2">
+                <button
+                  disabled={!typedWord.trim()}
+                  onClick={handleApplyTypedWord}
+                  className="flex-1 py-3 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 text-gray-950 font-black text-xs uppercase disabled:opacity-40 shadow-lg active:scale-95 transition-transform"
+                >
+                  Placer les lettres
+                </button>
+                <button
+                  onClick={() => setShowTypeModal(false)}
                   className="px-4 py-3 rounded-2xl bg-white/10 text-gray-300 font-bold text-xs"
                 >
                   Annuler
