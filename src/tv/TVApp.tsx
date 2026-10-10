@@ -2,6 +2,7 @@ import React, { useEffect, Suspense } from 'react';
 import { useGame } from '../context/GameContext';
 import { TVNavbar } from './components/TVNavbar';
 import { TVHomeView } from './views/TVHomeView';
+import { TVLobbyView } from './views/TVLobbyView';
 import { TVGamePlayView } from './views/TVGamePlayView';
 import { TVToast } from './components/TVToast';
 import { Loader2 } from 'lucide-react';
@@ -29,14 +30,9 @@ export const TVApp: React.FC = () => {
   const renderCurrentView = () => {
     switch (tvView) {
       case 'home':
-      case 'lobby':
-      case 'detail':
-      case 'game_detail':
-      case 'categories':
-      case 'profiles':
-      case 'profile':
-      case 'settings':
         return <TVHomeView />;
+      case 'lobby':
+        return <TVLobbyView />;
       case 'playing':
       case 'gameplay':
         return <TVGamePlayView />;

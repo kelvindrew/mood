@@ -5,14 +5,12 @@ import { TVHeroBanner } from '../components/TVHeroBanner';
 import { TVGameRow } from '../components/TVGameRow';
 import { GameCatalogItem } from '../../types/game';
 import { tvNav } from '../../services/tvNavigation';
-import { socketService } from '../../services/socket';
 
 export const TVHomeView: React.FC = () => {
-  const { setSelectedGame, createRoom, room, startGame } = useGame();
+  const { setSelectedGame, createRoom } = useGame();
   const [games, setGames] = useState<GameCatalogItem[]>(adminCms.getGamesCatalog());
   const [spotlightGame, setSpotlightGame] = useState<GameCatalogItem>(games[0]);
 
-  // Initialisation et auto-création du salon dès l'allumage pour afficher le QR code
   useEffect(() => {
     tvNav.setInitialFocus('button');
     const unsub = adminCms.subscribe(() => {
@@ -22,29 +20,18 @@ export const TVHomeView: React.FC = () => {
         setSpotlightGame(updated[0]);
       }
     });
-
-    // Si aucun salon n'est encore actif, on en crée un immédiatement
-    if (!room && spotlightGame) {
-      createRoom(spotlightGame.id, { maxPlayers: spotlightGame.maxPlayers });
-    }
-
     return () => unsub();
   }, []);
 
-  // Changement de jeu en temps réel pour le salon actif
-  const handleSelectGame = (game: GameCatalogItem) => {
-    setSpotlightGame(game);
+  // Clic sur le jeu : crée le salon et bascule sur l'écran du Code QR
+  const handlePlayGame = async (game: GameCatalogItem) => {
     setSelectedGame(game);
-    if (room?.code) {
-      socketService.getSocket()?.emit('select_game', { code: room.code, gameId: game.id });
-    }
+    await createRoom(game.id, { maxPlayers: game.maxPlayers });
   };
 
-  const handleLaunchGame = async () => {
-    if (!room) {
-      await createRoom(spotlightGame.id, { maxPlayers: spotlightGame.maxPlayers });
-    }
-    startGame();
+  const handleHighlightGame = (game: GameCatalogItem) => {
+    setSpotlightGame(game);
+    setSelectedGame(game);
   };
 
   // Groupes de jeux épurés
@@ -71,7 +58,7 @@ export const TVHomeView: React.FC = () => {
           className="w-full h-full object-cover object-right md:object-center filter brightness-[0.80] contrast-[1.12] transition-opacity duration-700 animate-fade-in"
         />
 
-        {/* Dégradé sombre gauche pour une lisibilité parfaite des textes et du QR Code */}
+        {/* Dégradé sombre gauche pour une lisibilité parfaite des textes */}
         <div className="absolute inset-0 bg-gradient-to-r from-black via-black/95 via-42% via-black/50 via-75% to-transparent" />
 
         {/* Vignette haut & bas */}
@@ -79,22 +66,22 @@ export const TVHomeView: React.FC = () => {
         <div className="absolute bottom-0 left-0 right-0 h-[50vh] bg-gradient-to-t from-black via-black/95 to-transparent" />
       </div>
 
-      {/* 2. Hero Section : Présentation du Jeu + Le Module Connexion Code QR */}
+      {/* 2. Hero Section : Présentation du Jeu + Bouton JOUER */}
       <TVHeroBanner
         game={spotlightGame}
-        onLaunchGame={handleLaunchGame}
+        onPlay={handlePlayGame}
       />
 
       {/* 3. Carrousels Horizontaux 16:9 Widescreen */}
-      <div className="relative z-10 pt-2 pb-6 space-y-4">
+      <div className="relative z-10 pt-4 pb-6 space-y-4">
         {/* Ligne 1 : Jeux d'Ambiance & Fête */}
         <TVGameRow
           title="JEUX D'AMBIANCE & FÊTE"
           games={partyGames}
           activeGameId={spotlightGame.id}
-          onHighlightGame={handleSelectGame}
-          onSelectGame={handleSelectGame}
-          onPlayGame={handleLaunchGame}
+          onHighlightGame={handleHighlightGame}
+          onSelectGame={handlePlayGame}
+          onPlayGame={handlePlayGame}
         />
 
         {/* Ligne 2 : Société, Cartes & Stratégie */}
@@ -102,9 +89,9 @@ export const TVHomeView: React.FC = () => {
           title="SOCIÉTÉ, CARTES & STRATÉGIE"
           games={boardAndCards}
           activeGameId={spotlightGame.id}
-          onHighlightGame={handleSelectGame}
-          onSelectGame={handleSelectGame}
-          onPlayGame={handleLaunchGame}
+          onHighlightGame={handleHighlightGame}
+          onSelectGame={handlePlayGame}
+          onPlayGame={handlePlayGame}
         />
       </div>
     </div>
