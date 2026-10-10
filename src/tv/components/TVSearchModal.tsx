@@ -129,8 +129,8 @@ export const TVSearchModal: React.FC<TVSearchModalProps> = ({
       );
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/85 backdrop-blur-xl animate-fade-in select-none">
-      <div className="w-full max-w-4xl bg-[#090C14] border border-white/15 rounded-3xl p-6 shadow-2xl flex flex-col max-h-[85vh] overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-slate-950/85 animate-fade-in select-none">
+      <div className="w-full max-w-4xl bg-[#0A0F1D] border border-slate-700/80 rounded-3xl p-6 shadow-2xl flex flex-col max-h-[85vh] overflow-hidden">
         {isPasswordMode ? (
           /* ======================================================== */
           /* ADMIN PASSWORD PROMPT VIEW                               */
@@ -274,8 +274,8 @@ export const TVSearchModal: React.FC<TVSearchModalProps> = ({
           <>
             {/* Top Search Input Bar */}
             <div className="flex items-center space-x-3 pb-4 border-b border-white/10">
-              <div className="p-2.5 rounded-2xl bg-white/10 text-white">
-                <Search className="w-6 h-6 text-purple-400" />
+              <div className="p-2.5 rounded-2xl bg-cyan-500/15 border border-cyan-500/30 text-cyan-400">
+                <Search className="w-6 h-6 text-cyan-400" />
               </div>
               <input
                 ref={inputRef}
@@ -292,12 +292,12 @@ export const TVSearchModal: React.FC<TVSearchModalProps> = ({
                   }
                 }}
                 placeholder="Rechercher un jeu de salon (ex: Espion, Petit Bac, Ludo, Poker...)"
-                className="flex-1 bg-transparent border-none text-white text-lg md:text-xl font-bold placeholder-gray-500 focus:outline-none"
+                className="flex-1 bg-transparent border-none text-white text-lg md:text-xl font-bold placeholder-slate-500 focus:outline-none"
               />
               {query && (
                 <button
                   onClick={() => setQuery('')}
-                  className="p-2 rounded-xl text-gray-400 hover:text-white hover:bg-white/10"
+                  className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-white/10"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -307,7 +307,7 @@ export const TVSearchModal: React.FC<TVSearchModalProps> = ({
                   audio.playBack();
                   onClose();
                 }}
-                className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-xs font-bold text-gray-300 hover:text-white uppercase tracking-wider"
+                className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-xs font-bold text-slate-300 hover:text-white uppercase tracking-wider"
               >
                 Fermer (Échap)
               </button>
@@ -354,10 +354,10 @@ export const TVSearchModal: React.FC<TVSearchModalProps> = ({
             {/* Results Grid */}
             <div className="flex-1 overflow-y-auto pt-4 pr-1 scrollbar-none">
               <div className="flex items-center justify-between pb-3">
-                <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">
+                <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">
                   {filtered.length} {filtered.length > 1 ? 'Jeux trouvés' : 'Jeu trouvé'}
                 </span>
-                <span className="text-[11px] text-purple-400 font-mono font-bold">
+                <span className="text-[11px] text-cyan-400 font-mono font-bold">
                   Flèches ou Clic pour sélectionner
                 </span>
               </div>
@@ -380,19 +380,19 @@ export const TVSearchModal: React.FC<TVSearchModalProps> = ({
                         onClose();
                       }
                     }}
-                    className="group relative aspect-[2/3] rounded-2xl overflow-hidden cursor-pointer border border-white/10 bg-[#0E1322] shadow-lg transition-all duration-300 outline-none
-                               focus:scale-105 focus:ring-4 focus:ring-purple-500 focus:border-purple-400 hover:scale-105 hover:border-purple-500"
+                    className="group relative aspect-[2/3] rounded-2xl overflow-hidden cursor-pointer border border-slate-700/80 bg-[#131C35] shadow-lg transition-all duration-300 outline-none
+                               focus:scale-105 focus:ring-4 focus:ring-cyan-400 focus:border-cyan-300 hover:scale-105 hover:border-cyan-400"
                   >
                     <img
                       src={game.coverImage || game.heroImage}
                       alt={game.title}
                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent opacity-90 group-hover:opacity-75 transition-opacity" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent opacity-90 group-hover:opacity-75 transition-opacity" />
 
                     <div className="absolute inset-0 p-3 flex flex-col justify-between">
                       <div className="flex justify-end">
-                        <span className="px-2 py-0.5 rounded-full bg-black/60 backdrop-blur-md text-[10px] font-mono font-bold text-emerald-400 border border-white/10">
+                        <span className="px-2 py-0.5 rounded-full bg-slate-900/80 text-[10px] font-mono font-bold text-emerald-400 border border-slate-700">
                           98% Match
                         </span>
                       </div>
@@ -401,11 +401,11 @@ export const TVSearchModal: React.FC<TVSearchModalProps> = ({
                         <h4 className="text-xs md:text-sm font-black font-display text-white uppercase tracking-tight leading-tight line-clamp-2">
                           {game.title}
                         </h4>
-                        <p className="text-[10px] text-gray-300 line-clamp-1 mt-0.5">
+                        <p className="text-[10px] text-slate-300 line-clamp-1 mt-0.5">
                           {game.tagline}
                         </p>
-                        <div className="mt-2 flex items-center justify-between pt-1 border-t border-white/15">
-                          <span className="text-[10px] text-gray-400 font-mono">
+                        <div className="mt-2 flex items-center justify-between pt-1 border-t border-slate-700/60">
+                          <span className="text-[10px] text-slate-400 font-mono">
                             {game.minPlayers}-{game.maxPlayers}j
                           </span>
                           <button
@@ -415,7 +415,7 @@ export const TVSearchModal: React.FC<TVSearchModalProps> = ({
                               onPlayGame(game);
                               onClose();
                             }}
-                            className="px-2.5 py-1 rounded-full bg-purple-600 hover:bg-purple-500 text-white font-bold text-[10px] uppercase flex items-center space-x-1"
+                            className="px-2.5 py-1 rounded-full bg-cyan-400 hover:bg-cyan-300 text-slate-950 font-black text-[10px] uppercase flex items-center space-x-1"
                           >
                             <Play className="w-2.5 h-2.5 fill-current" />
                             <span>Jouer</span>

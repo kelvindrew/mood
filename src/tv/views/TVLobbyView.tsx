@@ -16,14 +16,14 @@ export const TVLobbyView: React.FC = () => {
 
   if (!room) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#07090E] select-none">
+      <div className="min-h-screen flex items-center justify-center bg-[#0A0F1D] select-none">
         <div className="text-center space-y-4">
-          <p className="text-[#B8C2D8] font-bold text-lg">Aucun salon actif</p>
+          <p className="text-slate-300 font-bold text-lg">Aucun salon actif</p>
           <button
             onClick={() => setTvView('home')}
-            className="px-8 py-3.5 rounded-2xl bg-[#E50914] text-white font-black text-base shadow-[0_0_25px_rgba(229,9,20,0.6)]"
+            className="px-8 py-3.5 rounded-xl bg-cyan-400 hover:bg-cyan-300 text-slate-950 font-black text-base shadow-[0_4px_20px_rgba(6,182,212,0.35)] outline-none focus:ring-4 focus:ring-white"
           >
-            Retour au Launcher
+            Retour à l'accueil
           </button>
         </div>
       </div>
@@ -67,19 +67,19 @@ export const TVLobbyView: React.FC = () => {
   const botCount = filledPlayers.filter(p => p.isBot).length;
 
   return (
-    <div className="relative min-h-screen pt-20 px-[5vw] pb-16 select-none flex flex-col justify-between bg-transparent text-white">
+    <div className="relative min-h-screen pt-16 px-[5vw] pb-12 select-none flex flex-col justify-between bg-[#0A0F1D] text-white">
       {/* Background Dynamic Ambient Backdrop */}
       <div className="fixed inset-0 z-0 pointer-events-none">
         <img
           src={selectedGame.heroImage || selectedGame.coverImage}
           alt={selectedGame.title}
-          className="w-full h-full object-cover object-center opacity-15 filter blur-2xl scale-110"
+          className="w-full h-full object-cover object-center opacity-20 filter blur-xl scale-105"
         />
-        <div className="absolute inset-0 bg-[#060810]/60" />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#0A0F1D]/80 via-[#0A0F1D]/90 to-[#0A0F1D]" />
       </div>
 
       {/* Top Header */}
-      <div className="relative z-10 flex items-center justify-between border-b border-white/10 pb-4">
+      <div className="relative z-10 flex items-center justify-between border-b border-slate-800 pb-4">
         <div className="flex items-center space-x-4">
           <button
             data-tv-focus
@@ -88,23 +88,23 @@ export const TVLobbyView: React.FC = () => {
               audio.playBack();
               setTvView('home');
             }}
-            className="flex items-center space-x-2 px-5 py-3 rounded-2xl bg-white/10 border border-white/20 text-white hover:text-white focus:bg-white focus:text-black focus:ring-4 focus:ring-mood-amber transition-all outline-none"
+            className="flex items-center space-x-2 px-5 py-2.5 rounded-xl bg-slate-800/80 border border-slate-700/60 text-slate-200 hover:text-white focus:bg-cyan-400 focus:text-slate-950 focus:border-cyan-300 transition-all outline-none"
           >
             <ArrowLeft className="w-4 h-4" />
-            <span className="font-black text-sm">Changer de Jeu</span>
+            <span className="font-bold text-xs sm:text-sm">Changer de Jeu</span>
           </button>
 
           <div>
             <div className="flex items-center space-x-2">
-              <span className="px-3 py-0.5 rounded-full bg-gradient-to-r from-mood-coral to-mood-amber text-white text-[11px] font-black uppercase tracking-wider shadow-md border border-white/20">
+              <span className="px-3 py-0.5 rounded-full bg-cyan-950/70 border border-cyan-400/30 text-cyan-300 text-[11px] font-bold uppercase tracking-wider">
                 SALON DE JEU ACTIF
               </span>
-              <span className="text-[#D1D5DB] text-xs font-bold">
+              <span className="text-slate-400 text-xs font-semibold">
                 {selectedGame.title} • Mode {room.settings.gameMode.toUpperCase()}
               </span>
             </div>
-            <h1 className="text-3xl font-black font-display text-white tracking-tight mt-0.5">
-              Connectez vos smartphones ou ajoutez des Bots IA
+            <h1 className="text-2xl sm:text-3xl font-black font-display text-white tracking-tight mt-0.5">
+              Connectez vos smartphones pour jouer
             </h1>
           </div>
         </div>
@@ -112,8 +112,8 @@ export const TVLobbyView: React.FC = () => {
         {/* Room Code Badge */}
         <div className="flex items-center space-x-4">
           <div className="flex flex-col items-end">
-            <span className="text-[10px] font-black text-gray-400 tracking-widest uppercase">CODE DU SALON</span>
-            <div className="px-8 py-2.5 rounded-2xl bg-[#0F1424] border-2 border-mood-amber/50 text-mood-amber font-mono font-black text-4xl tracking-widest shadow-[0_0_30px_rgba(245,158,11,0.3)]">
+            <span className="text-[10px] font-black text-slate-400 tracking-widest uppercase">CODE DU SALON</span>
+            <div className="px-7 py-2 rounded-2xl bg-slate-900/90 border-2 border-amber-400/60 text-amber-400 font-mono font-black text-3xl sm:text-4xl tracking-widest shadow-[0_0_20px_rgba(245,158,11,0.25)]">
               {room.code}
             </div>
           </div>
@@ -121,45 +121,45 @@ export const TVLobbyView: React.FC = () => {
       </div>
 
       {/* Main 2-Column Grid */}
-      <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 my-auto py-6">
+      <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 my-auto py-5">
         {/* Left Column: High-contrast QR Code & PIN instructions */}
-        <div className="lg:col-span-5 flex flex-col items-center justify-center p-8 rounded-3xl bg-[#0F1424]/90 border border-white/15 shadow-2xl space-y-5">
+        <div className="lg:col-span-5 flex flex-col items-center justify-center p-7 rounded-3xl bg-slate-900/90 border border-slate-700/60 shadow-xl space-y-4">
           <div className="text-center">
-            <span className="text-mood-cyan text-xs font-black tracking-widest uppercase flex items-center justify-center space-x-1.5">
-              <Smartphone className="w-4 h-4 text-mood-cyan" />
+            <span className="text-cyan-400 text-xs font-bold tracking-widest uppercase flex items-center justify-center space-x-1.5">
+              <Smartphone className="w-4 h-4 text-cyan-400" />
               <span>SCANNEZ AVEC VOTRE APPAREIL PHOTO</span>
             </span>
-            <h2 className="text-2xl font-black font-display text-white mt-1">
+            <h2 className="text-xl sm:text-2xl font-black font-display text-white mt-1">
               Pas d'application à installer
             </h2>
-            <p className="text-xs text-gray-300 mt-1 max-w-xs leading-relaxed font-medium">
+            <p className="text-xs text-slate-300 mt-1 max-w-xs leading-relaxed font-medium">
               Visez le QR Code pour transformer immédiatement votre smartphone en manette sans fil.
             </p>
           </div>
 
           {/* Ultra-sharp High-Contrast QR Code */}
-          <div className="p-4 rounded-3xl bg-white shadow-[0_0_35px_rgba(6,182,212,0.3)] border-4 border-mood-cyan">
+          <div className="p-4 rounded-2xl bg-white shadow-lg border-2 border-cyan-400/50">
             <QRCodeSVG
               value={mobileJoinUrl}
-              size={210}
+              size={200}
               level="H"
               includeMargin={false}
-              fgColor="#060810"
+              fgColor="#0A0F1D"
               bgColor="#FFFFFF"
             />
           </div>
 
           {/* Join Link & PIN Details */}
           <div className="w-full flex flex-col items-center space-y-2">
-            <div className="flex items-center space-x-2 text-xs text-gray-200 bg-black/40 px-4 py-2.5 rounded-xl border border-white/10 shadow-inner">
-              <span className="text-gray-400 font-bold">Site :</span>
-              <span className="font-mono text-mood-cyan font-black truncate max-w-[260px]">
+            <div className="flex items-center space-x-2 text-xs text-slate-300 bg-slate-950/60 px-4 py-2 rounded-xl border border-slate-800">
+              <span className="text-slate-400 font-medium">Site :</span>
+              <span className="font-mono text-cyan-300 font-bold truncate max-w-[260px]">
                 {typeof window !== 'undefined' ? window.location.host : 'mood.kalvinec.workers.dev'}
               </span>
             </div>
-            <div className="text-xs text-gray-300 flex items-center space-x-2 pt-1 font-bold">
+            <div className="text-xs text-slate-300 flex items-center space-x-2 pt-0.5 font-bold">
               <span>Code du salon :</span>
-              <span className="text-mood-amber font-mono text-2xl font-black px-4 py-1 rounded-xl bg-black/50 border border-mood-amber/50 shadow-sm">
+              <span className="text-amber-400 font-mono text-xl font-black px-3.5 py-1 rounded-xl bg-slate-950/80 border border-amber-400/40 shadow-sm">
                 {room.code}
               </span>
             </div>
@@ -167,12 +167,12 @@ export const TVLobbyView: React.FC = () => {
         </div>
 
         {/* Right Column: Connected Player Slots & Launch Controls */}
-        <div className="lg:col-span-7 flex flex-col justify-between p-8 rounded-3xl bg-[#0F1424]/90 border border-white/15 shadow-2xl space-y-6">
+        <div className="lg:col-span-7 flex flex-col justify-between p-7 rounded-3xl bg-slate-900/90 border border-slate-700/60 shadow-xl space-y-6">
           <div>
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center space-x-2">
-                <Users className="w-5 h-5 text-[#00F2FE]" />
-                <h3 className="text-xl font-black font-display text-white tracking-wide">
+                <Users className="w-5 h-5 text-cyan-400" />
+                <h3 className="text-lg sm:text-xl font-black font-display text-white tracking-wide">
                   JOUEURS CONNECTÉS ({filledPlayers.length}/{totalSlots})
                 </h3>
                 {isFull && (
@@ -192,13 +192,13 @@ export const TVLobbyView: React.FC = () => {
                       audio.playSelect();
                       addBot();
                     }}
-                    className="flex items-center space-x-1.5 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs shadow-md border border-indigo-400/40 focus:scale-105 focus:bg-white focus:text-indigo-900 transition-all outline-none"
+                    className="flex items-center space-x-1.5 px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-100 font-bold text-xs border border-slate-600 focus:bg-cyan-400 focus:text-slate-950 focus:border-cyan-300 transition-all outline-none"
                   >
                     <Bot className="w-4 h-4" />
                     <span>+ AJOUTER UN BOT IA</span>
                   </button>
                 ) : (
-                  <div className="px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 text-gray-400 text-xs font-bold">
+                  <div className="px-3 py-1.5 rounded-xl bg-slate-950/50 border border-slate-800 text-slate-400 text-xs font-semibold">
                     Salon complet ({totalSlots} max)
                   </div>
                 )}
@@ -211,7 +211,7 @@ export const TVLobbyView: React.FC = () => {
                       audio.playBack();
                       removeBot();
                     }}
-                    className="flex items-center space-x-1 px-3 py-2 rounded-xl bg-[#181F33] border border-white/10 text-rose-400 hover:text-white text-xs font-bold focus:bg-rose-600 focus:text-white transition-all outline-none"
+                    className="flex items-center space-x-1 px-3 py-2 rounded-xl bg-slate-800 border border-slate-700 text-slate-300 hover:text-white text-xs font-semibold focus:bg-rose-600 focus:text-white transition-all outline-none"
                     title="Retirer le dernier Bot"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
@@ -222,56 +222,46 @@ export const TVLobbyView: React.FC = () => {
             </div>
 
             {/* Players Grid with High-Contrast Cards */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
               {filledPlayers.map((player) => {
-                const colorMap: Record<string, string> = {
-                  red: 'border-red-500 bg-red-950/40 text-red-400',
-                  blue: 'border-blue-500 bg-blue-950/40 text-blue-400',
-                  green: 'border-emerald-500 bg-emerald-950/40 text-emerald-400',
-                  yellow: 'border-amber-500 bg-amber-950/40 text-amber-400',
-                  purple: 'border-purple-500 bg-purple-950/40 text-purple-400',
-                  cyan: 'border-cyan-500 bg-cyan-950/40 text-cyan-400',
-                };
-                const colorStyle = colorMap[player.color] || 'border-white/20 bg-[#181F33] text-white';
-
                 return (
                   <div
                     key={player.id}
-                    className={`flex items-center space-x-4 p-4 rounded-2xl border-2 ${colorStyle} shadow-lg transition-all animate-scale-in`}
+                    className="flex items-center space-x-3.5 p-3.5 rounded-2xl border border-slate-700/80 bg-slate-950/60 shadow-md transition-all animate-scale-in"
                   >
                     {player.isBot ? (
-                      <div className="w-12 h-12 rounded-2xl bg-indigo-600/60 border-2 border-indigo-400 flex items-center justify-center text-indigo-200 shadow-md flex-shrink-0">
-                        <Bot className="w-7 h-7" />
+                      <div className="w-11 h-11 rounded-xl bg-indigo-900/50 border border-indigo-500/40 flex items-center justify-center text-indigo-300 shadow flex-shrink-0">
+                        <Bot className="w-6 h-6" />
                       </div>
                     ) : player.selfieImage ? (
                       <img
                         src={player.selfieImage}
                         alt={player.name}
-                        className="w-12 h-12 rounded-xl object-cover border-2 border-white shadow-md flex-shrink-0"
+                        className="w-11 h-11 rounded-xl object-cover border border-slate-600 shadow flex-shrink-0"
                       />
                     ) : (
-                      <div className="w-12 h-12 rounded-2xl bg-[#181F33] border border-white/20 flex items-center justify-center text-white font-bold text-lg">
+                      <div className="w-11 h-11 rounded-xl bg-cyan-950/60 border border-cyan-500/30 flex items-center justify-center text-cyan-300 font-bold text-base flex-shrink-0">
                         {player.name.charAt(0).toUpperCase()}
                       </div>
                     )}
 
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center space-x-1.5">
-                        <span className="font-black text-white text-base truncate">{player.name}</span>
+                        <span className="font-bold text-white text-sm sm:text-base truncate">{player.name}</span>
                         {player.isHost && (
-                          <span className="px-2 py-0.5 rounded bg-[#FFB800]/20 text-[#FFB800] text-[10px] font-black uppercase">
+                          <span className="px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[9px] font-black uppercase">
                             HÔTE
                           </span>
                         )}
                         {player.isBot && (
-                          <span className="px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-300 text-[10px] font-black uppercase border border-indigo-400/40">
+                          <span className="px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-300 border border-indigo-400/30 text-[9px] font-black uppercase">
                             BOT IA
                           </span>
                         )}
                       </div>
                       <div className="flex items-center space-x-1 mt-0.5">
-                        <CheckCircle2 className="w-3.5 h-3.5 text-[#10B981]" />
-                        <span className="text-xs font-black text-[#10B981]">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                        <span className="text-[11px] font-bold text-emerald-400">
                           {player.isBot ? 'PRÊT AUTOMATIQUE' : 'PRÊT À JOUER'}
                         </span>
                       </div>
@@ -284,14 +274,14 @@ export const TVLobbyView: React.FC = () => {
               {Array.from({ length: emptySlotsCount }).map((_, idx) => (
                 <div
                   key={`empty_${idx}`}
-                  className="flex items-center space-x-4 p-4 rounded-2xl border-2 border-dashed border-white/15 bg-[#07090E]/60 text-gray-500"
+                  className="flex items-center space-x-3.5 p-3.5 rounded-2xl border border-dashed border-slate-800 bg-slate-950/30 text-slate-500"
                 >
-                  <div className="w-10 h-10 rounded-full border border-dashed border-gray-600 flex items-center justify-center text-gray-400 font-bold text-xs">
+                  <div className="w-9 h-9 rounded-full border border-dashed border-slate-700 flex items-center justify-center text-slate-500 font-bold text-xs">
                     {filledPlayers.length + idx + 1}
                   </div>
                   <div>
-                    <div className="font-bold text-sm text-[#B8C2D8]">SLOT LIBRE</div>
-                    <div className="text-[11px] text-gray-500">Scannez le QR code pour rejoindre</div>
+                    <div className="font-bold text-xs sm:text-sm text-slate-400">SLOT LIBRE</div>
+                    <div className="text-[10px] sm:text-[11px] text-slate-500">Scannez le QR code pour rejoindre</div>
                   </div>
                 </div>
               ))}
@@ -299,12 +289,12 @@ export const TVLobbyView: React.FC = () => {
           </div>
 
           {/* Bottom Launch Button */}
-          <div className="flex items-center justify-between pt-6 border-t border-white/10">
-            <div className="text-xs text-[#B8C2D8] flex items-center space-x-2 font-bold">
-              <span className="w-2.5 h-2.5 rounded-full bg-[#10B981] animate-pulse" />
+          <div className="flex items-center justify-between pt-5 border-t border-slate-800">
+            <div className="text-xs text-slate-400 flex items-center space-x-2 font-medium">
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
               <span>
                 {needsMorePlayers
-                  ? `Min. ${minRequired} joueur(s) requis pour ${selectedGame.title} (complété automatiquement avec des Bots IA).`
+                  ? `Min. ${minRequired} joueur(s) requis pour ${selectedGame.title} (complété avec des Bots IA).`
                   : `${filledPlayers.length} joueur(s) prêt(s). La partie peut commencer !`}
               </span>
             </div>
@@ -314,9 +304,9 @@ export const TVLobbyView: React.FC = () => {
                 data-tv-focus
                 tabIndex={0}
                 onClick={handleStartGame}
-                className="flex items-center space-x-2 px-8 py-3.5 rounded-2xl bg-gradient-to-r from-mood-coral via-rose-500 to-mood-amber hover:from-rose-500 hover:to-amber-400 text-white font-display font-black text-sm uppercase tracking-wider shadow-[0_0_30px_rgba(255,71,87,0.5)] transition-all duration-200 outline-none focus:scale-110 focus:ring-4 focus:ring-mood-amber focus:shadow-[0_0_40px_rgba(245,158,11,0.8)]"
+                className="flex items-center space-x-2 px-8 py-3.5 rounded-xl bg-cyan-400 hover:bg-cyan-300 text-slate-950 font-display font-black text-xs sm:text-sm uppercase tracking-wider shadow-[0_4px_25px_rgba(6,182,212,0.35)] transition-all outline-none focus:scale-105 focus:ring-4 focus:ring-white focus:bg-white cursor-pointer"
               >
-                <Play className="w-5 h-5 fill-current" />
+                <Play className="w-4 h-4 sm:w-5 sm:h-5 fill-current" />
                 <span>LANCER LA PARTIE</span>
               </button>
             </div>
@@ -326,16 +316,16 @@ export const TVLobbyView: React.FC = () => {
 
       {/* Launch Countdown Overlay */}
       {countdown !== null && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-md">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#0A0F1D]/95">
           <div className="flex flex-col items-center space-y-4 animate-scale-in">
-            <span className="text-xl font-bold text-[#FBBF24] tracking-widest uppercase">
+            <span className="text-sm sm:text-base font-bold text-amber-400 tracking-widest uppercase">
               La partie commence dans
             </span>
-            <span className="text-9xl font-black font-display text-white animate-pulse drop-shadow-[0_0_50px_rgba(251,191,36,0.8)]">
+            <span className="text-8xl sm:text-9xl font-black font-display text-white animate-pulse drop-shadow-[0_0_40px_rgba(6,182,212,0.6)]">
               {countdown}
             </span>
-            <span className="text-base font-bold text-gray-200">
-              Regardez la Smart TV & Préparez vos manettes !
+            <span className="text-xs sm:text-sm font-semibold text-slate-300">
+              Regardez la Smart TV & Préparez vos smartphones !
             </span>
           </div>
         </div>

@@ -40,60 +40,60 @@ export const TVProfilesView: React.FC = () => {
   return (
     <div className="min-h-screen pt-24 px-12 pb-24 select-none flex flex-col space-y-8">
       <div>
-        <span className="text-xs font-black uppercase text-brand-gold tracking-widest">SALON & JOUEURS</span>
+        <span className="text-xs font-black uppercase text-amber-400 tracking-widest">SALON & JOUEURS</span>
         <h1 className="text-3xl font-black font-display text-white mt-1">Profils & Trophées du Salon</h1>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         {/* Left Profile Card */}
-        <div className="lg:col-span-4 p-8 rounded-3xl bg-surface-card border border-white/15 backdrop-blur-xl shadow-2xl flex flex-col items-center text-center space-y-4">
+        <div className="lg:col-span-4 p-8 rounded-3xl bg-slate-900/90 border border-slate-700/80 shadow-2xl flex flex-col items-center text-center space-y-4">
           <div className="relative">
-            <div className="w-24 h-24 rounded-3xl bg-gradient-to-tr from-brand-red to-brand-gold flex items-center justify-center text-6xl shadow-glow-gold">
+            <div className="w-24 h-24 rounded-3xl bg-gradient-to-tr from-cyan-500 to-amber-500 flex items-center justify-center text-6xl shadow-[0_0_25px_rgba(245,158,11,0.3)]">
               {profile.avatar}
             </div>
-            <span className="absolute -bottom-2 -right-2 px-3 py-1 rounded-full bg-brand-gold text-background font-black text-xs">
+            <span className="absolute -bottom-2 -right-2 px-3 py-1 rounded-full bg-amber-400 text-slate-950 font-black text-xs">
               NIV. {profile.level}
             </span>
           </div>
 
           <div>
             <h2 className="text-2xl font-black font-display text-white">{profile.name}</h2>
-            <span className="text-xs font-bold text-gray-400">Joueur Principal Smart TV</span>
+            <span className="text-xs font-bold text-slate-400">Joueur Principal Smart TV</span>
           </div>
 
           {/* XP Bar */}
           <div className="w-full space-y-1.5 pt-2">
             <div className="flex justify-between text-xs font-bold">
-              <span className="text-gray-400">Progression Niv. {profile.level + 1}</span>
-              <span className="text-brand-gold">{profile.xp} / {profile.nextLevelXp} XP</span>
+              <span className="text-slate-400">Progression Niv. {profile.level + 1}</span>
+              <span className="text-amber-400">{profile.xp} / {profile.nextLevelXp} XP</span>
             </div>
-            <div className="w-full h-3 rounded-full bg-surface-dark overflow-hidden border border-white/10">
-              <div className="h-full bg-gradient-to-r from-brand-red to-brand-gold rounded-full" style={{ width: '85%' }} />
+            <div className="w-full h-3 rounded-full bg-slate-950 overflow-hidden border border-slate-800">
+              <div className="h-full bg-gradient-to-r from-cyan-400 to-amber-400 rounded-full" style={{ width: '85%' }} />
             </div>
           </div>
 
           {/* Quick Stats Grid */}
           <div className="grid grid-cols-2 gap-3 w-full pt-4">
-            <div className="p-3 rounded-2xl bg-surface-light border border-white/5 text-center">
+            <div className="p-3 rounded-2xl bg-slate-800/80 border border-slate-700/60 text-center">
               <div className="font-mono font-black text-xl text-white">{profile.gamesPlayed}</div>
-              <div className="text-[10px] font-bold text-gray-400 uppercase">Parties Jouées</div>
+              <div className="text-[10px] font-bold text-slate-400 uppercase">Parties Jouées</div>
             </div>
-            <div className="p-3 rounded-2xl bg-surface-light border border-white/5 text-center">
+            <div className="p-3 rounded-2xl bg-slate-800/80 border border-slate-700/60 text-center">
               <div className="font-mono font-black text-xl text-emerald-400">{profile.wins}</div>
-              <div className="text-[10px] font-bold text-gray-400 uppercase">Victoires</div>
+              <div className="text-[10px] font-bold text-slate-400 uppercase">Victoires</div>
             </div>
           </div>
         </div>
 
         {/* Right Trophies & History */}
         <div className="lg:col-span-8 space-y-6">
-          <div className="p-6 rounded-3xl bg-surface-card border border-white/15 backdrop-blur-xl shadow-2xl space-y-4">
+          <div className="p-6 rounded-3xl bg-slate-900/90 border border-slate-700/80 shadow-2xl space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
-                <Trophy className="w-5 h-5 text-brand-gold" />
+                <Trophy className="w-5 h-5 text-amber-400" />
                 <h3 className="text-lg font-black font-display text-white">Trophées Débloqués</h3>
               </div>
-              <span className="text-xs font-bold text-brand-gold">4 / 5 Trophées</span>
+              <span className="text-xs font-bold text-amber-400">4 / 5 Trophées</span>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -102,14 +102,14 @@ export const TVProfilesView: React.FC = () => {
                   key={tr.id}
                   className={`flex items-center space-x-3.5 p-4 rounded-2xl border transition-all ${
                     tr.unlocked
-                      ? 'bg-surface-light border-brand-gold/30 text-white'
-                      : 'bg-surface-dark/40 border-white/5 text-gray-600 opacity-60'
+                      ? 'bg-slate-800/80 border-amber-400/30 text-white'
+                      : 'bg-slate-950/60 border-slate-800 text-slate-600 opacity-60'
                   }`}
                 >
                   <div className="text-3xl filter drop-shadow">{tr.icon}</div>
                   <div>
                     <div className="font-bold text-sm text-white">{tr.title}</div>
-                    <div className="text-xs text-gray-400">{tr.desc}</div>
+                    <div className="text-xs text-slate-400">{tr.desc}</div>
                   </div>
                 </div>
               ))}

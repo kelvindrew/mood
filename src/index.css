@@ -182,40 +182,42 @@ html.tv-ui .animate-bounce {
 
 /* Boutons d'action géants Smart TV */
 .mood-btn-primary {
-  background: linear-gradient(135deg, #FF4757 0%, #E02438 100%);
-  color: #FFFFFF;
+  background: linear-gradient(135deg, #22D3EE 0%, #06B6D4 100%);
+  color: #080D1A;
   font-family: 'Space Grotesk', 'Outfit', sans-serif;
   font-weight: 900;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  box-shadow: 0 10px 30px -5px rgba(255, 71, 87, 0.55),
-              inset 0 1px 1px rgba(255, 255, 255, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  box-shadow: 0 8px 24px -4px rgba(6, 182, 212, 0.45),
+              inset 0 1px 1.5px rgba(255, 255, 255, 0.6);
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .mood-btn-primary:focus,
 .mood-btn-primary:hover {
-  transform: scale(1.05);
-  box-shadow: 0 14px 40px -5px rgba(255, 71, 87, 0.75),
+  transform: scale(1.04);
+  background: #FFFFFF;
+  color: #080D1A;
+  box-shadow: 0 12px 32px -4px rgba(6, 182, 212, 0.65),
               0 0 0 3px #FFFFFF;
 }
 
 .mood-btn-secondary {
-  background: rgba(255, 255, 255, 0.08);
-  color: #FFFFFF;
+  background: rgba(30, 41, 59, 0.75);
+  color: #F8FAFC;
   font-family: 'Space Grotesk', 'Outfit', sans-serif;
   font-weight: 800;
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.16);
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .mood-btn-secondary:focus,
 .mood-btn-secondary:hover {
-  background: rgba(255, 255, 255, 0.16);
-  border-color: #FFFFFF;
-  transform: scale(1.05);
+  background: rgba(51, 65, 85, 0.9);
+  border-color: #38BDF8;
+  transform: scale(1.03);
+  box-shadow: 0 0 0 2px #38BDF8;
 }
 
 /* Rétrocompatibilité fluide */

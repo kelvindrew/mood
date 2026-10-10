@@ -38,8 +38,8 @@ export const TVFloatingControlBar: React.FC<TVFloatingControlBarProps> = ({
     <div className="fixed bottom-6 left-0 right-0 z-40 flex items-center justify-center pointer-events-auto select-none animate-scale-in">
       {/* Sleek Centered Floating Bar */}
       <div
-        className="flex items-center justify-center max-w-4xl w-full px-4"
-        style={{ gap: 'clamp(14px, 2.2vw, 36px)' }}
+        className="flex items-center justify-between max-w-3xl w-full px-5 py-2.5 rounded-full bg-slate-900/95 border border-slate-700/80 shadow-2xl"
+        style={{ gap: 'clamp(12px, 1.8vw, 28px)' }}
       >
         {/* 1. Left Action Controls */}
         <div className="flex items-center space-x-2">
@@ -48,7 +48,7 @@ export const TVFloatingControlBar: React.FC<TVFloatingControlBarProps> = ({
             data-tv-focus
             tabIndex={0}
             onClick={onPrev}
-            className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 border border-white/10 flex items-center justify-center text-white/75 hover:text-white transition-all active:scale-90 outline-none focus:scale-125 focus:border-white focus:bg-white/30"
+            className="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 border border-slate-700 flex items-center justify-center text-slate-300 hover:text-white transition-all active:scale-90 outline-none focus:scale-115 focus:border-cyan-400 focus:bg-white focus:text-slate-950"
             title="Jeu Précédent"
           >
             <SkipBack className="w-4 h-4 fill-current" />
@@ -62,7 +62,7 @@ export const TVFloatingControlBar: React.FC<TVFloatingControlBarProps> = ({
               audio.playSelect();
               onPlay(activeGame);
             }}
-            className="flex items-center space-x-2 px-5 py-2 rounded-full bg-gradient-to-r from-[#10B981] to-[#059669] hover:from-[#059669] hover:to-[#047857] text-white font-display font-black text-xs uppercase tracking-wider shadow-[0_0_20px_rgba(16,185,129,0.45)] transition-all hover:scale-105 active:scale-95 outline-none focus:scale-115 focus:ring-4 focus:ring-emerald-400/50"
+            className="flex items-center space-x-2 px-5 py-2 rounded-full bg-cyan-400 hover:bg-cyan-300 text-slate-950 font-display font-black text-xs uppercase tracking-wider shadow-[0_4px_20px_rgba(6,182,212,0.35)] transition-all hover:scale-105 active:scale-95 outline-none focus:scale-110 focus:ring-4 focus:ring-white focus:bg-white"
             title="Lancer le Salon"
           >
             <Play className="w-3.5 h-3.5 fill-current" />
@@ -74,7 +74,7 @@ export const TVFloatingControlBar: React.FC<TVFloatingControlBarProps> = ({
             data-tv-focus
             tabIndex={0}
             onClick={onNext}
-            className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 border border-white/10 flex items-center justify-center text-white/75 hover:text-white transition-all active:scale-90 outline-none focus:scale-125 focus:border-white focus:bg-white/30"
+            className="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 border border-slate-700 flex items-center justify-center text-slate-300 hover:text-white transition-all active:scale-90 outline-none focus:scale-115 focus:border-cyan-400 focus:bg-white focus:text-slate-950"
             title="Jeu Suivant"
           >
             <SkipForward className="w-4 h-4 fill-current" />
@@ -88,15 +88,15 @@ export const TVFloatingControlBar: React.FC<TVFloatingControlBarProps> = ({
         >
           {/* Square Thumbnail */}
           <div className="flex flex-col items-center space-y-1 flex-shrink-0">
-            <div className="w-10 h-10 rounded-xl overflow-hidden shadow-lg relative border border-white/15">
+            <div className="w-10 h-10 rounded-xl overflow-hidden shadow-lg relative border border-slate-700">
               <img
                 src={activeGame.coverImage || activeGame.heroImage}
                 alt={activeGame.title}
                 className="w-full h-full object-cover"
               />
             </div>
-            <div className="w-8 h-1 rounded-full bg-white/20 overflow-hidden">
-              <div className="w-2/3 h-full bg-[#10B981] rounded-full" />
+            <div className="w-8 h-1 rounded-full bg-slate-800 overflow-hidden">
+              <div className="w-2/3 h-full bg-cyan-400 rounded-full" />
             </div>
           </div>
 
@@ -104,21 +104,21 @@ export const TVFloatingControlBar: React.FC<TVFloatingControlBarProps> = ({
             <span className="font-display font-black text-sm text-white truncate drop-shadow">
               {activeGame.title}
             </span>
-            <span className="text-[11px] text-gray-400 font-medium truncate">
+            <span className="text-[11px] text-slate-400 font-medium truncate">
               {activeGame.tagline || `${activeGame.category} • ${activeGame.minPlayers}-${activeGame.maxPlayers} Joueurs`}
             </span>
           </div>
 
           {/* Sound Wave Indicator Dots */}
           <div className="hidden sm:flex items-center space-x-1 pl-2">
-            <span className="w-1 h-3 rounded-full bg-[#10B981] animate-pulse" />
-            <span className="w-1 h-4.5 rounded-full bg-[#10B981]/80 animate-pulse delay-75" />
-            <span className="w-1 h-2 rounded-full bg-[#10B981]/60 animate-pulse delay-150" />
+            <span className="w-1 h-3 rounded-full bg-cyan-400 animate-pulse" />
+            <span className="w-1 h-4.5 rounded-full bg-cyan-400/80 animate-pulse delay-75" />
+            <span className="w-1 h-2 rounded-full bg-cyan-400/60 animate-pulse delay-150" />
           </div>
         </div>
 
         {/* 3. Right Icons */}
-        <div className="flex items-center space-x-2 text-white/70">
+        <div className="flex items-center space-x-2 text-slate-300">
           <button
             data-tv-focus
             tabIndex={0}
@@ -126,7 +126,7 @@ export const TVFloatingControlBar: React.FC<TVFloatingControlBarProps> = ({
               audio.playSelect();
               onMoreInfo(activeGame);
             }}
-            className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 border border-white/10 flex items-center justify-center text-white/75 hover:text-white transition-all active:scale-90 outline-none focus:scale-125 focus:border-white focus:bg-white/30"
+            className="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 border border-slate-700 flex items-center justify-center text-slate-300 hover:text-white transition-all active:scale-90 outline-none focus:scale-115 focus:border-cyan-400 focus:bg-white focus:text-slate-950"
             title="Détails & Règles"
           >
             <MessageSquareQuote className="w-4 h-4" />
@@ -139,7 +139,7 @@ export const TVFloatingControlBar: React.FC<TVFloatingControlBarProps> = ({
               audio.playSelect();
               setTvView('categories');
             }}
-            className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 border border-white/10 flex items-center justify-center text-white/75 hover:text-white transition-all active:scale-90 outline-none focus:scale-125 focus:border-white focus:bg-white/30"
+            className="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 border border-slate-700 flex items-center justify-center text-slate-300 hover:text-white transition-all active:scale-90 outline-none focus:scale-115 focus:border-cyan-400 focus:bg-white focus:text-slate-950"
             title="Catalogue de Tous les Jeux"
           >
             <Layers className="w-4 h-4" />

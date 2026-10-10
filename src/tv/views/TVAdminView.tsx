@@ -177,23 +177,23 @@ export const TVAdminView: React.FC = () => {
   // ============================================================
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen flex items-center justify-center px-4 bg-[#07090E] select-none">
-        <div className="max-w-md w-full p-8 rounded-3xl bg-surface-card border-2 border-brand-red/50 shadow-glow-red space-y-6 animate-scale-in">
+      <div className="min-h-screen flex items-center justify-center px-4 bg-[#0A0F1D] select-none">
+        <div className="max-w-md w-full p-8 rounded-3xl bg-slate-900/90 border border-cyan-500/30 shadow-[0_0_30px_rgba(6,182,212,0.15)] space-y-6 animate-scale-in">
           <div className="flex flex-col items-center text-center space-y-2">
-            <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-brand-red to-amber-500 flex items-center justify-center shadow-lg border border-white/20">
+            <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-cyan-500 to-indigo-600 flex items-center justify-center shadow-lg border border-white/20">
               <Lock className="w-8 h-8 text-white" />
             </div>
             <h1 className="text-2xl font-black font-display text-white">
               CONNEXION ADMINISTRATEUR
             </h1>
-            <p className="text-xs text-gray-400">
+            <p className="text-xs text-slate-400">
               Accédez au panneau de contrôle pour modifier les jeux, énigmes et contenus.
             </p>
           </div>
 
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
-              <label className="text-[11px] font-black uppercase tracking-wider text-gray-300 block mb-1.5">
+              <label className="text-[11px] font-black uppercase tracking-wider text-slate-300 block mb-1.5">
                 Mot de passe Master :
               </label>
               <input
@@ -201,7 +201,7 @@ export const TVAdminView: React.FC = () => {
                 value={passwordInput}
                 onChange={(e) => setPasswordInput(e.target.value)}
                 placeholder="Entrez le mot de passe (défaut : admin)"
-                className="w-full px-4 py-3 rounded-2xl bg-surface-dark border border-white/20 text-white font-mono text-sm focus:border-brand-accent focus:ring-2 focus:ring-brand-accent outline-none transition-all"
+                className="w-full px-4 py-3 rounded-2xl bg-slate-950 border border-slate-700 text-white font-mono text-sm focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/40 outline-none transition-all"
                 autoFocus
               />
             </div>
@@ -215,7 +215,7 @@ export const TVAdminView: React.FC = () => {
 
             <button
               type="submit"
-              className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-brand-red to-amber-500 text-white font-display font-black text-sm uppercase tracking-wider shadow-glow-red hover:scale-105 active:scale-95 transition-all"
+              className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-cyan-500 to-indigo-600 text-white font-display font-black text-sm uppercase tracking-wider shadow-[0_0_20px_rgba(6,182,212,0.3)] hover:scale-105 active:scale-95 transition-all"
             >
               Déverrouiller le Back-Office
             </button>
@@ -224,7 +224,7 @@ export const TVAdminView: React.FC = () => {
           <div className="pt-2 text-center">
             <button
               onClick={() => setTvView('home')}
-              className="text-xs font-bold text-gray-400 hover:text-white flex items-center justify-center space-x-1 mx-auto"
+              className="text-xs font-bold text-slate-400 hover:text-white flex items-center justify-center space-x-1 mx-auto"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
               <span>Retour à l'accueil</span>
@@ -239,19 +239,19 @@ export const TVAdminView: React.FC = () => {
   // MAIN ADMIN DASHBOARD
   // ============================================================
   return (
-    <div className="min-h-screen pt-20 px-8 pb-16 bg-[#07090E] select-none text-white flex flex-col justify-between">
+    <div className="min-h-screen pt-20 px-8 pb-16 bg-[#0A0F1D] select-none text-white flex flex-col justify-between">
       {/* Top Header & Navigation Tabs */}
       <div className="space-y-4">
         <div className="flex items-center justify-between border-b border-white/10 pb-4">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-red to-amber-500 flex items-center justify-center shadow-glow-red">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-500 to-indigo-600 flex items-center justify-center shadow-[0_0_15px_rgba(6,182,212,0.3)]">
               <Shield className="w-5 h-5 text-white" />
             </div>
             <div>
               <h1 className="text-2xl font-black font-display text-white tracking-wide">
                 PANNEAU D'ADMINISTRATION CMS
               </h1>
-              <span className="text-[11px] font-bold text-gray-400">
+              <span className="text-[11px] font-bold text-slate-400">
                 Gestion manuelle du contenu, des jeux et des énigmes en temps réel
               </span>
             </div>
@@ -260,7 +260,7 @@ export const TVAdminView: React.FC = () => {
           <div className="flex items-center space-x-3">
             <button
               onClick={() => setTvView('home')}
-              className="flex items-center space-x-1.5 px-4 py-2 rounded-xl bg-surface-card border border-white/10 text-xs font-bold text-gray-300 hover:text-white transition-all"
+              className="flex items-center space-x-1.5 px-4 py-2 rounded-xl bg-slate-800/80 border border-slate-700/60 text-xs font-bold text-slate-300 hover:text-white transition-all"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
               <span>Voir le Site</span>
@@ -304,11 +304,11 @@ export const TVAdminView: React.FC = () => {
                 }}
                 className={`flex items-center space-x-2 px-5 py-2.5 rounded-2xl text-xs font-black uppercase tracking-wider transition-all whitespace-nowrap ${
                   isActive
-                    ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-lg scale-105'
-                    : 'bg-surface-card border border-white/10 text-gray-400 hover:text-white'
+                    ? 'bg-gradient-to-r from-cyan-500 to-indigo-600 text-white shadow-lg scale-105'
+                    : 'bg-slate-900/80 border border-slate-700/60 text-slate-400 hover:text-white'
                 }`}
               >
-                <Icon className="w-4 h-4 text-[#FFB800]" />
+                <Icon className="w-4 h-4 text-amber-400" />
                 <span>{tab.label}</span>
               </button>
             );

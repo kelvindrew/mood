@@ -29,14 +29,14 @@ const WildRushBoardTV = React.lazy(() => import('../boards/WildRushBoardTV').the
 
 const TVBoardLoader: React.FC<{ gameId: string }> = ({ gameId }) => (
   <div className="flex flex-col items-center justify-center space-y-4 text-center select-none animate-scale-in">
-    <div className="w-16 h-16 rounded-3xl bg-emerald-500/20 border border-emerald-400/40 flex items-center justify-center shadow-[0_0_40px_rgba(16,185,129,0.3)]">
-      <Loader2 className="w-8 h-8 text-emerald-400 animate-spin" />
+    <div className="w-16 h-16 rounded-3xl bg-cyan-950/40 border border-cyan-400/40 flex items-center justify-center shadow-[0_0_30px_rgba(6,182,212,0.3)]">
+      <Loader2 className="w-8 h-8 text-cyan-400 animate-spin" />
     </div>
     <div className="flex flex-col space-y-1">
       <span className="font-display font-black text-xl text-white tracking-wide uppercase">
         CHARGEMENT DU JEU
       </span>
-      <span className="font-mono text-xs text-emerald-400 font-bold uppercase tracking-widest">
+      <span className="font-mono text-xs text-cyan-400 font-bold uppercase tracking-widest">
         {gameId}
       </span>
     </div>
@@ -114,11 +114,11 @@ export const TVGamePlayView: React.FC = () => {
   };
 
   return (
-    <div className="relative w-screen h-screen overflow-hidden bg-[#07090F] flex flex-col justify-center items-center select-none">
+    <div className="relative w-screen h-screen overflow-hidden bg-[#0A0F1D] flex flex-col justify-center items-center select-none">
       {/* Bouton retour vers le salon */}
       <button
         onClick={returnToLobby}
-        className="absolute top-4 left-5 z-50 flex items-center space-x-2 px-3.5 py-2 rounded-xl bg-black/60 hover:bg-black/85 border border-white/15 text-gray-300 hover:text-white text-xs font-bold transition-all shadow-lg active:scale-95"
+        className="absolute top-4 left-5 z-50 flex items-center space-x-2 px-3.5 py-2 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-slate-700/80 text-slate-300 hover:text-white text-xs font-bold transition-all shadow-lg active:scale-95"
         title="Quitter vers le salon"
       >
         <ArrowLeft className="w-4 h-4" />
