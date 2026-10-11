@@ -24,6 +24,8 @@ interface GameContextType {
   games: GameCatalogItem[];
   selectedGame: GameCatalogItem;
   setSelectedGame: (game: GameCatalogItem) => void;
+  selectedCategory: string;
+  setSelectedCategory: (cat: string) => void;
   moodTheme: MoodThemeId;
   setMoodTheme: (theme: MoodThemeId) => void;
   room: RoomState | null;
@@ -54,6 +56,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [mobileView, setMobileView] = useState<MobileView>('join');
   const [games, setGames] = useState<GameCatalogItem[]>(() => adminCms.getGamesCatalog());
   const [selectedGame, setSelectedGame] = useState<GameCatalogItem>(() => adminCms.getGamesCatalog()[0] || GAMES_CATALOG[0]);
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
 
   useEffect(() => {
     const unsub = adminCms.subscribe(() => {
@@ -364,6 +367,8 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         games,
         selectedGame,
         setSelectedGame,
+        selectedCategory,
+        setSelectedCategory,
         moodTheme,
         setMoodTheme,
         room,

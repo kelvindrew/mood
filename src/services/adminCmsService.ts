@@ -109,7 +109,17 @@ class AdminCmsService {
     try {
       const stored = localStorage.getItem(STORAGE_KEYS.GAMES_CATALOG);
       if (stored) {
-        return JSON.parse(stored);
+        const parsed: GameCatalogItem[] = JSON.parse(stored);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          const existingIds = new Set(parsed.map((g) => g.id));
+          const missing = GAMES_CATALOG.filter((g) => !existingIds.has(g.id));
+          if (missing.length > 0) {
+            const merged = [...parsed, ...missing];
+            localStorage.setItem(STORAGE_KEYS.GAMES_CATALOG, JSON.stringify(merged));
+            return merged;
+          }
+          return parsed;
+        }
       }
     } catch {}
     return GAMES_CATALOG;
