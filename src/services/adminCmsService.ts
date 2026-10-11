@@ -111,16 +111,32 @@ class AdminCmsService {
       if (stored) {
         const parsed: GameCatalogItem[] = JSON.parse(stored);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          const existingIds = new Set(parsed.map((g) => g.id));
-          const missing = GAMES_CATALOG.filter((g) => !existingIds.has(g.id));
-          if (missing.length > 0) {
-            const merged = [...parsed, ...missing];
-            localStorage.setItem(STORAGE_KEYS.GAMES_CATALOG, JSON.stringify(merged));
-            return merged;
-          }
-          return parsed;
+          const officialMap = new Map(GAMES_CATALOG.map((g) => [g.id, g]));
+          // Reconcile: ensure all 23 games exist with up-to-date media, preserving custom edits
+          const merged: GameCatalogItem[] = GAMES_CATALOG.map((official) => {
+            const custom = parsed.find((p) => p.id === official.id);
+            return custom
+              ? {
+                  ...official,
+                  ...custom,
+                  heroImage: custom.heroImage || official.heroImage,
+                  coverImage: custom.coverImage || official.coverImage,
+                }
+              : official;
+          });
+          // Also keep any extra custom games added through admin
+          parsed.forEach((custom) => {
+            if (!officialMap.has(custom.id)) {
+              merged.push(custom);
+            }
+          });
+          localStorage.setItem(STORAGE_KEYS.GAMES_CATALOG, JSON.stringify(merged));
+          return merged;
         }
       }
+    } catch {}
+    try {
+      localStorage.setItem(STORAGE_KEYS.GAMES_CATALOG, JSON.stringify(GAMES_CATALOG));
     } catch {}
     return GAMES_CATALOG;
   }

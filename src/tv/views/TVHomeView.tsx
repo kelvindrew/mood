@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useGame } from '../../context/GameContext';
 import { adminCms } from '../../services/adminCmsService';
+import { GAMES_CATALOG } from '../../data/gamesCatalog';
 import { GameCatalogItem } from '../../types/game';
 import { tvNav } from '../../services/tvNavigation';
 import { Play, Plus, Star, ChevronLeft, ChevronRight, BookOpen } from 'lucide-react';
@@ -60,7 +61,8 @@ export const TVHomeView: React.FC = () => {
     }
   };
 
-  const currentPoster = spotlightGame?.heroImage || spotlightGame?.coverImage;
+  const activeGame = spotlightGame || displayedGames[0] || games[0] || GAMES_CATALOG[0];
+  const currentPoster = activeGame?.heroImage || activeGame?.coverImage;
 
   return (
     <div className="relative min-h-screen bg-[#0A1118] text-white select-none overflow-hidden flex flex-col justify-between">
@@ -68,9 +70,9 @@ export const TVHomeView: React.FC = () => {
       <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden select-none bg-[#0A1118]">
         {currentPoster && (
           <img
-            key={spotlightGame.id}
+            key={activeGame.id}
             src={currentPoster}
-            alt={spotlightGame.title}
+            alt={activeGame.title}
             className="w-full h-full object-cover object-right-top md:object-right filter brightness-[0.78] contrast-[1.10] transition-opacity duration-700 animate-fade-in"
           />
         )}
@@ -89,18 +91,18 @@ export const TVHomeView: React.FC = () => {
       <div className="relative z-10 pt-28 md:pt-32 px-8 md:px-14 max-w-2xl flex flex-col space-y-3.5 animate-fade-in">
         {/* Titre Display Majuscule Stylisé */}
         <h1 className="text-4xl sm:text-5xl md:text-6xl font-black font-display tracking-tight text-white uppercase leading-none drop-shadow-[0_2px_15px_rgba(0,0,0,0.9)]">
-          {spotlightGame.title}
+          {activeGame.title}
         </h1>
 
         {/* Sous-titre / Mode (Ex: Season 1 -> Multijoueur Smart TV) */}
         <div className="text-sm md:text-base font-semibold text-slate-300 drop-shadow">
-          <span>{spotlightGame.minPlayers}–{spotlightGame.maxPlayers} Joueurs</span>
+          <span>{activeGame.minPlayers}–{activeGame.maxPlayers} Joueurs</span>
           <span className="mx-2 text-slate-500">•</span>
-          <span>{spotlightGame.durationMinutes}</span>
-          {spotlightGame.badge && (
+          <span>{activeGame.durationMinutes}</span>
+          {activeGame.badge && (
             <>
               <span className="mx-2 text-slate-500">•</span>
-              <span className="text-amber-400 font-bold uppercase">{spotlightGame.badge}</span>
+              <span className="text-amber-400 font-bold uppercase">{activeGame.badge}</span>
             </>
           )}
         </div>
@@ -115,7 +117,7 @@ export const TVHomeView: React.FC = () => {
             <Star className="w-4 h-4 fill-amber-400/50" />
           </div>
           <span className="text-slate-400">
-            {spotlightGame.category.toUpperCase()} • SMART TV • SANS MANETTE
+            {activeGame.category.toUpperCase()} • SMART TV • SANS MANETTE
           </span>
         </div>
 
@@ -124,7 +126,7 @@ export const TVHomeView: React.FC = () => {
           <button
             data-tv-focus
             tabIndex={0}
-            onClick={() => handlePlayGame(spotlightGame)}
+            onClick={() => handlePlayGame(activeGame)}
             className="px-6 py-2.5 rounded-lg bg-cyan-400 hover:bg-cyan-300 text-slate-950 font-black text-sm uppercase tracking-wider flex items-center space-x-2 shadow-[0_0_20px_rgba(6,182,212,0.4)] transition-all outline-none focus:scale-105 focus:ring-4 focus:ring-white focus:bg-white cursor-pointer"
           >
             <Play className="w-4 h-4 fill-slate-950 translate-x-0.5" />
@@ -136,7 +138,7 @@ export const TVHomeView: React.FC = () => {
             tabIndex={0}
             onClick={() => {
               audio.playSelect();
-              setSelectedGame(spotlightGame);
+              setSelectedGame(activeGame);
               setTvView('game_detail');
             }}
             className="w-10 h-10 rounded-lg bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-400/40 text-cyan-300 hover:text-white flex items-center justify-center transition-all outline-none focus:scale-110 focus:ring-4 focus:ring-white focus:bg-cyan-400 focus:text-slate-950 cursor-pointer"
@@ -148,7 +150,7 @@ export const TVHomeView: React.FC = () => {
 
         {/* Description / Synopsis épuré (2 à 3 lignes) */}
         <p className="text-xs sm:text-sm text-slate-300/90 font-sans leading-relaxed max-w-lg line-clamp-3 drop-shadow pt-0.5">
-          {spotlightGame.description || spotlightGame.tagline}
+          {activeGame.description || activeGame.tagline}
         </p>
       </div>
 
