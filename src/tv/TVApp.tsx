@@ -9,6 +9,10 @@ import { Loader2 } from 'lucide-react';
 
 const TVResultsView = React.lazy(() => import('./views/TVResultsView').then(m => ({ default: m.TVResultsView })));
 const TVAdminView = React.lazy(() => import('./views/TVAdminView').then(m => ({ default: m.TVAdminView })));
+const TVCategoriesView = React.lazy(() => import('./views/TVCategoriesView').then(m => ({ default: m.TVCategoriesView })));
+const TVGameDetailView = React.lazy(() => import('./views/TVGameDetailView').then(m => ({ default: m.TVGameDetailView })));
+const TVProfilesView = React.lazy(() => import('./views/TVProfilesView').then(m => ({ default: m.TVProfilesView })));
+const TVSettingsView = React.lazy(() => import('./views/TVSettingsView').then(m => ({ default: m.TVSettingsView })));
 
 const ViewLoader: React.FC = () => (
   <div className="flex items-center justify-center min-h-screen bg-[#0A0F1D]">
@@ -38,6 +42,16 @@ export const TVApp: React.FC = () => {
         return <TVGamePlayView />;
       case 'results':
         return <TVResultsView />;
+      case 'categories':
+        return <TVCategoriesView />;
+      case 'detail':
+      case 'game_detail':
+        return <TVGameDetailView />;
+      case 'profile':
+      case 'profiles':
+        return <TVProfilesView />;
+      case 'settings':
+        return <TVSettingsView />;
       case 'admin':
         return <TVAdminView />;
       default:

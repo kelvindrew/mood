@@ -24,21 +24,21 @@ export const MobileHeader: React.FC = () => {
   if (!room) return null;
 
   return (
-    <header className="px-4 py-3 bg-surface-card/95 border-b border-white/10 flex items-center justify-between backdrop-blur-md sticky top-0 z-30">
+    <header className="px-4 py-3 bg-[#0D1526]/95 border-b border-slate-800 flex items-center justify-between sticky top-0 z-30">
       <div className="flex items-center space-x-2.5">
         <div className="text-2xl">{localPlayer?.avatar || '🦊'}</div>
         <div>
           <div className="flex items-center space-x-1.5">
             <span className="font-bold text-sm text-white truncate max-w-[110px]">{localPlayer?.name || 'Joueur'}</span>
             {localPlayer?.isHost && (
-              <span className="px-1.5 py-0.2 rounded bg-brand-gold/20 text-brand-gold text-[9px] font-black uppercase">
+              <span className="px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[9px] font-black uppercase">
                 HÔTE
               </span>
             )}
           </div>
-          <div className="flex items-center space-x-1 text-[11px] text-gray-400">
+          <div className="flex items-center space-x-1 text-[11px] text-slate-400">
             <span>Salon :</span>
-            <span className="font-mono font-black text-brand-gold">{room.code}</span>
+            <span className="font-mono font-black text-amber-400">{room.code}</span>
           </div>
         </div>
       </div>
@@ -59,7 +59,7 @@ export const MobileHeader: React.FC = () => {
 
         <button
           onClick={toggleSound}
-          className="p-1.5 rounded-lg bg-surface-light text-gray-400 hover:text-white"
+          className="p-1.5 rounded-lg bg-slate-800/80 border border-slate-700/60 text-slate-300 hover:text-white"
         >
           {muted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
         </button>

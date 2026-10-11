@@ -167,7 +167,7 @@ export const TVResultsView: React.FC = () => {
             audio.playSelect();
             replayGame();
           }}
-          className="flex items-center space-x-3 px-10 py-4 rounded-2xl bg-cyan-400 hover:bg-cyan-300 text-slate-950 font-black text-lg shadow-[0_0_25px_rgba(6,182,212,0.4)] hover:scale-105 focus:scale-105 focus:bg-white focus:text-slate-950 focus:ring-4 focus:ring-cyan-300 transition-all outline-none"
+          className="flex items-center space-x-3 px-10 py-4 rounded-2xl bg-gradient-to-r from-cyan-400 to-cyan-300 hover:from-cyan-300 hover:to-cyan-200 text-slate-950 font-black text-lg shadow-[0_4px_25px_rgba(6,182,212,0.35)] hover:scale-105 focus:scale-105 focus:bg-white focus:text-slate-950 focus:ring-4 focus:ring-white transition-all outline-none cursor-pointer"
         >
           <RotateCcw className="w-5 h-5 stroke-[2.5]" />
           <span>REJOUER AVEC LE MÊME GROUPE</span>
@@ -180,7 +180,7 @@ export const TVResultsView: React.FC = () => {
             audio.playSelect();
             returnToHome();
           }}
-          className="flex items-center space-x-3 px-8 py-4 rounded-2xl bg-slate-800/90 hover:bg-slate-700/90 border border-slate-600/70 text-slate-200 font-bold text-base hover:text-white focus:scale-105 focus:bg-white focus:text-slate-950 focus:ring-4 focus:ring-cyan-400 transition-all outline-none"
+          className="flex items-center space-x-3 px-8 py-4 rounded-2xl bg-slate-800/90 hover:bg-slate-700/90 border border-slate-600/70 text-slate-200 font-bold text-base hover:text-white focus:scale-105 focus:bg-cyan-400 focus:text-slate-950 focus:ring-4 focus:ring-white transition-all outline-none cursor-pointer"
         >
           <Home className="w-5 h-5" />
           <span>RETOUR À L'ACCUEIL</span>

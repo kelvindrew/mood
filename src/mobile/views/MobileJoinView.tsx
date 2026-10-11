@@ -183,14 +183,14 @@ export const MobileJoinView: React.FC<MobileJoinViewProps> = ({ defaultRoomCode 
       <div className="relative z-10 flex flex-col justify-between min-h-[calc(100vh-2.5rem)]">
         {/* Top Brand Banner & Theme Atmosphere Switcher */}
         <div className="text-center pt-2 space-y-2.5 animate-scale-in flex flex-col items-center">
-          <div className="w-14 h-14 mx-auto rounded-2xl bg-gradient-to-tr from-mood-indigo via-mood-coral to-mood-amber flex items-center justify-center shadow-[0_0_30px_rgba(255,71,87,0.4)] border border-white/20">
+          <div className="w-14 h-14 mx-auto rounded-2xl bg-gradient-to-tr from-cyan-400 via-indigo-600 to-amber-400 flex items-center justify-center shadow-[0_0_25px_rgba(6,182,212,0.4)] border border-white/20">
             <Gamepad2 className="w-8 h-8 text-white" />
           </div>
           <div>
             <h1 className="text-2xl font-black font-display tracking-widest text-white">
               MOOD
             </h1>
-            <p className="text-[11px] text-mood-coral font-bold uppercase tracking-widest">
+            <p className="text-[11px] text-cyan-400 font-bold uppercase tracking-widest">
               Manette Sans Fil • Smart TV
             </p>
           </div>
@@ -202,10 +202,10 @@ export const MobileJoinView: React.FC<MobileJoinViewProps> = ({ defaultRoomCode 
         </div>
 
       {/* Main Join Form */}
-      <form onSubmit={handleJoin} className="my-auto space-y-4 bg-[#0F1424] border border-white/10 p-6 rounded-3xl shadow-2xl">
+      <form onSubmit={handleJoin} className="my-auto space-y-4 bg-[#0E1626]/95 border border-slate-700/60 p-5 sm:p-6 rounded-3xl shadow-2xl">
         {/* Room Code */}
         <div>
-          <label className="text-[11px] font-black text-gray-300 uppercase tracking-wider block mb-1">
+          <label className="text-[11px] font-black text-slate-300 uppercase tracking-wider block mb-1">
             Code du Salon TV (4 caractères)
           </label>
           <input
@@ -216,14 +216,14 @@ export const MobileJoinView: React.FC<MobileJoinViewProps> = ({ defaultRoomCode 
             value={code}
             onChange={(e) => setCode(e.target.value.toUpperCase())}
             placeholder="Ex: 4827"
-            className="w-full text-center py-3.5 px-4 rounded-2xl bg-black/60 border-2 border-purple-500/50 text-3xl font-black font-mono tracking-widest text-white placeholder-gray-600 focus:outline-none focus:border-purple-400 focus:shadow-[0_0_25px_rgba(124,58,237,0.5)] uppercase"
+            className="w-full text-center py-3.5 px-4 rounded-2xl bg-slate-950/80 border-2 border-amber-400/60 text-3xl font-black font-mono tracking-widest text-amber-400 placeholder-slate-600 focus:outline-none focus:border-amber-400 focus:ring-4 focus:ring-amber-400/20 uppercase shadow-inner"
             required
           />
         </div>
 
         {/* Player Name */}
         <div>
-          <label className="text-[11px] font-black text-gray-300 uppercase tracking-wider block mb-1">
+          <label className="text-[11px] font-black text-slate-300 uppercase tracking-wider block mb-1">
             Votre Pseudo
           </label>
           <input
@@ -232,7 +232,7 @@ export const MobileJoinView: React.FC<MobileJoinViewProps> = ({ defaultRoomCode 
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Entrez votre prénom ou pseudo"
-            className="w-full py-3 px-4 rounded-2xl bg-black/40 border border-white/15 text-sm font-bold text-white placeholder-gray-500 focus:outline-none focus:border-mood-coral shadow-inner"
+            className="w-full py-3 px-4 rounded-2xl bg-slate-950/60 border border-slate-700/60 text-sm font-bold text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20 shadow-inner"
             required
           />
         </div>
@@ -240,13 +240,13 @@ export const MobileJoinView: React.FC<MobileJoinViewProps> = ({ defaultRoomCode 
         {/* Avatar or Selfie Camera */}
         <div>
           <div className="flex items-center justify-between mb-1">
-            <label className="text-[11px] font-black text-gray-300 uppercase tracking-wider">
+            <label className="text-[11px] font-black text-slate-300 uppercase tracking-wider">
               Avatar ou Photo Selfie
             </label>
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              className="text-[11px] font-bold text-mood-amber flex items-center space-x-1"
+              className="text-[11px] font-bold text-amber-400 hover:text-amber-300 flex items-center space-x-1"
             >
               <Camera className="w-3.5 h-3.5" />
               <span>{selfieImage ? 'Changer Photo' : 'Prendre Selfie'}</span>
@@ -262,12 +262,12 @@ export const MobileJoinView: React.FC<MobileJoinViewProps> = ({ defaultRoomCode 
           </div>
 
           {selfieImage ? (
-            <div className="flex items-center space-x-3 p-2 rounded-2xl bg-black/40 border border-mood-amber/50">
-              <img src={selfieImage} alt="Selfie" className="w-12 h-12 rounded-xl object-cover border-2 border-mood-amber shadow-md" />
-              <span className="text-xs font-bold text-mood-emerald">Photo Selfie capturée pour la TV</span>
+            <div className="flex items-center space-x-3 p-2 rounded-2xl bg-slate-950/60 border border-amber-400/40">
+              <img src={selfieImage} alt="Selfie" className="w-12 h-12 rounded-xl object-cover border-2 border-amber-400 shadow-md" />
+              <span className="text-xs font-bold text-emerald-400">Photo Selfie capturée pour la TV</span>
             </div>
           ) : (
-            <div className="grid grid-cols-6 gap-1.5 p-2 bg-black/40 rounded-2xl border border-white/10 shadow-inner">
+            <div className="grid grid-cols-6 gap-1.5 p-2 bg-slate-950/60 rounded-2xl border border-slate-800 shadow-inner">
               {AVATAR_LETTERS.map((av) => (
                 <button
                   key={av}
@@ -278,8 +278,8 @@ export const MobileJoinView: React.FC<MobileJoinViewProps> = ({ defaultRoomCode 
                   }}
                   className={`w-10 h-10 rounded-xl text-base font-black flex items-center justify-center transition-all ${
                     selectedAvatar === av
-                      ? 'bg-gradient-to-r from-mood-coral to-mood-amber scale-110 shadow-lg ring-2 ring-white text-white'
-                      : 'bg-white/5 text-gray-300 hover:bg-white/10'
+                      ? 'bg-gradient-to-r from-cyan-400 to-indigo-600 scale-105 shadow-lg ring-2 ring-cyan-300 text-white'
+                      : 'bg-slate-900/80 border border-slate-800 text-slate-300 hover:bg-slate-800'
                   }`}
                 >
                   {av}
@@ -291,7 +291,7 @@ export const MobileJoinView: React.FC<MobileJoinViewProps> = ({ defaultRoomCode 
 
         {/* Custom Buzzer Sound Selector */}
         <div>
-          <label className="text-[11px] font-black text-gray-300 uppercase tracking-wider block mb-1">
+          <label className="text-[11px] font-black text-slate-300 uppercase tracking-wider block mb-1">
             Son de Buzzer Personnel
           </label>
           <div className="grid grid-cols-5 gap-1.5">
@@ -302,8 +302,8 @@ export const MobileJoinView: React.FC<MobileJoinViewProps> = ({ defaultRoomCode 
                 onClick={() => handlePreviewBuzzer(s.id)}
                 className={`py-2 rounded-xl text-[10px] font-bold flex flex-col items-center justify-center space-y-0.5 border transition-all ${
                   buzzerSound === s.id
-                    ? 'bg-mood-amber text-black border-mood-amber font-black shadow-md scale-105'
-                    : 'bg-black/30 border-white/10 text-gray-400'
+                    ? 'bg-amber-400 text-slate-950 border-amber-400 font-black shadow-md scale-105'
+                    : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:text-white'
                 }`}
               >
                 <span>{s.label}</span>
@@ -313,22 +313,22 @@ export const MobileJoinView: React.FC<MobileJoinViewProps> = ({ defaultRoomCode 
         </div>
 
         {/* Spectator Mode */}
-        <div className="flex items-center justify-between p-3 rounded-2xl bg-black/30 border border-white/10">
+        <div className="flex items-center justify-between p-3 rounded-2xl bg-slate-950/60 border border-slate-800">
           <div className="flex items-center space-x-2">
-            <Eye className="w-4 h-4 text-mood-cyan" />
+            <Eye className="w-4 h-4 text-cyan-400" />
             <span className="text-xs font-bold text-white">Mode Spectateur</span>
           </div>
           <input
             type="checkbox"
             checked={isSpectator}
             onChange={(e) => setIsSpectator(e.target.checked)}
-            className="w-5 h-5 accent-mood-coral rounded cursor-pointer"
+            className="w-5 h-5 accent-cyan-400 rounded cursor-pointer"
           />
         </div>
 
         {/* Error Message */}
         {error && (
-          <div className="p-3 rounded-xl bg-rose-950/80 border border-rose-500 text-rose-300 text-xs font-bold text-center">
+          <div className="p-3 rounded-xl bg-rose-950/80 border border-rose-500/70 text-rose-300 text-xs font-bold text-center">
             {error}
           </div>
         )}
@@ -337,7 +337,7 @@ export const MobileJoinView: React.FC<MobileJoinViewProps> = ({ defaultRoomCode 
         <button
           type="submit"
           disabled={isLoading}
-          className="w-full py-4 rounded-2xl bg-[#7C3AED] hover:bg-[#6D28D9] text-white font-black text-base shadow-[0_0_30px_rgba(124,58,237,0.6)] active:scale-95 transition-all flex items-center justify-center space-x-2 border border-white/20"
+          className="w-full py-4 rounded-2xl bg-gradient-to-r from-cyan-400 to-cyan-500 hover:from-cyan-300 hover:to-cyan-400 text-slate-950 font-black text-base shadow-[0_4px_25px_rgba(6,182,212,0.35)] active:scale-95 transition-all flex items-center justify-center space-x-2 border border-cyan-300/40 disabled:opacity-50"
         >
           <span>{isLoading ? 'Connexion en cours...' : 'REJOINDRE LA PARTIE'}</span>
           <ArrowRight className="w-5 h-5" />

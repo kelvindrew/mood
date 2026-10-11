@@ -48,11 +48,14 @@ export const TVHeroBanner: React.FC<TVHeroBannerProps> = ({ game, onPlay }) => {
               audio.playSelect();
               onPlay(game);
             }}
-            className="px-8 py-3 rounded-xl bg-cyan-400 hover:bg-cyan-300 text-slate-950 font-black text-xs sm:text-sm md:text-base uppercase tracking-wider flex items-center space-x-2.5 transition-all outline-none focus:scale-105 focus:ring-4 focus:ring-white focus:bg-white shadow-[0_4px_20px_rgba(6,182,212,0.35)] cursor-pointer"
+            className="px-8 py-3 rounded-xl bg-gradient-to-r from-cyan-400 to-cyan-300 hover:from-cyan-300 hover:to-cyan-200 text-slate-950 font-black text-xs sm:text-sm md:text-base uppercase tracking-wider flex items-center space-x-2.5 transition-all outline-none focus:scale-105 focus:ring-4 focus:ring-white focus:bg-white shadow-[0_4px_20px_rgba(6,182,212,0.35)] cursor-pointer"
           >
             <Play className="w-4 h-4 sm:w-5 sm:h-5 fill-current" />
             <span>JOUER</span>
           </button>
+          <span className="text-xs text-slate-400 font-medium hidden sm:inline-block">
+            Smartphones utilisés comme manettes sans fil
+          </span>
         </div>
       </div>
     </div>

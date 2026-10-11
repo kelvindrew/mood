@@ -68,14 +68,14 @@ export const TVLobbyView: React.FC = () => {
 
   return (
     <div className="relative min-h-screen pt-16 px-[5vw] pb-12 select-none flex flex-col justify-between bg-[#0A0F1D] text-white">
-      {/* Background Dynamic Ambient Backdrop */}
+      {/* Background Dynamic Ambient Backdrop (Optimized for TV 60fps) */}
       <div className="fixed inset-0 z-0 pointer-events-none">
         <img
           src={selectedGame.heroImage || selectedGame.coverImage}
           alt={selectedGame.title}
-          className="w-full h-full object-cover object-center opacity-20 filter blur-xl scale-105"
+          className="w-full h-full object-cover object-center opacity-25 scale-102"
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-[#0A0F1D]/80 via-[#0A0F1D]/90 to-[#0A0F1D]" />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#0A0F1D]/85 via-[#0A0F1D]/90 to-[#0A0F1D]" />
       </div>
 
       {/* Top Header */}
@@ -138,28 +138,28 @@ export const TVLobbyView: React.FC = () => {
           </div>
 
           {/* Ultra-sharp High-Contrast QR Code */}
-          <div className="p-4 rounded-2xl bg-white shadow-lg border-2 border-cyan-400/50">
+          <div className="p-3.5 sm:p-4 rounded-2xl bg-white shadow-2xl border-2 border-cyan-400/40">
             <QRCodeSVG
               value={mobileJoinUrl}
-              size={200}
-              level="H"
-              includeMargin={false}
+              size={215}
+              level="M"
+              includeMargin={true}
               fgColor="#0A0F1D"
               bgColor="#FFFFFF"
             />
           </div>
 
           {/* Join Link & PIN Details */}
-          <div className="w-full flex flex-col items-center space-y-2">
-            <div className="flex items-center space-x-2 text-xs text-slate-300 bg-slate-950/60 px-4 py-2 rounded-xl border border-slate-800">
-              <span className="text-slate-400 font-medium">Site :</span>
+          <div className="w-full flex flex-col items-center space-y-2 pt-1">
+            <div className="flex items-center space-x-2 text-xs text-slate-300 bg-slate-950/70 px-4 py-2 rounded-xl border border-slate-800/80">
+              <span className="text-slate-400 font-medium">Ou rendez-vous sur :</span>
               <span className="font-mono text-cyan-300 font-bold truncate max-w-[260px]">
                 {typeof window !== 'undefined' ? window.location.host : 'mood.kalvinec.workers.dev'}
               </span>
             </div>
             <div className="text-xs text-slate-300 flex items-center space-x-2 pt-0.5 font-bold">
-              <span>Code du salon :</span>
-              <span className="text-amber-400 font-mono text-xl font-black px-3.5 py-1 rounded-xl bg-slate-950/80 border border-amber-400/40 shadow-sm">
+              <span className="text-slate-400">Puis entrez le code :</span>
+              <span className="text-amber-400 font-mono text-xl font-black px-4 py-1 rounded-xl bg-slate-950/90 border border-amber-400/50 shadow-[0_0_15px_rgba(245,158,11,0.2)]">
                 {room.code}
               </span>
             </div>

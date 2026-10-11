@@ -52,23 +52,23 @@ export const MobileLobbyView: React.FC = () => {
         <main className="p-4 flex-1 flex flex-col justify-between space-y-4 animate-scale-in">
         {/* Game Badge */}
         <div className="text-center space-y-1">
-          <span className="px-3.5 py-1 rounded-full bg-gradient-to-r from-mood-coral to-mood-amber text-white text-[10px] font-black uppercase tracking-wider shadow-lg border border-white/20">
+          <span className="px-3.5 py-1 rounded-full bg-cyan-950/80 border border-cyan-400/40 text-cyan-300 text-[10px] font-black uppercase tracking-wider shadow-md">
             SALON DU JEU
           </span>
           <h1 className="text-2xl font-black font-display text-white">{selectedGame.title}</h1>
-          <p className="text-xs text-gray-400 font-medium">Regardez l'écran Smart TV pour voir les joueurs</p>
+          <p className="text-xs text-slate-400 font-medium">Regardez l'écran Smart TV pour voir les joueurs</p>
         </div>
 
         {/* Color / Team Selector */}
-        <div className="p-4 rounded-3xl bg-[#0F1424] border border-white/10 space-y-3 shadow-xl">
+        <div className="p-4 rounded-3xl bg-[#0E1626]/95 border border-slate-700/60 space-y-3 shadow-xl">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
-              <Palette className="w-4 h-4 text-mood-amber" />
-              <span className="text-xs font-black uppercase tracking-wider text-gray-300">
+              <Palette className="w-4 h-4 text-amber-400" />
+              <span className="text-xs font-black uppercase tracking-wider text-slate-300">
                 Couleur de Pion / Équipe
               </span>
             </div>
-            <span className="text-[10px] font-bold text-gray-400 capitalize">{localPlayer.color}</span>
+            <span className="text-[10px] font-bold text-slate-400 capitalize">{localPlayer.color}</span>
           </div>
 
           <div className="grid grid-cols-6 gap-2">
@@ -95,8 +95,8 @@ export const MobileLobbyView: React.FC = () => {
             onClick={handleToggleReady}
             className={`w-full py-5 rounded-3xl font-black text-xl flex items-center justify-center space-x-3 transition-all active:scale-95 shadow-xl ${
               localPlayer.isReady
-                ? 'bg-mood-emerald text-white shadow-[0_0_30px_rgba(16,185,129,0.5)] border-2 border-emerald-400'
-                : 'bg-[#0F1424] border-2 border-white/20 text-gray-200 hover:border-white/50'
+                ? 'bg-emerald-400 text-slate-950 shadow-[0_4px_25px_rgba(16,185,129,0.35)] border-2 border-emerald-300'
+                : 'bg-slate-900/90 border-2 border-slate-700 text-slate-200 hover:border-cyan-400'
             }`}
           >
             <CheckCircle2 className="w-6 h-6" />
@@ -112,7 +112,7 @@ export const MobileLobbyView: React.FC = () => {
                   audio.playSelect();
                   socketService.addBot(room.code);
                 }}
-                className="w-full py-3 rounded-2xl bg-mood-indigo/90 border border-mood-indigo text-white font-black text-xs shadow-md flex items-center justify-center space-x-2 active:scale-95"
+                className="w-full py-3 rounded-2xl bg-indigo-900/60 border border-indigo-500/40 text-indigo-200 font-black text-xs shadow-md flex items-center justify-center space-x-2 active:scale-95"
               >
                 <Bot className="w-4 h-4" />
                 <span>+ AJOUTER UN BOT IA</span>
@@ -120,7 +120,7 @@ export const MobileLobbyView: React.FC = () => {
 
               <button
                 onClick={handleStartGame}
-                className="w-full py-4 rounded-2xl bg-gradient-to-r from-mood-coral to-mood-amber text-white font-black text-sm shadow-[0_0_30px_rgba(255,71,87,0.5)] hover:brightness-110 active:scale-95 transition-all flex items-center justify-center space-x-2 border border-white/20"
+                className="w-full py-4 rounded-2xl bg-gradient-to-r from-cyan-400 to-cyan-500 hover:from-cyan-300 hover:to-cyan-400 text-slate-950 font-black text-sm shadow-[0_4px_25px_rgba(6,182,212,0.35)] active:scale-95 transition-all flex items-center justify-center space-x-2 border border-cyan-300/40"
               >
                 <Play className="w-5 h-5 fill-current" />
                 <span>LANCER DEPUIS LE TÉLÉPHONE</span>
