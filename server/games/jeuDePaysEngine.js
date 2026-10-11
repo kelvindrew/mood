@@ -1,5 +1,4 @@
-// Server Game Engine for « JEU DE PAYS »
-// High-speed chained word association game with communal validation and speed bonus
+import { COUNTRIES_DATABASE, CATEGORIES_LEXICON } from './jeuDePaysData.js';
 
 export const JEU_DE_PAYS_CATEGORIES = [
   { id: 'pays', label: 'Pays', icon: '🌍', example: 'Maroc' },
@@ -17,6 +16,16 @@ export const JEU_DE_PAYS_CATEGORIES = [
 export const PLAYABLE_LETTERS = [
   'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'L', 'M', 'N', 'O', 'P', 'R', 'S', 'T', 'V'
 ];
+
+/**
+ * Vérifie si le mot correspond à un pays réel de la base officielle
+ */
+export function isValidCountry(raw) {
+  if (!raw || typeof raw !== 'string') return false;
+  const norm = normalizeAnswer(raw);
+  if (!norm) return false;
+  return COUNTRIES_DATABASE.some((c) => normalizeAnswer(c) === norm);
+}
 
 /**
  * Normalise une réponse :
@@ -163,9 +172,21 @@ export class JeuDePaysEngine {
         if (this.phase !== 'category_running') return;
         if (this.currentCategoryIndex !== this.roundCategories.indexOf(cat)) return;
 
-        // Generate simulated bot response starting with the letter
-        const simulatedText = `${letter}${cat.example ? cat.example.slice(1) : 'land'}`;
-        this.submitAnswer(bot.id, simulatedText);
+        // Choose a real existing word from the category lexicon starting with this letter
+        const pool = (CATEGORIES_LEXICON[cat.id] || []).filter((item) =>
+          answerStartsWithLetter(item, letter)
+        );
+
+        let chosenText = '';
+        if (pool.length > 0) {
+          chosenText = pool[Math.floor(Math.random() * pool.length)];
+        } else {
+          chosenText = '';
+        }
+
+        if (chosenText) {
+          this.submitAnswer(bot.id, chosenText);
+        }
       }, delay);
     }
   }
@@ -252,9 +273,20 @@ export class JeuDePaysEngine {
       for (const target of this.players) {
         if (target.id === bot.id) continue;
         const entry = this.answers[target.id]?.[cat.id];
-        const rawText = entry?.text || '';
-        // Bot approves if starts with correct letter and length >= 2
-        const isValid = answerStartsWithLetter(rawText, this.currentLetter) && rawText.length >= 2;
+        const rawText = (entry?.text || '').trim();
+
+        let isValid = false;
+        if (answerStartsWithLetter(rawText, this.currentLetter)) {
+          if (cat.id === 'pays') {
+            // Un faux pays (comme 'Paroc') est immédiatement rejeté par les bots !
+            isValid = isValidCountry(rawText);
+          } else {
+            const lexicon = CATEGORIES_LEXICON[cat.id] || [];
+            const norm = normalizeAnswer(rawText);
+            const inLexicon = lexicon.some((w) => normalizeAnswer(w) === norm);
+            isValid = inLexicon || rawText.length >= 3;
+          }
+        }
         this.castValidationVote(bot.id, target.id, cat.id, isValid);
       }
     }
@@ -335,11 +367,14 @@ export class JeuDePaysEngine {
         const accepts = votesArr.filter((v) => v === true).length;
         const rejectedByVote = rejects > accepts && rejects >= 2;
 
+        // Pour la catégorie 'pays', le pays doit être un vrai pays officiel (pas un mot inventé comme 'Paroc')
+        const isOfficialCountry = catId === 'pays' ? isValidCountry(raw) : true;
+
         let basePoints = 0;
         let speedBonus = 0;
         let isDuplicate = false;
 
-        if (!raw || !startsWithCorrectLetter || rejectedByVote) {
+        if (!raw || !startsWithCorrectLetter || rejectedByVote || !isOfficialCountry) {
           basePoints = 0;
           speedBonus = 0;
         } else {
@@ -376,7 +411,7 @@ export class JeuDePaysEngine {
           speedBonus,
           totalPoints: totalCategoryPoints,
           isDuplicate,
-          rejected: rejectedByVote || (!startsWithCorrectLetter && Boolean(raw)),
+          rejected: rejectedByVote || (!startsWithCorrectLetter && Boolean(raw)) || (!isOfficialCountry && Boolean(raw)),
         });
       }
     }

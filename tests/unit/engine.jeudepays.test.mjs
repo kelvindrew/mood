@@ -4,6 +4,7 @@ import {
   JeuDePaysEngine,
   normalizeAnswer,
   answerStartsWithLetter,
+  isValidCountry,
 } from '../../server/games/jeuDePaysEngine.js';
 
 describe('JeuDePaysEngine (« JEU DE PAYS »)', () => {
@@ -142,6 +143,44 @@ describe('JeuDePaysEngine (« JEU DE PAYS »)', () => {
     // Bob et Charlie ont des réponses uniques valides (+10 pts + 3 pts vitesse = 13 pts)
     expect(engine.scores.p2).toBe(13);
     expect(engine.scores.p3).toBe(13);
+
+    engine.destroy();
+  });
+
+  it('rejette un faux pays inventé comme "Paroc" et valide les vrais pays comme "Portugal" ou "Pérou"', () => {
+    expect(isValidCountry('Paroc')).toBe(false);
+    expect(isValidCountry('Portugal')).toBe(true);
+    expect(isValidCountry('Pérou')).toBe(true);
+    expect(isValidCountry('Pologne')).toBe(true);
+    expect(isValidCountry('Les Pays-Bas')).toBe(true);
+
+    const players = [
+      { id: 'p1', name: 'Alice' },
+      { id: 'p2', name: 'Bob' },
+    ];
+    const engine = new JeuDePaysEngine(players, () => {}, () => {});
+    engine.currentLetter = 'P';
+
+    const cat0 = 'pays';
+
+    // Alice met "Paroc" (faux pays inventé)
+    // Bob met "Portugal" (vrai pays)
+    engine.answers.p1[cat0] = { text: 'Paroc', submittedAtTimeLeft: 10 };
+    engine.answers.p2[cat0] = { text: 'Portugal', submittedAtTimeLeft: 8 };
+
+    engine.computeRoundScores();
+
+    const aliceBreakdown = engine.roundBreakdowns.p1.find((b) => b.categoryId === cat0);
+    const bobBreakdown = engine.roundBreakdowns.p2.find((b) => b.categoryId === cat0);
+
+    // Alice doit être rejetée (0 point)
+    expect(aliceBreakdown.rejected).toBe(true);
+    expect(aliceBreakdown.totalPoints).toBe(0);
+
+    // Bob doit être validé avec 10 points de base + bonus de vitesse
+    expect(bobBreakdown.rejected).toBe(false);
+    expect(bobBreakdown.basePoints).toBe(10);
+    expect(bobBreakdown.totalPoints).toBeGreaterThanOrEqual(10);
 
     engine.destroy();
   });
