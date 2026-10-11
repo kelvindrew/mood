@@ -32,16 +32,19 @@ const WildRushController = React.lazy(() => import('./views/controllers/WildRush
 const JeuDePaysController = React.lazy(() => import('./views/controllers/JeuDePaysController').then(m => ({ default: m.JeuDePaysController })));
 
 const ControllerLoader: React.FC = () => (
-  <div className="flex flex-col items-center justify-center min-h-screen bg-[#0A120E] text-white p-6 select-none space-y-4">
-    <div className="w-14 h-14 rounded-2xl bg-emerald-500/20 border border-emerald-400/30 flex items-center justify-center shadow-lg">
-      <Loader2 className="w-7 h-7 text-emerald-400 animate-spin" />
+  <div className="flex flex-col items-center justify-center min-h-screen bg-[#070D0B] text-white p-6 select-none space-y-4 animate-fade-in">
+    <div className="relative flex items-center justify-center">
+      <div className="w-16 h-16 rounded-2xl bg-cyan-500/15 border border-cyan-400/40 flex items-center justify-center shadow-[0_0_25px_rgba(6,182,212,0.3)]">
+        <Loader2 className="w-8 h-8 text-cyan-400 animate-spin" />
+      </div>
+      <div className="absolute inset-0 rounded-2xl bg-cyan-400/20 blur-xl animate-pulse pointer-events-none" />
     </div>
     <div className="flex flex-col items-center space-y-1">
-      <span className="font-display font-black text-lg uppercase tracking-wide">
+      <span className="font-display font-black text-sm uppercase tracking-widest text-cyan-300">
         CHARGEMENT DE LA MANETTE
       </span>
-      <span className="text-xs text-gray-400">
-        Connexion au salon en cours...
+      <span className="text-xs text-slate-400">
+        Connexion au salon en cours…
       </span>
     </div>
   </div>

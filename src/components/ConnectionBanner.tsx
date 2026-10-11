@@ -27,10 +27,24 @@ const BANNER_CONFIG: Record<Exclude<ConnectionState, 'connected'>, { text: strin
 
 export const ConnectionBanner: React.FC = () => {
   const { connectionState } = useGame();
+  const [showConnecting, setShowConnecting] = React.useState(false);
+
+  React.useEffect(() => {
+    if (connectionState === 'connecting') {
+      const timer = setTimeout(() => setShowConnecting(true), 1800);
+      return () => clearTimeout(timer);
+    } else {
+      setShowConnecting(false);
+    }
+  }, [connectionState]);
 
   if (connectionState === 'connected') {
     // Marqueur discret (non rendu visuellement) pour l'état sain
     return <div aria-hidden data-conn="connected" style={{ display: 'none' }} />;
+  }
+
+  if (connectionState === 'connecting' && !showConnecting) {
+    return <div aria-hidden data-conn="connecting" style={{ display: 'none' }} />;
   }
 
   const cfg = BANNER_CONFIG[connectionState];
