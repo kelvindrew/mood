@@ -86,6 +86,34 @@ export const GAMES_CATALOG: GameCatalogItem[] = [
     ]
   },
   {
+    id: 'jeu_de_pays',
+    title: 'JEU DE PAYS',
+    tagline: 'Réponses rapides en chaîne avec la même lettre : Pays, Animal, Marque...',
+    description: 'Une lettre tirée au sort pour tout le salon ! Le téléviseur fait défiler des catégories en chaîne rapide : Pays, Animal, Marque de voiture, Prénom... Répondez avant la fin du chrono, validez collectivement et cumulez les points uniques et bonus de vitesse !',
+    category: 'reflexion',
+    minPlayers: 1,
+    maxPlayers: 12,
+    durationMinutes: '10–15 min',
+    difficulty: 'Facile',
+    badge: 'NOUVEAU',
+    coverImage: '/games/jeu_de_pays.jpg',
+    heroImage: '/games/jeu_de_pays.jpg',
+    features: [
+      'Même lettre imposée pour tous les joueurs en simultané',
+      'Défilement dynamique des catégories en chaîne à rythme effréné (12s)',
+      'Bonus de rapidité jusqu’à +3 pts pour les réponses ultra-rapides',
+      'Validation démocratique et vote en direct sur mobile',
+      'Attribution équitable : +10 pts réponse unique, +5 pts réponse doublon'
+    ],
+    rules: [
+      'Une lettre secrète est tirée au sort sur l’écran TV pour la manche.',
+      'Une catégorie apparaît : tapez très vite une réponse commençant par cette lettre.',
+      'Dès la fin du compte à rebours, la catégorie suivante enchaîne immédiatement.',
+      'À la fin de la série, examinez les propositions de tous les joueurs et votez.',
+      'Le joueur le plus rapide et le plus inspiré remporte la partie !'
+    ]
+  },
+  {
     id: 'fake_news',
     title: 'FAKE NEWS : QUI A DIT VRAI ?',
     tagline: 'Le grand jeu de bluff, d’intox et d’anecdotes insolites',

@@ -26,6 +26,7 @@ const NavalBattleBoardTV = React.lazy(() => import('../boards/NavalBattleBoardTV
 const MemeFactoryBoardTV = React.lazy(() => import('../boards/MemeFactoryBoardTV').then(m => ({ default: m.MemeFactoryBoardTV })));
 const ConnectFourBoardTV = React.lazy(() => import('../boards/ConnectFourBoardTV').then(m => ({ default: m.ConnectFourBoardTV })));
 const WildRushBoardTV = React.lazy(() => import('../boards/WildRushBoardTV').then(m => ({ default: m.WildRushBoardTV })));
+const JeuDePaysBoardTV = React.lazy(() => import('../boards/JeuDePaysBoardTV').then(m => ({ default: m.JeuDePaysBoardTV })));
 
 const TVBoardLoader: React.FC<{ gameId: string }> = ({ gameId }) => (
   <div className="flex flex-col items-center justify-center space-y-4 text-center select-none animate-scale-in">
@@ -108,6 +109,8 @@ export const TVGamePlayView: React.FC = () => {
         return <ConnectFourBoardTV />;
       case 'wild_rush':
         return <WildRushBoardTV />;
+      case 'jeu_de_pays':
+        return <JeuDePaysBoardTV />;
       default:
         return <LudoBoardTV />;
     }

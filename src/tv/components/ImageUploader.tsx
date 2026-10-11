@@ -6,6 +6,7 @@ export const GAME_POSTERS = [
   { id: 'spy', title: "L'Espion", path: '/games/spy.jpg' },
   { id: 'bomb_party', title: 'Bomb Party', path: '/games/bomb_party.jpg' },
   { id: 'petit_bac', title: 'Petit Bac', path: '/games/petit_bac.jpg' },
+  { id: 'jeu_de_pays', title: 'Jeu de Pays', path: '/games/jeu_de_pays.jpg' },
   { id: 'fake_news', title: 'Fake News', path: '/games/fake_news.jpg' },
   { id: 'werewolf', title: 'Loup-Garou', path: '/games/werewolf.jpg' },
   { id: 'ludo', title: 'Ludo Royale', path: '/games/ludo.jpg' },

@@ -29,6 +29,7 @@ const NavalBattleController = React.lazy(() => import('./views/controllers/Naval
 const MemeFactoryController = React.lazy(() => import('./views/controllers/MemeFactoryController').then(m => ({ default: m.MemeFactoryController })));
 const ConnectFourController = React.lazy(() => import('./views/controllers/ConnectFourController').then(m => ({ default: m.ConnectFourController })));
 const WildRushController = React.lazy(() => import('./views/controllers/WildRushController').then(m => ({ default: m.WildRushController })));
+const JeuDePaysController = React.lazy(() => import('./views/controllers/JeuDePaysController').then(m => ({ default: m.JeuDePaysController })));
 
 const ControllerLoader: React.FC = () => (
   <div className="flex flex-col items-center justify-center min-h-screen bg-[#0A120E] text-white p-6 select-none space-y-4">
@@ -115,6 +116,8 @@ export const MobileApp: React.FC<MobileAppProps> = ({ isSimulatorMode = false, d
         return <ConnectFourController />;
       case 'wild_rush':
         return <WildRushController />;
+      case 'jeu_de_pays':
+        return <JeuDePaysController />;
       default:
         return <LudoController />;
     }

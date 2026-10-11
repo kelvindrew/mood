@@ -22,7 +22,8 @@ export type GameId =
   | 'naval_battle'
   | 'meme_factory'
   | 'connect_four'
-  | 'wild_rush';
+  | 'wild_rush'
+  | 'jeu_de_pays';
 
 export type PlayerColor = 'red' | 'blue' | 'green' | 'yellow' | 'purple' | 'cyan' | 'orange' | 'pink';
 
@@ -607,6 +608,67 @@ export interface PetitBacGameState {
   myVotes?: Record<string, boolean>;
 }
 
+export interface JeuDePaysCategory {
+  id: string;
+  label: string;
+  icon: string;
+  example?: string;
+}
+
+export interface JeuDePaysBreakdownItem {
+  categoryId: string;
+  categoryLabel: string;
+  categoryIcon: string;
+  rawText: string;
+  basePoints: number;
+  speedBonus: number;
+  totalPoints: number;
+  isDuplicate: boolean;
+  rejected: boolean;
+}
+
+export interface JeuDePaysGameState {
+  gameId: 'jeu_de_pays';
+  phase: 'wheel' | 'category_running' | 'category_intermission' | 'voting' | 'round_recap' | 'gameover';
+  currentRound: number;
+  totalRounds: number;
+  timer: number;
+  categoryDuration: number;
+  currentLetter: string;
+  roundCategories: JeuDePaysCategory[];
+  currentCategory: JeuDePaysCategory | null;
+  currentCategoryIndex: number;
+  votingCategory: JeuDePaysCategory | null;
+  votingCategoryIndex: number;
+  answeredPlayerIds: string[];
+  answers: Record<string, Record<string, string>>;
+  validationVotes: Record<string, Record<string, boolean>>;
+  scores: Record<string, number>;
+  roundBreakdowns: Record<string, JeuDePaysBreakdownItem[]>;
+  finalPodium: Array<{
+    id: string;
+    name: string;
+    avatar?: string;
+    color: string;
+    score: number;
+    rank: number;
+    isWinner: boolean;
+  }> | null;
+  isGameOver: boolean;
+  players: Array<{
+    id: string;
+    name: string;
+    color: string;
+    avatar?: string;
+    isBot?: boolean;
+    hasAnsweredCurrentCategory: boolean;
+  }>;
+  // Private
+  myAnswerForCurrentCategory?: string;
+  hasAnsweredCurrentCategory?: boolean;
+  myAllAnswers?: Record<string, { text: string; submittedAtTimeLeft: number }>;
+}
+
 export interface FakeNewsChoice {
   id: string;
   text: string;
@@ -966,6 +1028,7 @@ export interface RoomState {
     | MemeFactoryGameState
     | ConnectFourGameState
     | WildRushGameState
+    | JeuDePaysGameState
     | null;
   serverLanIp?: string;
   serverPort?: number;

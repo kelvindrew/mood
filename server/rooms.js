@@ -22,6 +22,7 @@ import { NavalBattleEngine } from './games/navalBattleEngine.js';
 import { MemeFactoryEngine } from './games/memeFactoryEngine.js';
 import { ConnectFourEngine } from './games/connectFourEngine.js';
 import { WildRushEngine } from './games/wildRushEngine.js';
+import { JeuDePaysEngine } from './games/jeuDePaysEngine.js';
 
 const AVAILABLE_COLORS = ['red', 'blue', 'green', 'yellow', 'purple', 'cyan', 'orange', 'pink'];
 
@@ -59,6 +60,7 @@ export const GAME_PLAYER_CONSTRAINTS = {
   poker: { min: 2, max: 8 },
   blackjack: { min: 1, max: 7 },
   wild_rush: { min: 2, max: 4 },
+  jeu_de_pays: { min: 1, max: 12 },
 };
 
 export class RoomManager {
@@ -594,6 +596,10 @@ export class RoomManager {
         room.gameEngine = new WildRushEngine(room.players, onStateChange, onGameOver, room.settings);
         break;
       }
+      case 'jeu_de_pays': {
+        room.gameEngine = new JeuDePaysEngine(room.players, onStateChange, onGameOver, room.settings);
+        break;
+      }
       default: {
         room.gameEngine = new LudoEngine(room.players, onStateChange, onGameOver);
         break;
@@ -817,6 +823,13 @@ export class RoomManager {
       case 'bac_cast_vote':
       case 'bac_restart':
         if (room.gameId === 'petit_bac' && room.gameEngine) {
+          return room.gameEngine.handleAction(player.id, action, payload);
+        }
+        break;
+      case 'jdp_submit_answer':
+      case 'jdp_cast_vote':
+      case 'jdp_restart':
+        if (room.gameId === 'jeu_de_pays' && room.gameEngine) {
           return room.gameEngine.handleAction(player.id, action, payload);
         }
         break;
