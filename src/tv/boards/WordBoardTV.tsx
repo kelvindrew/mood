@@ -18,6 +18,7 @@ import {
   ChevronDown,
 } from 'lucide-react';
 import { tvNav } from '../../services/tvNavigation';
+import { WorldLandscapeBackground } from '../../components/WorldLandscapeBackground';
 
 function getMultiplier(r: number, c: number): string {
   if (r === 7 && c === 7) return 'CENTER';
@@ -170,15 +171,27 @@ const Leaderboard = React.memo(function Leaderboard({
 });
 
 export const WordBoardTV: React.FC = () => {
-  const { room, setTvView, sendGameAction } = useGame();
+  const { room, setTvView, sendGameAction, returnToHome } = useGame();
   const gameState = room?.gameState as ScrabbleGameState | undefined;
 
   const [endStage, setEndStage] = useState<number>(1);
   const [selectedWordHistory, setSelectedWordHistory] = useState<ScrabbleWordHistoryItem | null>(null);
+  const [showExitModal, setShowExitModal] = useState<boolean>(false);
   const historyScrollRef = useRef<HTMLDivElement>(null);
   const endOverlayRef = useRef<HTMLDivElement>(null);
+  const exitModalRef = useRef<HTMLDivElement>(null);
 
   const isGameOver = !!(gameState?.isGameOver || gameState?.winner);
+
+  // Focus télécommande sur le modal de sortie lorsqu'il s'ouvre
+  useEffect(() => {
+    if (showExitModal && exitModalRef.current) {
+      const t = setTimeout(() => {
+        tvNav.focusElement(exitModalRef.current?.querySelector<HTMLElement>('[data-tv-focus]') || null);
+      }, 60);
+      return () => clearTimeout(t);
+    }
+  }, [showExitModal]);
 
   // Progressive animation sequence on Game Over
   useEffect(() => {
@@ -266,7 +279,14 @@ export const WordBoardTV: React.FC = () => {
           'radial-gradient(circle at 82% 82%, rgba(245,158,11,0.07), transparent 40%)',
       }}
     >
-      {/* ================= 1. COLONNE GAUCHE — tour + classement ================= */}
+      {/* Arrière-plan dynamique de paysages mondiaux défilant toutes les 5s */}
+      <WorldLandscapeBackground
+        overlayDarkness={0.82}
+        showLocationBadge={true}
+        tintClass="from-emerald-950/40 via-[#070D0B]/75 to-[#070D0B]/92"
+      />
+
+      {/* ================= 1. COLONNE GAUCHE — tour + classement + bouton quitter ================= */}
       <aside className="h-full min-h-0 flex flex-col gap-3 z-10" style={{ minHeight: 0 }}>
         {/* Active Player Card */}
         <div className="tv-panel p-4 rounded-3xl shadow-lg flex-shrink-0">
@@ -317,6 +337,17 @@ export const WordBoardTV: React.FC = () => {
           <div className="p-2 rounded-xl bg-black/40 border border-white/10 text-center text-[11px] text-gray-300 font-medium truncate flex-shrink-0">
             {gameState.lastActionLog || 'La partie commence !'}
           </div>
+
+          {/* Bouton Quitter vers l'accueil TV */}
+          <button
+            data-tv-focus
+            onClick={() => setShowExitModal(true)}
+            className="w-full p-2.5 rounded-2xl bg-white/5 hover:bg-rose-500/20 border border-white/10 hover:border-rose-500/40 text-gray-300 hover:text-rose-200 transition-colors flex items-center justify-center space-x-2 text-xs font-bold flex-shrink-0 active:scale-95"
+            title="Quitter la partie et retourner au menu des jeux"
+          >
+            <Home className="w-4 h-4 text-rose-400" />
+            <span>Quitter vers l'accueil</span>
+          </button>
         </div>
       </aside>
 
@@ -726,6 +757,50 @@ export const WordBoardTV: React.FC = () => {
               </div>
             </div>
           )}
+        </div>
+      )}
+
+      {/* ================= 5. MODAL DE CONFIRMATION DE SORTIE ================= */}
+      {showExitModal && (
+        <div
+          ref={exitModalRef}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-8 animate-scale-in"
+        >
+          <div className="w-full max-w-lg p-8 rounded-3xl bg-[#140F0A]/95 border-2 border-rose-500/70 shadow-[0_0_60px_rgba(244,63,94,0.35)] text-center space-y-6">
+            <div className="inline-flex p-4 rounded-full bg-rose-500/20 border border-rose-500/40 text-rose-400">
+              <Home className="w-12 h-12" />
+            </div>
+
+            <div className="space-y-2">
+              <h2 className="text-2xl font-black font-display text-white">
+                Quitter la partie de Scrabble ?
+              </h2>
+              <p className="text-sm text-gray-300">
+                Vous reviendrez à l'accueil pour choisir un autre jeu. Les manettes des joueurs resteront connectées au salon !
+              </p>
+            </div>
+
+            <div className="flex items-center justify-center space-x-4 pt-2">
+              <button
+                data-tv-focus
+                onClick={() => {
+                  setShowExitModal(false);
+                  returnToHome();
+                }}
+                className="flex-1 py-3.5 rounded-2xl bg-gradient-to-r from-rose-600 to-rose-700 hover:from-rose-500 hover:to-rose-600 text-white font-black text-sm uppercase tracking-wider shadow-lg active:scale-95 transition-all"
+              >
+                Oui, quitter vers l'accueil
+              </button>
+
+              <button
+                data-tv-focus
+                onClick={() => setShowExitModal(false)}
+                className="flex-1 py-3.5 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/20 text-gray-200 font-black text-sm uppercase tracking-wider active:scale-95 transition-all"
+              >
+                Annuler
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

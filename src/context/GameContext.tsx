@@ -32,6 +32,7 @@ interface GameContextType {
   localPlayer: Player | null;
   serverLanIp: string;
   connectionState: ConnectionState; // E9
+  isAutoReconnecting: boolean;
   createRoom: (gameId: GameId, settings?: unknown) => Promise<{ success: boolean; code?: string; error?: string }>;
   joinRoom: (code: string, name: string, avatar: string, isSpectator?: boolean, selfieImage?: string) => Promise<{ success: boolean; error?: string }>;
   toggleReady: () => void;
@@ -39,11 +40,13 @@ interface GameContextType {
   removeBot: (botId?: string) => void;
   setPlayerColor: (color: PlayerColor) => void;
   startGame: () => void;
+  selectGame: (gameId: GameId) => void;
   sendGameAction: (action: string, payload?: Record<string, unknown>) => void;
   sendReaction: (emoji: string) => void;
   replayGame: () => void;
   returnToLobby: () => void;
   returnToHome: () => void;
+  leaveRoom: () => void;
   isSimulatorOpen: boolean;
   setIsSimulatorOpen: (open: boolean) => void;
 }
@@ -79,6 +82,17 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [isSimulatorOpen, setIsSimulatorOpen] = useState<boolean>(false);
   // E9 — la reconnexion automatique reste gérée par socketService
   const [connectionState, setConnectionState] = useState<ConnectionState>('connecting');
+  const [isAutoReconnecting, setIsAutoReconnecting] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false;
+    try {
+      const saved = localStorage.getItem('playflix_session');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        return Boolean(parsed?.code && parsed?.player?.id && parsed?.sessionToken);
+      }
+    } catch {}
+    return false;
+  });
 
   const setMoodTheme = (theme: MoodThemeId) => {
     setMoodThemeState(theme);
@@ -136,9 +150,37 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const stateKey = (r: { gameId: string; code: string } | null | undefined) =>
       r ? `${r.gameId}:${r.code}` : '';
 
+    const attemptAutoReconnect = () => {
+      try {
+        const saved = localStorage.getItem('playflix_session');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (parsed?.code && parsed?.player?.id && parsed?.sessionToken) {
+            setIsAutoReconnecting(true);
+            socketService
+              .reconnectPlayer(parsed.code, parsed.player.id, parsed.sessionToken, parsed.player)
+              .then((res) => {
+                if (res?.success && res.player) {
+                  setLocalPlayer(res.player);
+                } else {
+                  socketService.clearSavedSession();
+                  setIsAutoReconnecting(false);
+                }
+              })
+              .catch(() => {
+                setIsAutoReconnecting(false);
+              });
+          }
+        }
+      } catch {
+        setIsAutoReconnecting(false);
+      }
+    };
+
     socket.on('connect', () => {
       console.log('[GameContext] Connected to socket server');
       setConnectionState('connected'); // E9
+      attemptAutoReconnect();
     });
 
     // E9 — machine à états de connexion (la reconnexion auto reste active)
@@ -202,9 +244,10 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         setTvView('results');
         setMobileView('controller');
       } else if (updatedRoom.status === 'lobby') {
-        setTvView('lobby');
+        setTvView((prev) => (prev === 'home' ? 'home' : 'lobby'));
         setMobileView('lobby');
       }
+      setIsAutoReconnecting(false);
 
       setLocalPlayer((prev) => {
         if (!prev) return null;
@@ -343,6 +386,14 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     socketService.replayGame(room.code);
   };
 
+  const selectGame = (gameId: GameId) => {
+    if (canSend && room) {
+      socketService.selectGame(room.code, gameId);
+    }
+    const found = GAMES_CATALOG.find((g) => g.id === gameId);
+    if (found) setSelectedGame(found);
+  };
+
   const returnToLobby = () => {
     // Navigation locale toujours permise ; l'émission est protégée
     if (canSend && room) socketService.returnToLobby(room.code);
@@ -351,7 +402,20 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   const returnToHome = () => {
+    // Règle d'or : le retour à l'accueil ne déconnecte PAS les manettes !
+    // Si un salon est actif, la partie se termine proprement et le salon
+    // reste prêt et connecté sur le serveur pour le prochain jeu.
+    if (canSend && room) {
+      socketService.returnToLobby(room.code);
+    }
+    setTvView('home');
+  };
+
+  const leaveRoom = () => {
+    socketService.clearSavedSession();
     setRoom(null);
+    setLocalPlayer(null);
+    setMobileView('join');
     setTvView('home');
   };
 
@@ -375,6 +439,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         localPlayer,
         serverLanIp,
         connectionState,
+        isAutoReconnecting,
         createRoom,
         joinRoom,
         toggleReady,
@@ -382,11 +447,13 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         removeBot,
         setPlayerColor,
         startGame,
+        selectGame,
         sendGameAction,
         sendReaction,
         replayGame,
         returnToLobby,
         returnToHome,
+        leaveRoom,
         isSimulatorOpen,
         setIsSimulatorOpen,
       }}

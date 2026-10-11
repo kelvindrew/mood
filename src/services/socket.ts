@@ -44,7 +44,6 @@ class SocketService {
 
       this.socket.on('connect', () => {
         console.log('[PLAYFLIX Socket] Connected successfully, socket ID:', this.socket?.id);
-        this.performHandshake();
       });
 
       this.socket.on('connect_error', (error) => {
@@ -61,17 +60,51 @@ class SocketService {
     return this.socket;
   }
 
-  private performHandshake() {
-    if (typeof window === 'undefined') return;
-    try {
-      const savedSession = localStorage.getItem('playflix_session');
-      if (savedSession) {
-        const { code, player, sessionToken } = JSON.parse(savedSession);
-        if (code && player?.id && sessionToken) {
-          this.socket?.emit('reconnect_player', { code, playerId: player.id, sessionToken, playerData: player });
+  public reconnectPlayer(
+    code: string,
+    playerId: string,
+    sessionToken: string,
+    playerData?: Partial<Player>
+  ): Promise<{ success: boolean; room?: RoomState; player?: Player; error?: string }> {
+    return new Promise((resolve) => {
+      const socket = this.connect();
+      let resolved = false;
+
+      const timer = setTimeout(() => {
+        if (!resolved) {
+          resolved = true;
+          resolve({ success: false, error: 'Délai d\'attente dépassé pour la reconnexion' });
         }
+      }, 7000);
+
+      const doEmit = () => {
+        socket.emit(
+          'reconnect_player',
+          { code, playerId, sessionToken, playerData },
+          (res: { success: boolean; player?: Player; error?: string }) => {
+            if (!resolved) {
+              resolved = true;
+              clearTimeout(timer);
+              resolve(res || { success: false, error: 'Échec de reconnexion' });
+            }
+          }
+        );
+      };
+
+      if (socket.connected) {
+        doEmit();
+      } else {
+        socket.once('connect', doEmit);
       }
-    } catch {}
+    });
+  }
+
+  public clearSavedSession() {
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.removeItem('playflix_session');
+      } catch {}
+    }
   }
 
   public getSocket(): Socket | null {

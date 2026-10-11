@@ -8,7 +8,7 @@ import { Play, Plus, Star, ChevronLeft, ChevronRight, BookOpen } from 'lucide-re
 import { audio } from '../../services/audio';
 
 export const TVHomeView: React.FC = () => {
-  const { setSelectedGame, createRoom, selectedCategory, setTvView } = useGame();
+  const { room, selectGame, setSelectedGame, createRoom, selectedCategory, setTvView } = useGame();
   const [games, setGames] = useState<GameCatalogItem[]>(() => adminCms.getGamesCatalog());
   const [spotlightGame, setSpotlightGame] = useState<GameCatalogItem>(games[0]);
   const carouselRef = useRef<HTMLDivElement>(null);
@@ -38,11 +38,17 @@ export const TVHomeView: React.FC = () => {
     }
   }, [selectedCategory, displayedGames]);
 
-  // Lancement du jeu -> Création du salon & Affichage du QR Code TV
+  // Lancement du jeu -> Conservation des manettes connectées ou création de salon
   const handlePlayGame = async (game: GameCatalogItem) => {
     audio.playSelect();
     setSelectedGame(game);
-    await createRoom(game.id, { maxPlayers: game.maxPlayers });
+    if (room && room.code) {
+      // Les manettes restent connectées ! On met à jour le jeu dans le salon existant
+      selectGame(game.id);
+      setTvView('lobby');
+    } else {
+      await createRoom(game.id, { maxPlayers: game.maxPlayers });
+    }
   };
 
   const handleHighlightGame = (game: GameCatalogItem) => {

@@ -21,7 +21,10 @@ import {
   AlertCircle,
   HelpCircle,
   Type,
+  Home,
+  LogOut,
 } from 'lucide-react';
+import { WorldLandscapeBackground } from '../../../components/WorldLandscapeBackground';
 
 function getMultiplier(r: number, c: number): string {
   if (r === 7 && c === 7) return 'CENTER';
@@ -87,7 +90,7 @@ const MULTIPLIERS_MAP: Record<string, { label: string; bg: string; text: string;
 };
 
 export const WordController: React.FC = () => {
-  const { room, localPlayer, sendGameAction } = useGame();
+  const { room, localPlayer, sendGameAction, leaveRoom } = useGame();
   const gameState = room?.gameState as ScrabbleGameState | undefined;
 
   // C2: All hooks declared before any early return
@@ -102,6 +105,7 @@ export const WordController: React.FC = () => {
   const [dragState, setDragState] = useState<DragState | null>(null);
   const [showTypeModal, setShowTypeModal] = useState<boolean>(false);
   const [typedWord, setTypedWord] = useState<string>('');
+  const [showExitModal, setShowExitModal] = useState<boolean>(false);
 
   const boardContainerRef = useRef<HTMLDivElement | null>(null);
   const rackContainerRef = useRef<HTMLDivElement | null>(null);
@@ -533,41 +537,34 @@ export const WordController: React.FC = () => {
     return null;
   };
 
-  // Tap handler (when touch doesn't move > 6px)
+  // Tap handler (touch move < 14px)
   const handleTap = (
     tile: TileItem,
     source: DragSource
   ) => {
     if (source === 'board') {
+      // Tap on a placed board tile recalls it to rack
       handleRemovePlacedTile(tile.id);
       return;
     }
 
-    // Tap on rack tile: immediately place at focusedCell with auto-advance!
     if (!isMyTurn) return;
 
-    const { row, col } = focusedCell;
-    const isTargetOccupied = gameState.board[row]?.[col] !== null || placedTileMap.has(`${row}_${col}`);
-
-    if (!isTargetOccupied) {
-      // Place directly at cursor and advance cursor along direction!
-      placeTileAtCell(tile, row, col, true);
-      return;
-    }
-
-    // If focusedCell is already occupied, select/toggle selection
     triggerHaptic(hapticPatterns.tap);
     audio.playFocus();
     setLocalError('');
 
+    // Si la tuile était déjà sélectionnée, on la désélectionne
     if (selectedRackTileId === tile.id) {
       setSelectedRackTileId(null);
-    } else {
-      setSelectedRackTileId(tile.id);
+      return;
     }
+
+    // Sélectionne la tuile du chevalet avec retour lumineux et haptique
+    setSelectedRackTileId(tile.id);
   };
 
-  // Pointer Down: starts high-precision touch tracking for finger drag & drop
+  // Pointer Down: touch tracking fiable pour écran tactile et souris
   const handlePointerDown = (
     e: React.PointerEvent,
     tile: TileItem,
@@ -579,7 +576,7 @@ export const WordController: React.FC = () => {
     if (isGameOver || !isMyTurn) return;
     if (e.button !== 0 && e.pointerType === 'mouse') return;
 
-    // Cache layout bounding boxes at touch start for zero layout-thrashing 120fps drag
+    // Cache layout bounding boxes at touch start
     if (boardContainerRef.current) {
       boardRectRef.current = boardContainerRef.current.getBoundingClientRect();
     }
@@ -614,9 +611,9 @@ export const WordController: React.FC = () => {
       const dy = moveEvt.clientY - dragRef.current.startY;
       const dist = Math.hypot(dx, dy);
 
-      if (!dragRef.current.isDragging && dist > 6) {
+      // Seuil augmenté à 14px pour éviter tout déclenchement involontaire de drag lors d'un tap
+      if (!dragRef.current.isDragging && dist > 14) {
         dragRef.current.isDragging = true;
-        setSelectedRackTileId(null);
         triggerHaptic(hapticPatterns.tap);
         audio.playFocus();
         document.body.style.userSelect = 'none';
@@ -627,8 +624,8 @@ export const WordController: React.FC = () => {
         dragRef.current.currentX = moveEvt.clientX;
         dragRef.current.currentY = moveEvt.clientY;
 
-        // Mathematical magnetic snapping with ergonomic 50px vertical finger offset
-        const cellCoords = getCellFromTouchPoint(moveEvt.clientX, moveEvt.clientY, 50);
+        // Bounding box snapping au-dessus du doigt (offset 40px)
+        const cellCoords = getCellFromTouchPoint(moveEvt.clientX, moveEvt.clientY, 40);
 
         let hoveredCell = null;
         if (cellCoords) {
@@ -692,12 +689,12 @@ export const WordController: React.FC = () => {
             handleReorderRack(drag.sourceRackIndex, drag.hoveredRackIndex);
           }
         } else if (drag.source === 'board') {
-          // Dragged from board and dropped outside board: recall to rack
+          // Relâché hors plateau : rappel au chevalet
           setPlacedTiles((prev) => prev.filter((p) => p.tile.id !== drag.tile.id));
           triggerHaptic(hapticPatterns.tap);
         }
       } else {
-        // Tap
+        // Simple Tap franc
         handleTap(drag.tile, drag.source);
       }
     };
@@ -707,27 +704,27 @@ export const WordController: React.FC = () => {
     window.addEventListener('pointercancel', handlePointerUp);
   };
 
-  // Tap on board cell: either place selected rack tile or set cursor
+  // Tap sur une case du plateau : pose la tuile sélectionnée ou déplace le curseur
   const handleBoardCellClick = (r: number, c: number) => {
     if (isGameOver) return;
 
-    // Check if cell already has a placed tile from this turn -> recall it
+    // Si la case a déjà une tuile posée ce tour -> rappel au chevalet
     const placed = placedTileMap.get(`${r}_${c}`);
     if (placed) {
       handleRemovePlacedTile(placed.tile.id);
       return;
     }
 
-    // If user has a selected tile from rack, place it immediately!
+    // Si une lettre du chevalet est sélectionnée, la déposer sur cette case libre !
     if (selectedRackTileId) {
       const tile = orderedRack.find((t) => t.id === selectedRackTileId);
       if (tile && gameState.board[r]?.[c] === null) {
-        placeTileAtCell(tile, r, c);
+        placeTileAtCell(tile, r, c, true);
         return;
       }
     }
 
-    // Otherwise, set focus cursor
+    // Sinon, déplacer simplement le curseur de visée
     triggerHaptic(hapticPatterns.tap);
     audio.playFocus();
     setLocalError('');
@@ -897,32 +894,49 @@ export const WordController: React.FC = () => {
 
   return (
     <div className="min-h-screen flex flex-col justify-between bg-[#0B100E] text-white select-none relative overflow-x-hidden">
+      {/* Fond dynamique paysages défilant avec assombrissement adapté mobile */}
+      <WorldLandscapeBackground
+        overlayDarkness={0.90}
+        showLocationBadge={false}
+        tintClass="from-emerald-950/30 via-[#0B100E]/80 to-[#0B100E]/95"
+      />
+
       <MobileHeader />
 
-      <main className="p-3 flex-1 flex flex-col justify-between space-y-2 max-w-lg mx-auto w-full pb-5">
-        {/* Turn Status Banner */}
-        <div
-          className={`p-2.5 rounded-2xl text-center border transition-all ${
-            isMyTurn
-              ? 'bg-[#10B981]/20 border-[#10B981] shadow-[0_0_15px_rgba(16,185,129,0.3)]'
-              : 'bg-white/5 border-white/10 text-gray-400'
-          }`}
-        >
-          <div className="flex items-center justify-between px-2">
-            <div className="flex items-center space-x-1.5">
-              <span className="w-2 h-2 rounded-full bg-[#10B981] animate-ping" />
-              <span className="text-[11px] font-black uppercase tracking-wider text-[#10B981]">
-                {isMyTurn ? 'VOTRE TOUR DE JOUER' : 'TOUR ADVERSE'}
-              </span>
-            </div>
-            <div className="flex items-center space-x-1 font-mono font-bold text-xs text-white">
-              <span>
-                {direction === 'horizontal'
-                  ? '↔ Ligne ' + (focusedCell.row + 1)
-                  : '↕ Colonne ' + (focusedCell.col + 1)}
-              </span>
+      <main className="p-3 flex-1 flex flex-col justify-between space-y-2 max-w-lg mx-auto w-full pb-5 z-10">
+        {/* Turn Status Banner & Exit button */}
+        <div className="flex items-center space-x-2">
+          <div
+            className={`flex-1 p-2.5 rounded-2xl text-center border transition-all ${
+              isMyTurn
+                ? 'bg-[#10B981]/20 border-[#10B981] shadow-[0_0_15px_rgba(16,185,129,0.3)]'
+                : 'bg-white/5 border-white/10 text-gray-400'
+            }`}
+          >
+            <div className="flex items-center justify-between px-2">
+              <div className="flex items-center space-x-1.5">
+                <span className="w-2 h-2 rounded-full bg-[#10B981] animate-ping" />
+                <span className="text-[11px] font-black uppercase tracking-wider text-[#10B981]">
+                  {isMyTurn ? 'VOTRE TOUR DE JOUER' : 'TOUR ADVERSE'}
+                </span>
+              </div>
+              <div className="flex items-center space-x-1 font-mono font-bold text-xs text-white">
+                <span>
+                  {direction === 'horizontal'
+                    ? '↔ Ligne ' + (focusedCell.row + 1)
+                    : '↕ Colonne ' + (focusedCell.col + 1)}
+                </span>
+              </div>
             </div>
           </div>
+
+          <button
+            onClick={() => setShowExitModal(true)}
+            className="p-2.5 rounded-2xl bg-white/5 border border-white/10 text-rose-300 hover:text-white hover:bg-rose-500/20 active:scale-95 transition-all flex items-center justify-center"
+            title="Quitter la partie"
+          >
+            <LogOut className="w-4 h-4" />
+          </button>
         </div>
 
         {/* Clean Tactile / Tap Guide Banner */}
@@ -1426,6 +1440,44 @@ export const WordController: React.FC = () => {
         )}
 
         <ReactionFlinger />
+
+        {/* Modal de Confirmation pour Quitter la Partie */}
+        {showExitModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-4 animate-scale-in">
+            <div className="w-full max-w-sm p-6 rounded-3xl bg-[#1A1410] border-2 border-rose-500/70 shadow-2xl text-center space-y-4">
+              <div className="inline-flex p-3.5 rounded-full bg-rose-500/20 border border-rose-500/40 text-rose-400">
+                <LogOut className="w-8 h-8" />
+              </div>
+
+              <div className="space-y-1.5">
+                <h3 className="text-lg font-black font-display text-white">
+                  Quitter la partie ?
+                </h3>
+                <p className="text-xs text-gray-300 leading-relaxed">
+                  Vous reviendrez à l'écran de sélection ou d'attente du salon sans être déconnecté.
+                </p>
+              </div>
+
+              <div className="flex space-x-2 pt-2">
+                <button
+                  onClick={() => {
+                    setShowExitModal(false);
+                    leaveRoom();
+                  }}
+                  className="flex-1 py-3 rounded-2xl bg-gradient-to-r from-rose-600 to-rose-700 text-white font-black text-xs uppercase shadow-lg active:scale-95 transition-transform"
+                >
+                  Quitter
+                </button>
+                <button
+                  onClick={() => setShowExitModal(false)}
+                  className="px-4 py-3 rounded-2xl bg-white/10 text-gray-300 font-bold text-xs active:scale-95 transition-transform"
+                >
+                  Annuler
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </main>
     </div>
   );

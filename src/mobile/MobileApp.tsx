@@ -53,10 +53,24 @@ interface MobileAppProps {
 }
 
 export const MobileApp: React.FC<MobileAppProps> = ({ isSimulatorMode = false, defaultRoomCode = '' }) => {
-  const { room, mobileView, localPlayer } = useGame();
+  const { room, mobileView, localPlayer, isAutoReconnecting } = useGame();
 
   // Empêche l'extinction de l'écran du smartphone pendant la partie
   useWakeLock(Boolean(room && localPlayer));
+
+  if (isAutoReconnecting) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-[#070D0B] text-white p-6 select-none space-y-4">
+        <div className="w-16 h-16 rounded-2xl bg-cyan-500/20 border border-cyan-400/40 flex items-center justify-center shadow-2xl animate-pulse">
+          <Loader2 className="w-8 h-8 text-cyan-400 animate-spin" />
+        </div>
+        <div className="text-center space-y-1">
+          <h2 className="text-lg font-black font-display tracking-wider text-white">RECONNEXION À LA PARTIE</h2>
+          <p className="text-xs text-slate-400">Restauration automatique de votre session MOOD...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!room || mobileView === 'join' || !localPlayer) {
     return <MobileJoinView defaultRoomCode={defaultRoomCode} />;
