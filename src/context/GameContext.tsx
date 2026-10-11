@@ -124,6 +124,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       }
 
       if (params.get('admin') === 'true' || params.get('view') === 'admin') {
+        setAppMode('tv');
         setTvView('admin');
       }
 

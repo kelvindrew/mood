@@ -1,6 +1,6 @@
 import React from 'react';
 import { useGame } from '../../context/GameContext';
-import { Radio, Search } from 'lucide-react';
+import { Radio, Search, Settings } from 'lucide-react';
 import { audio } from '../../services/audio';
 
 const NAV_TABS = [
@@ -83,6 +83,20 @@ export const TVNavbar: React.FC = () => {
             </div>
           </div>
         )}
+
+        {/* Circular Admin / Settings Button */}
+        <button
+          data-tv-focus
+          tabIndex={0}
+          onClick={() => {
+            audio.playSelect();
+            setTvView('admin');
+          }}
+          className="w-9 h-9 rounded-full bg-slate-900/80 border border-slate-700/70 hover:border-cyan-400/80 hover:bg-slate-800 text-slate-300 hover:text-cyan-400 flex items-center justify-center transition-all outline-none focus:scale-110 focus:ring-2 focus:ring-cyan-400"
+          title="Connexion Administrateur"
+        >
+          <Settings className="w-4 h-4" />
+        </button>
 
         {/* Circular Search Button */}
         <button

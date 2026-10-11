@@ -124,6 +124,31 @@ export const TVSettingsView: React.FC = () => {
             </div>
           </div>
         </div>
+
+        {/* Espace Administrateur Back-Office CMS */}
+        <div className="p-6 rounded-3xl bg-slate-900/90 border border-slate-700/80 shadow-xl flex items-center justify-between">
+          <div className="flex items-center space-x-4">
+            <div className="w-12 h-12 rounded-2xl bg-indigo-500/15 border border-indigo-500/30 flex items-center justify-center">
+              <Shield className="w-6 h-6 text-indigo-400" />
+            </div>
+            <div>
+              <h3 className="text-lg font-black font-display text-white">Espace Administrateur & CMS</h3>
+              <p className="text-xs text-slate-400">Gérer le catalogue des jeux, les énigmes 4 Images 1 Mot et l'IA Studio</p>
+            </div>
+          </div>
+
+          <button
+            data-tv-focus
+            tabIndex={0}
+            onClick={() => {
+              audio.playSelect();
+              setTvView('admin');
+            }}
+            className="px-6 py-3 rounded-2xl bg-gradient-to-r from-cyan-500 to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 text-white font-black text-xs uppercase tracking-wider shadow-lg border border-cyan-400/30 transition-all outline-none focus:scale-105 focus:ring-4 focus:ring-cyan-400"
+          >
+            Accéder à l'Admin
+          </button>
+        </div>
       </div>
     </div>
   );

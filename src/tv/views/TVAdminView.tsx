@@ -19,6 +19,8 @@ import {
   AlertTriangle,
   ArrowLeft,
   Eye,
+  EyeOff,
+  KeyRound,
   LogOut,
   Sparkles,
 } from 'lucide-react';
@@ -31,6 +33,7 @@ export const TVAdminView: React.FC = () => {
 
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(adminCms.isAuthenticated());
   const [passwordInput, setPasswordInput] = useState<string>('');
+  const [showPassword, setShowPassword] = useState<boolean>(false);
   const [authError, setAuthError] = useState<string>('');
   const [activeTab, setActiveTab] = useState<'catalog' | 'ai_studio' | 'four_pics' | 'branding' | 'security'>('catalog');
 
@@ -196,14 +199,27 @@ export const TVAdminView: React.FC = () => {
               <label className="text-[11px] font-black uppercase tracking-wider text-slate-300 block mb-1.5">
                 Mot de passe Master :
               </label>
-              <input
-                type="password"
-                value={passwordInput}
-                onChange={(e) => setPasswordInput(e.target.value)}
-                placeholder="Entrez le mot de passe (défaut : admin)"
-                className="w-full px-4 py-3 rounded-2xl bg-slate-950 border border-slate-700 text-white font-mono text-sm focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/40 outline-none transition-all"
-                autoFocus
-              />
+              <div className="relative">
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  value={passwordInput}
+                  onChange={(e) => {
+                    setPasswordInput(e.target.value);
+                    setAuthError('');
+                  }}
+                  placeholder="Entrez le mot de passe (défaut : admin)"
+                  className="w-full px-4 py-3 pr-12 rounded-2xl bg-slate-950 border border-slate-700 text-white font-mono text-sm focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/40 outline-none transition-all"
+                  autoFocus
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white p-1"
+                  title={showPassword ? 'Masquer' : 'Afficher'}
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
             </div>
 
             {authError && (
@@ -213,9 +229,71 @@ export const TVAdminView: React.FC = () => {
               </div>
             )}
 
+            {/* Clavier virtuel pour télécommande TV */}
+            <div className="pt-1">
+              <div className="text-[10px] uppercase font-bold text-slate-400 tracking-wider mb-2 text-center">
+                Clavier rapide télécommande
+              </div>
+              <div className="grid grid-cols-3 gap-2">
+                {['1', '2', '3', '4', '5', '6', '7', '8', '9'].map((digit) => (
+                  <button
+                    key={digit}
+                    type="button"
+                    data-tv-focus
+                    onClick={() => {
+                      setPasswordInput((prev) => prev + digit);
+                      setAuthError('');
+                      audio.playSelect();
+                    }}
+                    className="py-2.5 rounded-xl bg-white/5 hover:bg-white/15 text-white font-mono font-bold text-sm border border-white/10 active:scale-95 transition-all outline-none focus:scale-105 focus:ring-2 focus:ring-cyan-400"
+                  >
+                    {digit}
+                  </button>
+                ))}
+                <button
+                  type="button"
+                  data-tv-focus
+                  onClick={() => {
+                    setPasswordInput((prev) => prev.slice(0, -1));
+                    setAuthError('');
+                    audio.playBack();
+                  }}
+                  className="py-2.5 rounded-xl bg-rose-950/40 hover:bg-rose-900/60 text-rose-300 font-bold text-xs border border-rose-500/30 active:scale-95 transition-all outline-none focus:scale-105 focus:ring-2 focus:ring-rose-400"
+                >
+                  Effacer
+                </button>
+                <button
+                  type="button"
+                  data-tv-focus
+                  onClick={() => {
+                    setPasswordInput((prev) => prev + '0');
+                    setAuthError('');
+                    audio.playSelect();
+                  }}
+                  className="py-2.5 rounded-xl bg-white/5 hover:bg-white/15 text-white font-mono font-bold text-sm border border-white/10 active:scale-95 transition-all outline-none focus:scale-105 focus:ring-2 focus:ring-cyan-400"
+                >
+                  0
+                </button>
+                <button
+                  type="button"
+                  data-tv-focus
+                  onClick={() => {
+                    setPasswordInput('admin');
+                    setAuthError('');
+                    audio.playSelect();
+                  }}
+                  className="py-2.5 rounded-xl bg-cyan-950/40 hover:bg-cyan-900/60 text-cyan-300 font-bold text-[10px] border border-cyan-500/30 active:scale-95 transition-all outline-none focus:scale-105 focus:ring-2 focus:ring-cyan-400"
+                  title="Remplir le mot de passe par défaut 'admin'"
+                >
+                  Défaut
+                </button>
+              </div>
+            </div>
+
             <button
               type="submit"
-              className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-cyan-500 to-indigo-600 text-white font-display font-black text-sm uppercase tracking-wider shadow-[0_0_20px_rgba(6,182,212,0.3)] hover:scale-105 active:scale-95 transition-all"
+              data-tv-focus
+              className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-cyan-500 to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 text-white font-display font-black text-sm uppercase tracking-wider shadow-[0_0_20px_rgba(6,182,212,0.3)] hover:scale-105 active:scale-95 transition-all outline-none focus:scale-105 focus:ring-4 focus:ring-white"
             >
               Déverrouiller le Back-Office
             </button>
@@ -223,8 +301,9 @@ export const TVAdminView: React.FC = () => {
 
           <div className="pt-2 text-center">
             <button
+              data-tv-focus
               onClick={() => setTvView('home')}
-              className="text-xs font-bold text-slate-400 hover:text-white flex items-center justify-center space-x-1 mx-auto"
+              className="text-xs font-bold text-slate-400 hover:text-white flex items-center justify-center space-x-1 mx-auto outline-none focus:text-cyan-300"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
               <span>Retour à l'accueil</span>
