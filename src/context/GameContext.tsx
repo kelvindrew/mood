@@ -57,15 +57,24 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [appMode, setAppMode] = useState<AppMode>('tv');
   const [tvView, setTvView] = useState<TVView>('home');
   const [mobileView, setMobileView] = useState<MobileView>('join');
-  const [games, setGames] = useState<GameCatalogItem[]>(() => adminCms.getGamesCatalog());
-  const [selectedGame, setSelectedGame] = useState<GameCatalogItem>(() => adminCms.getGamesCatalog()[0] || GAMES_CATALOG[0]);
+  const [games, setGames] = useState<GameCatalogItem[]>(() =>
+    adminCms.getGamesCatalog().filter((g) => !['wild_rush', 'blind_test', 'president'].includes(g.id))
+  );
+  const [selectedGame, setSelectedGame] = useState<GameCatalogItem>(() => games[0] || GAMES_CATALOG[0]);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
 
   useEffect(() => {
     const unsub = adminCms.subscribe(() => {
-      const updated = adminCms.getGamesCatalog();
+      const updated = adminCms
+        .getGamesCatalog()
+        .filter((g) => !['wild_rush', 'blind_test', 'president'].includes(g.id));
       setGames(updated);
-      setSelectedGame((prev) => updated.find((g) => g.id === prev.id) || updated[0]);
+      setSelectedGame((prev) => {
+        if (!prev || ['wild_rush', 'blind_test', 'president'].includes(prev.id)) {
+          return updated[0];
+        }
+        return updated.find((g) => g.id === prev.id) || updated[0];
+      });
     });
     return () => unsub();
   }, []);

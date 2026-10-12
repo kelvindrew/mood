@@ -10,36 +10,47 @@ import { WorldLandscapeBackground } from '../../components/WorldLandscapeBackgro
 
 export const TVHomeView: React.FC = () => {
   const { room, selectGame, setSelectedGame, createRoom, selectedCategory, setTvView } = useGame();
-  const [games, setGames] = useState<GameCatalogItem[]>(() => adminCms.getGamesCatalog());
-  const [spotlightGame, setSpotlightGame] = useState<GameCatalogItem>(games[0]);
+  const [games, setGames] = useState<GameCatalogItem[]>(() =>
+    adminCms.getGamesCatalog().filter((g) => !['wild_rush', 'blind_test', 'president'].includes(g.id))
+  );
+  const [spotlightGame, setSpotlightGame] = useState<GameCatalogItem>(() => games[0] || GAMES_CATALOG[0]);
   const [branding, setBranding] = useState<PlatformBranding>(() => adminCms.getPlatformBranding());
   const carouselRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     tvNav.setInitialFocus('button');
     const unsub = adminCms.subscribe(() => {
-      const updated = adminCms.getGamesCatalog();
+      const updated = adminCms
+        .getGamesCatalog()
+        .filter((g) => !['wild_rush', 'blind_test', 'president'].includes(g.id));
       setGames(updated);
       setBranding(adminCms.getPlatformBranding());
-      if (updated.length > 0 && !spotlightGame) {
-        setSpotlightGame(updated[0]);
-      }
+      setSpotlightGame((prev) => {
+        if (!prev || ['wild_rush', 'blind_test', 'president'].includes(prev.id)) {
+          return updated[0];
+        }
+        return updated.find((g) => g.id === prev.id) || updated[0];
+      });
     });
     return () => unsub();
   }, []);
 
   // Filtrage selon l'onglet actif sélectionné dans la Navbar
-  const displayedGames =
+  const displayedGames = (
     !selectedCategory || selectedCategory === 'all'
       ? games
-      : games.filter((g) => g.category === selectedCategory);
+      : games.filter((g) => g.category === selectedCategory)
+  ).filter((g) => !['wild_rush', 'blind_test', 'president'].includes(g.id));
 
   // Mettre à jour le jeu mis en avant si la catégorie change et le jeu actuel n'en fait pas partie
   useEffect(() => {
-    if (displayedGames.length > 0 && !displayedGames.some((g) => g.id === spotlightGame?.id)) {
+    if (
+      displayedGames.length > 0 &&
+      (!spotlightGame || !displayedGames.some((g) => g.id === spotlightGame?.id))
+    ) {
       setSpotlightGame(displayedGames[0]);
     }
-  }, [selectedCategory, displayedGames]);
+  }, [selectedCategory, displayedGames, spotlightGame]);
 
   // Lancement du jeu -> Conservation des manettes connectées ou création de salon
   const handlePlayGame = async (game: GameCatalogItem) => {
