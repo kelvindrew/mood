@@ -77,12 +77,12 @@ export const TVHomeView: React.FC = () => {
 
   return (
     <div className="relative min-h-screen bg-[#0A1118] text-white select-none overflow-hidden flex flex-col justify-between">
-      {/* 1. Arrière-plan cinématique : Bannières Paysages défilantes ou Visuel du jeu */}
+      {/* 1. Arrière-plan cinématique : Image du jeu occupant toute la partie visible, parfaitement centrée */}
       {isLandscapeMode ? (
         <WorldLandscapeBackground
-          overlayDarkness={0.45}
+          overlayDarkness={0.25}
           showLocationBadge={true}
-          tintClass="from-slate-950/20 via-[#0A1118]/45 to-[#0A1118]/85"
+          tintClass="from-slate-950/20 via-transparent to-[#0A1118]/80"
         />
       ) : (
         <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden select-none bg-[#0A1118]">
@@ -91,86 +91,90 @@ export const TVHomeView: React.FC = () => {
               key={activeGame.id}
               src={currentPoster}
               alt={activeGame.title}
-              className="w-full h-full object-cover object-right-top md:object-right filter brightness-[0.78] contrast-[1.10] transition-opacity duration-700 animate-fade-in"
+              className="w-full h-full object-cover object-center filter brightness-[0.95] contrast-[1.05] transition-opacity duration-700 animate-fade-in"
             />
           )}
 
-          {/* Dégradé latéral gauche : préserve une lisibilité parfaite des textes et boutons */}
-          <div className="absolute inset-0 bg-gradient-to-r from-[#0A1118] via-[#0A1118]/90 via-48% to-transparent" />
+          {/* Dégradé latéral gauche doux pour la lisibilité des textes sans cacher l'image centrale */}
+          <div className="absolute inset-0 bg-gradient-to-r from-[#0A1118]/90 via-[#0A1118]/40 via-35% to-transparent" />
 
-          {/* Dégradé supérieur pour la Navbar */}
-          <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-[#0A1118] via-[#0A1118]/70 to-transparent" />
+          {/* Dégradé supérieur léger pour la Navbar */}
+          <div className="absolute top-0 left-0 right-0 h-28 bg-gradient-to-b from-[#0A1118]/80 via-[#0A1118]/30 to-transparent" />
 
-          {/* Dégradé inférieur pour le carrousel de vignettes */}
-          <div className="absolute bottom-0 left-0 right-0 h-[62vh] bg-gradient-to-t from-[#0A1118] via-[#0A1118]/95 via-50% to-transparent" />
+          {/* Dégradé inférieur léger sur le bas pour intégrer le carrousel */}
+          <div className="absolute bottom-0 left-0 right-0 h-52 bg-gradient-to-t from-[#0A1118] via-[#0A1118]/70 to-transparent" />
         </div>
       )}
 
       {/* 2. Section Héro (Titre, Saison/Joueurs, Étoiles, Catégorie, Boutons Jouer & Plus, Synopsis) */}
-      <div className="relative z-10 pt-28 md:pt-32 px-8 md:px-14 max-w-2xl flex flex-col space-y-3.5 animate-fade-in">
-        {/* Titre Display Majuscule Stylisé */}
-        <h1 className="text-4xl sm:text-5xl md:text-6xl font-black font-display tracking-tight text-white uppercase leading-none drop-shadow-[0_2px_15px_rgba(0,0,0,0.9)]">
-          {activeGame.title}
-        </h1>
+      <div className="relative z-10 pt-24 md:pt-28 px-8 md:px-14 max-w-xl flex flex-col space-y-3 animate-fade-in pointer-events-auto">
+        <div className="p-4 md:p-5 rounded-3xl bg-black/35 backdrop-blur-md border border-white/10 shadow-2xl space-y-3">
+          {/* Titre Display Majuscule Stylisé */}
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-black font-display tracking-tight text-white uppercase leading-none drop-shadow-[0_2px_15px_rgba(0,0,0,0.9)]">
+            {activeGame.title}
+          </h1>
 
-        {/* Sous-titre / Mode (Ex: Season 1 -> Multijoueur Smart TV) */}
-        <div className="text-sm md:text-base font-semibold text-slate-300 drop-shadow">
-          <span>{activeGame.minPlayers}–{activeGame.maxPlayers} Joueurs</span>
-          <span className="mx-2 text-slate-500">•</span>
-          <span>{activeGame.durationMinutes}</span>
-          {activeGame.badge && (
-            <>
-              <span className="mx-2 text-slate-500">•</span>
-              <span className="text-amber-400 font-bold uppercase">{activeGame.badge}</span>
-            </>
-          )}
-        </div>
-
-        {/* Étoiles dorées & Tags de genre (Crime • Drama • Mystery) */}
-        <div className="flex items-center space-x-3 text-xs sm:text-sm font-medium">
-          <div className="flex items-center text-amber-400 space-x-0.5">
-            <Star className="w-4 h-4 fill-amber-400" />
-            <Star className="w-4 h-4 fill-amber-400" />
-            <Star className="w-4 h-4 fill-amber-400" />
-            <Star className="w-4 h-4 fill-amber-400" />
-            <Star className="w-4 h-4 fill-amber-400/50" />
+          {/* Sous-titre / Mode (Ex: Joueurs, Durée, Badge) */}
+          <div className="text-xs md:text-sm font-semibold text-slate-200 drop-shadow flex items-center flex-wrap gap-2">
+            <span>{activeGame.minPlayers}–{activeGame.maxPlayers} Joueurs</span>
+            <span className="text-slate-500">•</span>
+            <span>{activeGame.durationMinutes}</span>
+            {activeGame.badge && (
+              <>
+                <span className="text-slate-500">•</span>
+                <span className="text-amber-400 font-bold uppercase px-2 py-0.5 rounded bg-amber-400/15 border border-amber-400/30">
+                  {activeGame.badge}
+                </span>
+              </>
+            )}
           </div>
-          <span className="text-slate-400">
-            {activeGame.category.toUpperCase()} • SMART TV • SANS MANETTE
-          </span>
+
+          {/* Étoiles dorées & Tags de genre */}
+          <div className="flex items-center space-x-2.5 text-xs font-medium">
+            <div className="flex items-center text-amber-400 space-x-0.5">
+              <Star className="w-3.5 h-3.5 fill-amber-400" />
+              <Star className="w-3.5 h-3.5 fill-amber-400" />
+              <Star className="w-3.5 h-3.5 fill-amber-400" />
+              <Star className="w-3.5 h-3.5 fill-amber-400" />
+              <Star className="w-3.5 h-3.5 fill-amber-400/50" />
+            </div>
+            <span className="text-slate-300 uppercase tracking-wider text-[11px]">
+              {activeGame.category} • MULTIJOUEUR SALON
+            </span>
+          </div>
+
+          {/* Boutons d'Action : JOUER (Cyan) + PLUS (Règles / Infos) */}
+          <div className="flex items-center space-x-3 pt-1">
+            <button
+              data-tv-focus
+              tabIndex={0}
+              onClick={() => handlePlayGame(activeGame)}
+              className="px-6 py-2.5 rounded-xl bg-cyan-400 hover:bg-cyan-300 text-slate-950 font-black text-xs sm:text-sm uppercase tracking-wider flex items-center space-x-2 shadow-[0_0_20px_rgba(6,182,212,0.5)] transition-all outline-none focus:scale-105 focus:ring-4 focus:ring-white focus:bg-white cursor-pointer"
+            >
+              <Play className="w-4 h-4 fill-slate-950 translate-x-0.5" />
+              <span>JOUER</span>
+            </button>
+
+            <button
+              data-tv-focus
+              tabIndex={0}
+              onClick={() => {
+                audio.playSelect();
+                setSelectedGame(activeGame);
+                setTvView('game_detail');
+              }}
+              className="w-10 h-10 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-white flex items-center justify-center transition-all outline-none focus:scale-110 focus:ring-4 focus:ring-white focus:bg-cyan-400 focus:text-slate-950 cursor-pointer"
+              title="Règles et détails du jeu"
+            >
+              <Plus className="w-5 h-5 stroke-[2.5]" />
+            </button>
+          </div>
+
+          {/* Description / Synopsis épuré */}
+          <p className="text-xs text-slate-300 font-sans leading-relaxed line-clamp-2 drop-shadow pt-0.5">
+            {activeGame.description || activeGame.tagline}
+          </p>
         </div>
-
-        {/* Boutons d'Action : JOUER (Cyan) + PLUS (Règles / Infos) */}
-        <div className="flex items-center space-x-3 pt-1">
-          <button
-            data-tv-focus
-            tabIndex={0}
-            onClick={() => handlePlayGame(activeGame)}
-            className="px-6 py-2.5 rounded-lg bg-cyan-400 hover:bg-cyan-300 text-slate-950 font-black text-sm uppercase tracking-wider flex items-center space-x-2 shadow-[0_0_20px_rgba(6,182,212,0.4)] transition-all outline-none focus:scale-105 focus:ring-4 focus:ring-white focus:bg-white cursor-pointer"
-          >
-            <Play className="w-4 h-4 fill-slate-950 translate-x-0.5" />
-            <span>JOUER</span>
-          </button>
-
-          <button
-            data-tv-focus
-            tabIndex={0}
-            onClick={() => {
-              audio.playSelect();
-              setSelectedGame(activeGame);
-              setTvView('game_detail');
-            }}
-            className="w-10 h-10 rounded-lg bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-400/40 text-cyan-300 hover:text-white flex items-center justify-center transition-all outline-none focus:scale-110 focus:ring-4 focus:ring-white focus:bg-cyan-400 focus:text-slate-950 cursor-pointer"
-            title="Règles et détails du jeu"
-          >
-            <Plus className="w-5 h-5 stroke-[2.5]" />
-          </button>
-        </div>
-
-        {/* Description / Synopsis épuré (2 à 3 lignes) */}
-        <p className="text-xs sm:text-sm text-slate-300/90 font-sans leading-relaxed max-w-lg line-clamp-3 drop-shadow pt-0.5">
-          {activeGame.description || activeGame.tagline}
-        </p>
       </div>
 
       {/* 3. Carrousel Inférieur de Vignettes Verticales / Posters (Tous les 23 jeux disponibles) */}

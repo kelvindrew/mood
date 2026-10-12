@@ -61,7 +61,7 @@ const DEFAULT_BRANDING: PlatformBranding = {
   customLogoUrl: '',
   defaultTurnDuration: 30,
   defaultMaxPlayers: 6,
-  homeBackgroundMode: 'landscapes',
+  homeBackgroundMode: 'game',
   customLandscapes: [],
 };
 
