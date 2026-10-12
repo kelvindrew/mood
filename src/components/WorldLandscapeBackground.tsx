@@ -139,15 +139,15 @@ export const WorldLandscapeBackground: React.FC<WorldLandscapeBackgroundProps> =
           >
             <img
               src={landscape.url}
-              alt={`${landscape.name}, ${landscape.country}`}
+              alt={`${landscape.name || 'Paysage'}, ${landscape.country || ''}`}
               loading={index <= 1 ? 'eager' : 'lazy'}
-              className="w-full h-full object-cover object-center filter brightness-[0.70] contrast-[1.08] transform scale-105"
+              className="w-full h-full object-cover object-center filter brightness-[0.92] contrast-[1.05] transform scale-100"
             />
           </div>
         );
       })}
 
-      {/* 3. Masque sombre protecteur : assure un contraste absolu pour les tuiles et textes */}
+      {/* 3. Masque sombre protecteur : contraste équilibré sans noircir ni dégrader la photo */}
       <div
         className="absolute inset-0 z-20 pointer-events-none transition-colors duration-1000"
         style={{
@@ -155,16 +155,18 @@ export const WorldLandscapeBackground: React.FC<WorldLandscapeBackgroundProps> =
         }}
       />
 
-      {/* 4. Vignette radiale & Dégradé d'ambiance harmonisé avec le design */}
+      {/* 4. Vignette et dégradés d'ambiance doux préservant la clarté centrale de l'image */}
       <div className={`absolute inset-0 z-20 bg-gradient-to-b ${tintClass} pointer-events-none`} />
-      <div className="absolute inset-0 z-20 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-transparent via-[#070D0B]/60 to-[#070D0B]/95 pointer-events-none" />
+      <div className="absolute inset-0 z-20 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-transparent via-[#070D0B]/30 to-[#070D0B]/80 pointer-events-none" />
 
-      {/* 5. Discrète étiquette de lieu en bas (élégante et non intrusive) */}
-      {showLocationBadge && (
-        <div className="absolute bottom-3 left-6 z-30 pointer-events-none flex items-center space-x-2 text-[11px] font-sans font-medium text-slate-400/80 bg-black/40 backdrop-blur-md px-3 py-1 rounded-full border border-white/10 shadow-lg animate-fade-in transition-all">
+      {/* 5. Discrète étiquette de lieu en bas (affichée uniquement si renseignée) */}
+      {showLocationBadge && (currentLandscape.name || currentLandscape.country) && (
+        <div className="absolute bottom-3 left-6 z-30 pointer-events-none flex items-center space-x-2 text-[11px] font-sans font-medium text-slate-300 bg-black/50 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-white/15 shadow-xl animate-fade-in transition-all">
           <span className="text-amber-400">🌍</span>
           <span className="truncate">
-            <strong className="text-slate-200 font-bold">{currentLandscape.name}</strong> • {currentLandscape.country}
+            {currentLandscape.name && <strong className="text-white font-bold">{currentLandscape.name}</strong>}
+            {currentLandscape.name && currentLandscape.country && ' • '}
+            {currentLandscape.country && <span className="text-slate-300">{currentLandscape.country}</span>}
           </span>
         </div>
       )}

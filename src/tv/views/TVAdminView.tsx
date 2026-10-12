@@ -1211,29 +1211,27 @@ export const TVAdminView: React.FC = () => {
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <label className="text-[10px] font-black uppercase text-gray-400 block mb-1">
-                          Nom du lieu / Paysage
+                          Nom du lieu / Paysage <span className="text-slate-500 font-normal">(Optionnel)</span>
                         </label>
                         <input
                           type="text"
-                          value={editingLandscape.name}
+                          value={editingLandscape.name || ''}
                           onChange={(e) => setEditingLandscape({ ...editingLandscape, name: e.target.value })}
-                          placeholder="Ex: Mont Blanc, Plage de Kribi..."
+                          placeholder="Ex: Mont Blanc, Couché de soleil... (ou laisser vide)"
                           className="w-full px-3 py-2 rounded-xl bg-surface-dark border border-white/15 text-white font-bold text-sm"
-                          required
                         />
                       </div>
 
                       <div>
                         <label className="text-[10px] font-black uppercase text-gray-400 block mb-1">
-                          Pays / Région
+                          Pays / Région <span className="text-slate-500 font-normal">(Optionnel)</span>
                         </label>
                         <input
                           type="text"
-                          value={editingLandscape.country}
+                          value={editingLandscape.country || ''}
                           onChange={(e) => setEditingLandscape({ ...editingLandscape, country: e.target.value })}
-                          placeholder="Ex: France, Cameroun, Japon..."
+                          placeholder="Ex: France, Japon... (ou laisser vide)"
                           className="w-full px-3 py-2 rounded-xl bg-surface-dark border border-white/15 text-white font-bold text-sm"
-                          required
                         />
                       </div>
                     </div>
@@ -1290,11 +1288,13 @@ export const TVAdminView: React.FC = () => {
                     </div>
                     <div className="absolute bottom-2.5 left-3 right-3">
                       <div className="text-sm font-black text-white truncate drop-shadow">
-                        {landscape.name || 'Sans titre'}
+                        {landscape.name?.trim() || `Paysage #${index + 1}`}
                       </div>
-                      <div className="text-[11px] font-bold text-cyan-300 drop-shadow">
-                        📍 {landscape.country || 'Pays inconnu'}
-                      </div>
+                      {landscape.country?.trim() && (
+                        <div className="text-[11px] font-bold text-cyan-300 drop-shadow">
+                          📍 {landscape.country}
+                        </div>
+                      )}
                     </div>
                   </div>
 

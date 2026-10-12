@@ -80,9 +80,9 @@ export const TVHomeView: React.FC = () => {
       {/* 1. Arrière-plan cinématique : Bannières Paysages défilantes ou Visuel du jeu */}
       {isLandscapeMode ? (
         <WorldLandscapeBackground
-          overlayDarkness={0.70}
+          overlayDarkness={0.45}
           showLocationBadge={true}
-          tintClass="from-slate-950/40 via-[#0A1118]/70 to-[#0A1118]/95"
+          tintClass="from-slate-950/20 via-[#0A1118]/45 to-[#0A1118]/85"
         />
       ) : (
         <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden select-none bg-[#0A1118]">
