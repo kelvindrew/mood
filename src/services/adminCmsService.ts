@@ -125,9 +125,11 @@ class AdminCmsService {
       if (stored) {
         const parsed: GameCatalogItem[] = JSON.parse(stored);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          const officialMap = new Map(GAMES_CATALOG.map((g) => [g.id, g]));
-          // Reconcile: ensure all 23 games exist with up-to-date media, preserving custom edits
-          const merged: GameCatalogItem[] = GAMES_CATALOG.map((official) => {
+          // Filter out explicitly removed games
+          const DELETED_GAMES = new Set(['wild_rush', 'blind_test', 'president']);
+          const officialMap = new Map(GAMES_CATALOG.filter((g) => !DELETED_GAMES.has(g.id)).map((g) => [g.id, g]));
+          // Reconcile: ensure all active games exist with up-to-date media, preserving custom edits
+          const merged: GameCatalogItem[] = GAMES_CATALOG.filter((g) => !DELETED_GAMES.has(g.id)).map((official) => {
             const custom = parsed.find((p) => p.id === official.id);
             return custom
               ? {
@@ -138,9 +140,9 @@ class AdminCmsService {
                 }
               : official;
           });
-          // Also keep any extra custom games added through admin
+          // Also keep any extra custom games added through admin (except deleted ones)
           parsed.forEach((custom) => {
-            if (!officialMap.has(custom.id)) {
+            if (!officialMap.has(custom.id) && !DELETED_GAMES.has(custom.id)) {
               merged.push(custom);
             }
           });
@@ -149,10 +151,11 @@ class AdminCmsService {
         }
       }
     } catch {}
+    const filteredDefaults = GAMES_CATALOG.filter((g) => !['wild_rush', 'blind_test', 'president'].includes(g.id));
     try {
-      localStorage.setItem(STORAGE_KEYS.GAMES_CATALOG, JSON.stringify(GAMES_CATALOG));
+      localStorage.setItem(STORAGE_KEYS.GAMES_CATALOG, JSON.stringify(filteredDefaults));
     } catch {}
-    return GAMES_CATALOG;
+    return filteredDefaults;
   }
 
   public saveGame(game: GameCatalogItem) {

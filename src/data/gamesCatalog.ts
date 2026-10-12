@@ -2,35 +2,6 @@ import { GameCatalogItem } from '../types/game';
 
 export const GAMES_CATALOG: GameCatalogItem[] = [
   {
-    id: 'wild_rush',
-    title: 'WILD RUSH : COURSE 3D',
-    tagline: 'La grande course 3D multijoueur où chaque décision transforme votre animal',
-    description: 'Affrontez jusqu’à 4 joueurs dans une course 3D spectaculaire à travers 8 environnements sauvages (Rivière, Jungle, Désert, Banquise, Volcan, Océan, Savane, Montagne). Observez le terrain sur la TV, choisissez l’animal parfait sur votre smartphone en moins de 8 secondes, activez des boosts dévastateurs et franchissez la ligne d’arrivée en tête !',
-    category: 'popular',
-    minPlayers: 1,
-    maxPlayers: 4,
-    durationMinutes: '3–5 min',
-    difficulty: 'Moyen',
-    badge: 'EXCLUSIF 3D',
-    coverImage: '/games/wild_rush.jpg',
-    heroImage: '/games/wild_rush.jpg',
-    features: [
-      'Scène 3D temps réel avec caméra dynamique et météo animée',
-      '8 environnements vivants : Rivière, Jungle, Banquise, Volcan, etc.',
-      'Métamorphoses animales instantanées selon vos décisions',
-      'Système de combos (x2, x3, BOOST, PERFECT RUN) avec traînées lumineuses',
-      'Manette tactile ultra-réactive sur smartphone avec verrouillage instantané',
-      'Arrivée cinématographique avec podium et statistiques complètes'
-    ],
-    rules: [
-      'Observez l’environnement et l’obstacle annoncé sur la Smart TV.',
-      'Sur votre smartphone, choisissez rapidement l’animal le plus adapté parmi 4 options.',
-      'Choix optimal = boost majeur (+200 pts), choix inadapté = ralentissement.',
-      'Enchaînez les bons choix pour déclencher les modes COMBO et BOOST.',
-      'Le premier joueur à franchir l’arche d’arrivée remporte la couronne Wild Rush !'
-    ]
-  },
-  {
     id: 'spy',
     title: 'L’ESPION : UNDERCOVER',
     tagline: 'Le grand jeu de déduction sociale, de bluff et de mots secrets',
@@ -496,32 +467,6 @@ export const GAMES_CATALOG: GameCatalogItem[] = [
     ]
   },
   {
-    id: 'blind_test',
-    title: 'BLIND TEST MUSICAL ARENA',
-    tagline: 'Le défi musical avec buzzers ultra-réactifs',
-    description: 'Testez votre culture musicale ! Des mélodies et thèmes cultes retentissent sur la TV avec visualiseur audio. Soyez le plus rapide à buzzer sur votre mobile !',
-    category: 'party',
-    minPlayers: 2,
-    maxPlayers: 10,
-    durationMinutes: '10–20 min',
-    difficulty: 'Facile',
-    badge: 'MUSIQUE',
-    coverImage: '/games/blind_test.jpg',
-    heroImage: '/games/blind_test.jpg',
-    features: [
-      'Visualiseur audio spectral dynamique sur la TV',
-      'Buzzer instantané avec son personnalisé',
-      'Mélodies cultes : Cinéma, Séries, Pop, Rétro',
-      'Classement en direct'
-    ],
-    rules: [
-      'Un extrait musical retentit sur la Smart TV.',
-      'Appuyez le plus vite possible sur le buzzer de votre smartphone.',
-      'Vous disposez de 8 secondes pour choisir le bon titre.',
-      'Le joueur totalisant le plus de points l’emporte !'
-    ]
-  },
-  {
     id: 'werewolf',
     title: 'LOUP-GAROU DU SALON',
     tagline: 'Le jeu de bluff et de déduction sociale',
@@ -545,31 +490,6 @@ export const GAMES_CATALOG: GameCatalogItem[] = [
       'La nuit, chaque rôle effectue son action discrètement sur son mobile.',
       'Le jour, les joueurs débattent ensemble et votent pour éliminer un suspect.',
       'Les villageois gagnent s’ils éliminent tous les loups.'
-    ]
-  },
-  {
-    id: 'president',
-    title: 'LE PRÉSIDENT (TROUDUC)',
-    tagline: 'Le jeu de cartes de défausse et de hiérarchie',
-    description: 'Débarrassez-vous de vos cartes en jouant des simples, des paires ou des combinaisons supérieures ! Atteignez le statut de Président et dominez la partie.',
-    category: 'cards',
-    minPlayers: 3,
-    maxPlayers: 6,
-    durationMinutes: '15–25 min',
-    difficulty: 'Moyen',
-    badge: 'CARTES',
-    coverImage: '/games/president.jpg',
-    heroImage: '/games/president.jpg',
-    features: [
-      'Main secrète sur smartphone',
-      'Combinaisons multiples (paires, brelans, carrés)',
-      'Rangs de fin de manche : Président, Neutre, Trouduc',
-      'Inversion de hiérarchie'
-    ],
-    rules: [
-      'Les cartes sont classées du 3 (plus faible) au 2 (plus fort).',
-      'Posez une combinaison supérieure à celle sur la table.',
-      'Le premier joueur sans cartes devient le Président.'
     ]
   },
   {

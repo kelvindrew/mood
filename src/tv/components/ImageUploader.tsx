@@ -2,7 +2,6 @@ import React, { useRef, useState } from 'react';
 import { Upload, Link as LinkIcon, Trash2, Image as ImageIcon, Check, Sparkles } from 'lucide-react';
 
 export const GAME_POSTERS = [
-  { id: 'wild_rush', title: 'Wild Rush 3D', path: '/games/wild_rush.jpg' },
   { id: 'spy', title: "L'Espion", path: '/games/spy.jpg' },
   { id: 'bomb_party', title: 'Bomb Party', path: '/games/bomb_party.jpg' },
   { id: 'petit_bac', title: 'Petit Bac', path: '/games/petit_bac.jpg' },
@@ -15,10 +14,8 @@ export const GAME_POSTERS = [
   { id: 'naval_battle', title: 'Bataille Navale', path: '/games/naval_battle.jpg' },
   { id: 'poker', title: 'Poker Texas', path: '/games/poker.jpg' },
   { id: 'blackjack', title: 'Blackjack 21', path: '/games/blackjack.jpg' },
-  { id: 'president', title: 'Président', path: '/games/president.jpg' },
   { id: 'menteur', title: 'Jeu du Menteur', path: '/games/menteur.jpg' },
   { id: 'card_party', title: 'Card Party', path: '/games/card_party.jpg' },
-  { id: 'blind_test', title: 'Blind Test', path: '/games/blind_test.jpg' },
   { id: 'quiz', title: 'Grand Quiz', path: '/games/quiz.jpg' },
   { id: 'four_pics', title: '4 Images 1 Mot', path: '/games/four_pics.jpg' },
   { id: 'draw_and_guess', title: "Dessiner c'est Gagné", path: '/games/draw_and_guess.jpg' },

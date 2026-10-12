@@ -1,7 +1,5 @@
 // Accolades et citations critiques pour l'habillage cinmatographique style Netflix TV
 export const GAME_ACCOLADES: Record<string, string> = {
-  wild_rush:
-    "Course d'arcade 3D palpitante : mtamorphoses instantanes, boosts dvastateurs et comptition acharne jusqu' la ligne d'arrive.",
   connect_four:
     "Le duel tactique par excellence : alignez 4 pions gagnants, anticipez les piges de l'adversaire et ralisez le coup parfait.",
   ludo:
@@ -12,8 +10,6 @@ export const GAME_ACCOLADES: Record<string, string> = {
     "Le phnomne mondial des jeux de cartes : retournements de situation imprvisibles, cartes +4 ravageuses et cris de joie en salon.",
   quiz:
     "Le grand show tlvis interactif : buzzers ultra-rapides sur tlphone, questions captivantes et suspense jusqu'au podium.",
-  blind_test:
-    "L'arne musicale en direct : reconnaissez les tubes lgendaires en une fraction de seconde et buzzez avant tout le monde.",
   draw_and_guess:
     "Fous rires garantis en direct : dessinez au doigt sur votre cran mobile et faites deviner vos crations les plus djantes.",
   naval_battle:
@@ -38,8 +34,6 @@ export const GAME_ACCOLADES: Record<string, string> = {
     "Le puzzle visuel captivant : observez attentivement les 4 indices projets sur la TV et composez le mot mystre commun.",
   menteur:
     "Osez bluffer pour vous dbarrasser de vos cartes : mentez avec aplomb ou criez  l'imposteur au bon moment.",
-  president:
-    "La lutte hirarchique culte des cartes : imposez vos combinaisons pour monter sur le trne de Prsident et viter le trouduc.",
   inter:
     "Jeu de leves tactique : lisez le jeu adverse, coupez au bon moment et maximisez les plis pour dcrocher la victoire.",
   quick_games:
