@@ -276,6 +276,15 @@ class AdminCmsService {
     this.notify();
   }
 
+  public saveMultipleLandscapes(newLandscapes: WorldLandscapeItem[]) {
+    if (!newLandscapes || newLandscapes.length === 0) return;
+    const current = this.getCustomLandscapes();
+    const updated = [...newLandscapes, ...current];
+    localStorage.setItem(STORAGE_KEYS.HOME_LANDSCAPES, JSON.stringify(updated));
+    this.savePlatformBranding({ customLandscapes: updated });
+    this.notify();
+  }
+
   public deleteLandscape(landscapeId: string) {
     const current = this.getCustomLandscapes();
     const updated = current.filter((l) => l.id !== landscapeId);

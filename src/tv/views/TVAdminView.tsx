@@ -170,6 +170,63 @@ export const TVAdminView: React.FC = () => {
     }
   };
 
+  const handleBatchUploadLandscapes = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    const fileList = Array.from(files);
+    let processedCount = 0;
+    const newItems: WorldLandscapeItem[] = [];
+
+    fileList.forEach((file, index) => {
+      if (!file.type.startsWith('image/')) return;
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const img = new window.Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const maxDim = 1920;
+          let width = img.width;
+          let height = img.height;
+          if (width > maxDim || height > maxDim) {
+            if (width > height) {
+              height = Math.round((height * maxDim) / width);
+              width = maxDim;
+            } else {
+              width = Math.round((width * maxDim) / height);
+              height = maxDim;
+            }
+          }
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          if (ctx) {
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = 'high';
+            ctx.drawImage(img, 0, 0, width, height);
+            const compressed = canvas.toDataURL('image/jpeg', 0.92);
+            newItems.push({
+              id: `landscape_${Date.now()}_${index}`,
+              name: file.name.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' '),
+              country: '',
+              url: compressed,
+            });
+          }
+          processedCount++;
+          if (processedCount === fileList.length) {
+            adminCms.saveMultipleLandscapes(newItems);
+            triggerToast(`${newItems.length} images de bannières ajoutées avec succès !`);
+            audio.playSelect();
+          }
+        };
+        img.src = ev.target?.result as string;
+      };
+      reader.readAsDataURL(file);
+    });
+    // Réinitialiser le champ pour permettre de re-sélectionner les mêmes fichiers si besoin
+    e.target.value = '';
+  };
+
   // 4. Backup & Security
   const handleExportBackup = () => {
     const jsonStr = adminCms.exportFullBackup();
@@ -1112,7 +1169,19 @@ export const TVAdminView: React.FC = () => {
                 </p>
               </div>
 
-              <div className="flex items-center space-x-3">
+              <div className="flex items-center space-x-2.5">
+                <label className="flex items-center space-x-1.5 px-4 py-2.5 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-black text-xs uppercase shadow-lg hover:scale-105 transition-all cursor-pointer">
+                  <Upload className="w-4 h-4" />
+                  <span>Ajouter plusieurs images</span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={handleBatchUploadLandscapes}
+                    className="hidden"
+                  />
+                </label>
+
                 <button
                   type="button"
                   onClick={() =>
@@ -1126,7 +1195,7 @@ export const TVAdminView: React.FC = () => {
                   className="flex items-center space-x-1.5 px-4 py-2.5 rounded-2xl bg-gradient-to-r from-cyan-500 to-indigo-600 text-white font-black text-xs uppercase shadow-lg hover:scale-105 transition-all"
                 >
                   <Plus className="w-4 h-4" />
-                  <span>Ajouter une image paysage</span>
+                  <span>Ajouter une image</span>
                 </button>
 
                 <button
