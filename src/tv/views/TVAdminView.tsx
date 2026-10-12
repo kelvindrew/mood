@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useGame } from '../../context/GameContext';
-import { adminCms, PlatformBranding, FourPicsPuzzleItem } from '../../services/adminCmsService';
+import { adminCms, PlatformBranding, FourPicsPuzzleItem, WorldLandscapeItem } from '../../services/adminCmsService';
 import { GameCatalogItem } from '../../types/game';
 import {
   Lock,
@@ -23,6 +23,7 @@ import {
   KeyRound,
   LogOut,
   Sparkles,
+  Compass,
 } from 'lucide-react';
 import { ImageUploader } from '../components/ImageUploader';
 import { AIContentStudioPanel } from '../components/AIContentStudioPanel';
@@ -35,17 +36,19 @@ export const TVAdminView: React.FC = () => {
   const [passwordInput, setPasswordInput] = useState<string>('');
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [authError, setAuthError] = useState<string>('');
-  const [activeTab, setActiveTab] = useState<'catalog' | 'ai_studio' | 'four_pics' | 'branding' | 'security'>('catalog');
+  const [activeTab, setActiveTab] = useState<'catalog' | 'ai_studio' | 'four_pics' | 'branding' | 'landscapes' | 'security'>('catalog');
 
   // Live CMS State
   const [games, setGames] = useState<GameCatalogItem[]>(adminCms.getGamesCatalog());
   const [puzzles, setPuzzles] = useState<FourPicsPuzzleItem[]>(adminCms.getFourPicsPuzzles());
   const [branding, setBranding] = useState<PlatformBranding>(adminCms.getPlatformBranding());
+  const [landscapes, setLandscapes] = useState<WorldLandscapeItem[]>(adminCms.getCustomLandscapes());
 
   // Editing Sub-states
   const [editingGame, setEditingGame] = useState<GameCatalogItem | null>(null);
   const [imageEditingGame, setImageEditingGame] = useState<GameCatalogItem | null>(null);
   const [editingPuzzle, setEditingPuzzle] = useState<FourPicsPuzzleItem | null>(null);
+  const [editingLandscape, setEditingLandscape] = useState<WorldLandscapeItem | null>(null);
   const [newPassword, setNewPassword] = useState<string>('');
   const [saveSuccessMsg, setSaveSuccessMsg] = useState<string>('');
 
@@ -55,6 +58,7 @@ export const TVAdminView: React.FC = () => {
       setGames(adminCms.getGamesCatalog());
       setPuzzles(adminCms.getFourPicsPuzzles());
       setBranding(adminCms.getPlatformBranding());
+      setLandscapes(adminCms.getCustomLandscapes());
     });
     return () => unsub();
   }, []);
@@ -135,6 +139,35 @@ export const TVAdminView: React.FC = () => {
     adminCms.savePlatformBranding(branding);
     triggerToast('Paramètres et personnalisation enregistrés !');
     audio.playSelect();
+  };
+
+  // 3.5 Landscapes Handlers
+  const handleSaveLandscape = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingLandscape || !editingLandscape.url) {
+      alert('Veuillez fournir une image pour le paysage.');
+      return;
+    }
+    adminCms.saveLandscape(editingLandscape);
+    setEditingLandscape(null);
+    triggerToast('Bannière paysage enregistrée avec succès !');
+    audio.playSelect();
+  };
+
+  const handleDeleteLandscape = (id: string) => {
+    if (confirm('Voulez-vous vraiment supprimer ce paysage ?')) {
+      adminCms.deleteLandscape(id);
+      triggerToast('Paysage supprimé.');
+      audio.playBack();
+    }
+  };
+
+  const handleResetLandscapes = () => {
+    if (confirm('Restaurer la collection par défaut de paysages ?')) {
+      adminCms.resetLandscapes();
+      triggerToast('Paysages restaurés par défaut.');
+      audio.playSelect();
+    }
   };
 
   // 4. Backup & Security
@@ -368,6 +401,7 @@ export const TVAdminView: React.FC = () => {
           {[
             { id: 'catalog', label: '🎮 Catalogue des Jeux', icon: Gamepad2 },
             { id: 'four_pics', label: '🖼️ Énigmes 4 Images 1 Mot', icon: Image },
+            { id: 'landscapes', label: '🌄 Bannières & Paysages', icon: Compass },
             { id: 'ai_studio', label: '🤖 AI Content Studio (Gemini)', icon: Sparkles },
             { id: 'branding', label: '⚙️ Branding & Paramètres', icon: Settings },
             { id: 'security', label: '🔐 Sécurité & Sauvegardes', icon: Shield },
@@ -1010,6 +1044,46 @@ export const TVAdminView: React.FC = () => {
                   />
                 </div>
               </div>
+              <div className="pt-2 border-t border-white/10">
+                <label className="text-[10px] font-black uppercase text-gray-400 block mb-2">Style d'Arrière-Plan de l'Accueil TV</label>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setBranding({ ...branding, homeBackgroundMode: 'landscapes' })}
+                    className={`p-3.5 rounded-2xl border text-left transition-all ${
+                      branding.homeBackgroundMode === 'landscapes'
+                        ? 'bg-cyan-950/70 border-cyan-400 shadow-md ring-1 ring-cyan-400'
+                        : 'bg-surface-dark border-white/10 hover:border-white/30'
+                    }`}
+                  >
+                    <div className="flex items-center space-x-2 mb-1">
+                      <Compass className="w-4 h-4 text-cyan-300" />
+                      <span className="text-xs font-black text-white uppercase">Paysages Défilants</span>
+                    </div>
+                    <p className="text-[10px] text-slate-400">
+                      Diaporama cinématique continu de magnifiques paysages personnalisables.
+                    </p>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setBranding({ ...branding, homeBackgroundMode: 'game' })}
+                    className={`p-3.5 rounded-2xl border text-left transition-all ${
+                      branding.homeBackgroundMode === 'game'
+                        ? 'bg-cyan-950/70 border-cyan-400 shadow-md ring-1 ring-cyan-400'
+                        : 'bg-surface-dark border-white/10 hover:border-white/30'
+                    }`}
+                  >
+                    <div className="flex items-center space-x-2 mb-1">
+                      <Gamepad2 className="w-4 h-4 text-amber-300" />
+                      <span className="text-xs font-black text-white uppercase">Affiche du Jeu</span>
+                    </div>
+                    <p className="text-[10px] text-slate-400">
+                      Affiche en grand le poster du jeu actuellement sélectionné dans le carrousel.
+                    </p>
+                  </button>
+                </div>
+              </div>
             </div>
 
             <button
@@ -1020,6 +1094,232 @@ export const TVAdminView: React.FC = () => {
               <span>Enregistrer les paramètres</span>
             </button>
           </form>
+        )}
+
+        {/* ========================================================= */}
+        {/* TAB 3.5: CUSTOM LANDSCAPES & HOME BANNERS */}
+        {/* ========================================================= */}
+        {activeTab === 'landscapes' && (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-lg font-black text-white flex items-center space-x-2">
+                  <Compass className="w-5 h-5 text-cyan-400" />
+                  <span>Bannières & Paysages d'Arrière-Plan ({landscapes.length})</span>
+                </h2>
+                <p className="text-xs text-slate-400">
+                  Ajoutez vos propres images ou photos de paysages pour l'arrière-plan de l'accueil TV et du Scrabble.
+                </p>
+              </div>
+
+              <div className="flex items-center space-x-3">
+                <button
+                  type="button"
+                  onClick={() =>
+                    setEditingLandscape({
+                      id: `landscape_${Date.now()}`,
+                      name: '',
+                      country: '',
+                      url: '',
+                    })
+                  }
+                  className="flex items-center space-x-1.5 px-4 py-2.5 rounded-2xl bg-gradient-to-r from-cyan-500 to-indigo-600 text-white font-black text-xs uppercase shadow-lg hover:scale-105 transition-all"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Ajouter une image paysage</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleResetLandscapes}
+                  className="flex items-center space-x-1.5 px-4 py-2 rounded-xl bg-surface-card border border-white/15 text-gray-400 hover:text-white text-xs font-bold transition-all"
+                  title="Restaurer les 7 paysages du monde officiels"
+                >
+                  <RotateCcw className="w-3.5 h-3.5" />
+                  <span>Réinitialiser par défaut</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Quick Background Mode Control */}
+            <div className="p-4 rounded-2xl bg-slate-900/80 border border-slate-700/60 flex items-center justify-between">
+              <div>
+                <span className="text-xs font-black text-white uppercase tracking-wider block">
+                  Mode actif sur l'Accueil TV
+                </span>
+                <span className="text-[11px] text-slate-400">
+                  {branding.homeBackgroundMode === 'landscapes'
+                    ? 'Le diaporama de paysages défile actuellement en fond sur la page d\'accueil.'
+                    : 'L\'accueil TV affiche actuellement le poster du jeu sélectionné.'}
+                </span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const updated: PlatformBranding = { ...branding, homeBackgroundMode: 'landscapes' };
+                    setBranding(updated);
+                    adminCms.savePlatformBranding(updated);
+                    triggerToast('Accueil TV basculé sur les Paysages défilants !');
+                  }}
+                  className={`px-3.5 py-1.5 rounded-xl text-xs font-black uppercase transition-all ${
+                    branding.homeBackgroundMode === 'landscapes'
+                      ? 'bg-cyan-500 text-slate-950 shadow-md'
+                      : 'bg-white/5 text-slate-400 hover:text-white'
+                  }`}
+                >
+                  Paysages
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const updated: PlatformBranding = { ...branding, homeBackgroundMode: 'game' };
+                    setBranding(updated);
+                    adminCms.savePlatformBranding(updated);
+                    triggerToast('Accueil TV basculé sur les Affiches de jeux !');
+                  }}
+                  className={`px-3.5 py-1.5 rounded-xl text-xs font-black uppercase transition-all ${
+                    branding.homeBackgroundMode === 'game'
+                      ? 'bg-amber-400 text-slate-950 shadow-md'
+                      : 'bg-white/5 text-slate-400 hover:text-white'
+                  }`}
+                >
+                  Affiches de jeux
+                </button>
+              </div>
+            </div>
+
+            {/* Modal / Formulaire d'ajout ou d'édition d'un paysage */}
+            {editingLandscape && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-6 bg-black/85 backdrop-blur-xl animate-fade-in">
+                <div className="w-full max-w-2xl bg-[#0E1322] border-2 border-cyan-400/60 rounded-3xl p-6 shadow-2xl flex flex-col overflow-hidden animate-scale-in">
+                  <div className="flex items-center justify-between border-b border-white/10 pb-3 flex-shrink-0">
+                    <h3 className="text-base font-black text-cyan-300 uppercase flex items-center space-x-2">
+                      <Compass className="w-5 h-5 text-cyan-400" />
+                      <span>{editingLandscape.name ? `Édition : ${editingLandscape.name}` : 'Nouveau Paysage Personnalisé'}</span>
+                    </h3>
+                    <button
+                      type="button"
+                      onClick={() => setEditingLandscape(null)}
+                      className="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-xs text-gray-300 hover:text-white font-bold transition-all"
+                    >
+                      Fermer ✕
+                    </button>
+                  </div>
+
+                  <form onSubmit={handleSaveLandscape} className="flex-1 overflow-y-auto pr-2 py-4 space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="text-[10px] font-black uppercase text-gray-400 block mb-1">
+                          Nom du lieu / Paysage
+                        </label>
+                        <input
+                          type="text"
+                          value={editingLandscape.name}
+                          onChange={(e) => setEditingLandscape({ ...editingLandscape, name: e.target.value })}
+                          placeholder="Ex: Mont Blanc, Plage de Kribi..."
+                          className="w-full px-3 py-2 rounded-xl bg-surface-dark border border-white/15 text-white font-bold text-sm"
+                          required
+                        />
+                      </div>
+
+                      <div>
+                        <label className="text-[10px] font-black uppercase text-gray-400 block mb-1">
+                          Pays / Région
+                        </label>
+                        <input
+                          type="text"
+                          value={editingLandscape.country}
+                          onChange={(e) => setEditingLandscape({ ...editingLandscape, country: e.target.value })}
+                          placeholder="Ex: France, Cameroun, Japon..."
+                          className="w-full px-3 py-2 rounded-xl bg-surface-dark border border-white/15 text-white font-bold text-sm"
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="text-[10px] font-black uppercase text-gray-400 block mb-2">
+                        Image du paysage (Téléversez votre image ou saisissez une URL)
+                      </label>
+                      <ImageUploader
+                        label="Bannière Paysage (Format 16:9 recommandé)"
+                        aspectRatio="banner"
+                        value={editingLandscape.url}
+                        onChange={(newUrl: string) => setEditingLandscape({ ...editingLandscape, url: newUrl })}
+                      />
+                    </div>
+
+                    <div className="flex items-center justify-end space-x-3 pt-3 border-t border-white/10">
+                      <button
+                        type="button"
+                        onClick={() => setEditingLandscape(null)}
+                        className="px-4 py-2 rounded-xl bg-white/10 text-gray-300 text-xs font-bold"
+                      >
+                        Annuler
+                      </button>
+                      <button
+                        type="submit"
+                        className="flex items-center space-x-1.5 px-6 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-indigo-600 text-white font-display font-black text-xs uppercase shadow-lg hover:scale-105 transition-all"
+                      >
+                        <Save className="w-4 h-4" />
+                        <span>Enregistrer le paysage</span>
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            )}
+
+            {/* Grid of Landscapes */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+              {landscapes.map((landscape, index) => (
+                <div
+                  key={landscape.id || `${landscape.url}_${index}`}
+                  className="rounded-3xl bg-surface-card border border-white/15 overflow-hidden flex flex-col group hover:border-cyan-400/60 transition-all shadow-lg"
+                >
+                  <div className="relative aspect-[16/9] w-full bg-slate-950 overflow-hidden">
+                    <img
+                      src={landscape.url}
+                      alt={`${landscape.name}, ${landscape.country}`}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/20" />
+                    <div className="absolute top-2.5 left-2.5 px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-md border border-white/15 text-[10px] font-mono font-black text-cyan-300">
+                      #{index + 1}
+                    </div>
+                    <div className="absolute bottom-2.5 left-3 right-3">
+                      <div className="text-sm font-black text-white truncate drop-shadow">
+                        {landscape.name || 'Sans titre'}
+                      </div>
+                      <div className="text-[11px] font-bold text-cyan-300 drop-shadow">
+                        📍 {landscape.country || 'Pays inconnu'}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="p-3.5 flex items-center justify-between bg-surface-card/90">
+                    <button
+                      type="button"
+                      onClick={() => setEditingLandscape(landscape)}
+                      className="px-3.5 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-xs font-bold text-white transition-all"
+                    >
+                      Modifier
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteLandscape(landscape.id)}
+                      className="p-2 rounded-xl text-rose-400 hover:text-white hover:bg-rose-950/80 transition-all"
+                      title="Supprimer ce paysage"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         )}
 
         {/* ========================================================= */}

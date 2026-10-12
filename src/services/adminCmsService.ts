@@ -8,6 +8,13 @@ import { GameCatalogItem } from '../types/game';
 // @ts-ignore
 import { FOUR_PICS_PUZZLES } from '../../server/games/fourPicsData.js';
 
+export interface WorldLandscapeItem {
+  id: string;
+  name: string;
+  country: string;
+  url: string;
+}
+
 export interface PlatformBranding {
   platformName: string;
   platformSubtitle: string;
@@ -18,6 +25,10 @@ export interface PlatformBranding {
   customLogoUrl: string;
   defaultTurnDuration: number;
   defaultMaxPlayers: number;
+  /** Mode d'arrière-plan de l'accueil TV : 'game' (visuel du jeu sélectionné) ou 'landscapes' (bannières paysages défilantes) */
+  homeBackgroundMode?: 'game' | 'landscapes';
+  /** Bannières de paysages personnalisées créées par l'administrateur */
+  customLandscapes?: WorldLandscapeItem[];
 }
 
 export interface FourPicsPuzzleItem {
@@ -35,6 +46,7 @@ const STORAGE_KEYS = {
   GAMES_CATALOG: 'playflix_cms_games_catalog',
   FOUR_PICS_PUZZLES: 'playflix_cms_four_pics',
   PLATFORM_BRANDING: 'playflix_cms_branding',
+  HOME_LANDSCAPES: 'mood_cms_home_landscapes',
 };
 
 const DEFAULT_ADMIN_PASSWORD = 'admin';
@@ -49,6 +61,8 @@ const DEFAULT_BRANDING: PlatformBranding = {
   customLogoUrl: '',
   defaultTurnDuration: 30,
   defaultMaxPlayers: 6,
+  homeBackgroundMode: 'landscapes',
+  customLandscapes: [],
 };
 
 class AdminCmsService {
@@ -233,7 +247,50 @@ class AdminCmsService {
     this.notify();
   }
 
-  // 5. Full Backup Export & Import
+  // 5. Gestion des Bannières de Paysages (Accueil & Scrabble)
+  public getCustomLandscapes(): WorldLandscapeItem[] {
+    if (typeof window === 'undefined') return [];
+    try {
+      const stored = localStorage.getItem(STORAGE_KEYS.HOME_LANDSCAPES);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed)) return parsed;
+      }
+    } catch {}
+    const branding = this.getPlatformBranding();
+    return branding.customLandscapes || [];
+  }
+
+  public saveLandscape(landscape: WorldLandscapeItem) {
+    const current = this.getCustomLandscapes();
+    const existingIdx = current.findIndex((l) => l.id === landscape.id);
+    let updated: WorldLandscapeItem[];
+    if (existingIdx >= 0) {
+      updated = [...current];
+      updated[existingIdx] = { ...landscape };
+    } else {
+      updated = [landscape, ...current];
+    }
+    localStorage.setItem(STORAGE_KEYS.HOME_LANDSCAPES, JSON.stringify(updated));
+    this.savePlatformBranding({ customLandscapes: updated });
+    this.notify();
+  }
+
+  public deleteLandscape(landscapeId: string) {
+    const current = this.getCustomLandscapes();
+    const updated = current.filter((l) => l.id !== landscapeId);
+    localStorage.setItem(STORAGE_KEYS.HOME_LANDSCAPES, JSON.stringify(updated));
+    this.savePlatformBranding({ customLandscapes: updated });
+    this.notify();
+  }
+
+  public resetLandscapes() {
+    localStorage.removeItem(STORAGE_KEYS.HOME_LANDSCAPES);
+    this.savePlatformBranding({ customLandscapes: [] });
+    this.notify();
+  }
+
+  // 6. Full Backup Export & Import
   public exportFullBackup(): string {
     const data = {
       version: '1.0.0',

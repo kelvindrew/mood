@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { adminCms } from '../services/adminCmsService';
 
 export interface WorldLandscapeItem {
   id: string;
@@ -54,45 +55,72 @@ export const WORLD_LANDSCAPES: WorldLandscapeItem[] = [
 ];
 
 interface WorldLandscapeBackgroundProps {
-  /** Opacité de base de l'assombrissement pour garantir la lisibilité (défaut: 0.85) */
+  /** Opacité de base de l'assombrissement pour garantir la lisibilité (défaut: 0.82) */
   overlayDarkness?: number;
   /** Afficher la discrète étiquette de localisation (défaut: true) */
   showLocationBadge?: boolean;
   /** Teinte supplémentaire spécifique au jeu (ex: vert émeraude pour Scrabble) */
   tintClass?: string;
+  /** Liste personnalisée optionnelle de paysages */
+  landscapes?: WorldLandscapeItem[];
+  /** Délai de rotation en millisecondes (défaut: 5000ms) */
+  intervalMs?: number;
 }
 
 export const WorldLandscapeBackground: React.FC<WorldLandscapeBackgroundProps> = ({
   overlayDarkness = 0.82,
   showLocationBadge = true,
   tintClass = 'from-emerald-950/40 via-[#070D0B]/70 to-[#070D0B]/90',
+  landscapes: propLandscapes,
+  intervalMs = 5000,
 }) => {
+  const [customLandscapes, setCustomLandscapes] = useState<WorldLandscapeItem[]>(() =>
+    adminCms.getCustomLandscapes()
+  );
+
+  useEffect(() => {
+    const unsub = adminCms.subscribe(() => {
+      setCustomLandscapes(adminCms.getCustomLandscapes());
+    });
+    return () => unsub();
+  }, []);
+
+  // Si l'administrateur a défini ses propres paysages, les utiliser en priorité
+  const activeLandscapes: WorldLandscapeItem[] = React.useMemo(() => {
+    if (propLandscapes && propLandscapes.length > 0) return propLandscapes;
+    if (customLandscapes && customLandscapes.length > 0) return customLandscapes;
+    return WORLD_LANDSCAPES;
+  }, [propLandscapes, customLandscapes]);
+
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [loadedIndices, setLoadedIndices] = useState<Set<number>>(new Set([0]));
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Rotation automatique toutes les 5 secondes
+  // Remise à zéro de l'index si la liste change
   useEffect(() => {
+    setCurrentIndex(0);
+  }, [activeLandscapes.length]);
+
+  // Rotation automatique toutes les N secondes (défaut 5s)
+  useEffect(() => {
+    if (activeLandscapes.length <= 1) return;
+
     intervalRef.current = setInterval(() => {
       setCurrentIndex((prev) => {
-        const next = (prev + 1) % WORLD_LANDSCAPES.length;
+        const next = (prev + 1) % activeLandscapes.length;
         // Préchargement de l'image suivante
-        const preloadNext = (next + 1) % WORLD_LANDSCAPES.length;
+        const preloadNext = (next + 1) % activeLandscapes.length;
         const img = new Image();
-        img.src = WORLD_LANDSCAPES[preloadNext].url;
-        img.onload = () => {
-          setLoadedIndices((current) => new Set([...current, preloadNext]));
-        };
+        img.src = activeLandscapes[preloadNext].url;
         return next;
       });
-    }, 5000);
+    }, intervalMs);
 
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
-  }, []);
+  }, [activeLandscapes, intervalMs]);
 
-  const currentLandscape = WORLD_LANDSCAPES[currentIndex];
+  const currentLandscape = activeLandscapes[currentIndex] || WORLD_LANDSCAPES[0];
 
   return (
     <div className="fixed inset-0 pointer-events-none overflow-hidden select-none z-0">
@@ -100,11 +128,11 @@ export const WorldLandscapeBackground: React.FC<WorldLandscapeBackgroundProps> =
       <div className="absolute inset-0 bg-[#070D0B]" />
 
       {/* 2. Couche d'images avec transition fluide croisée (crossfade sans à-coup) */}
-      {WORLD_LANDSCAPES.map((landscape, index) => {
+      {activeLandscapes.map((landscape, index) => {
         const isCurrent = index === currentIndex;
         return (
           <div
-            key={landscape.id}
+            key={landscape.id || `${landscape.url}_${index}`}
             className={`absolute inset-0 transition-opacity duration-1000 ease-in-out will-change-[opacity] ${
               isCurrent ? 'opacity-100 z-10' : 'opacity-0 z-0'
             }`}

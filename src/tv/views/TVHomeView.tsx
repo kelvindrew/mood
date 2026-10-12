@@ -1,16 +1,18 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useGame } from '../../context/GameContext';
-import { adminCms } from '../../services/adminCmsService';
+import { adminCms, PlatformBranding } from '../../services/adminCmsService';
 import { GAMES_CATALOG } from '../../data/gamesCatalog';
 import { GameCatalogItem } from '../../types/game';
 import { tvNav } from '../../services/tvNavigation';
 import { Play, Plus, Star, ChevronLeft, ChevronRight, BookOpen } from 'lucide-react';
 import { audio } from '../../services/audio';
+import { WorldLandscapeBackground } from '../../components/WorldLandscapeBackground';
 
 export const TVHomeView: React.FC = () => {
   const { room, selectGame, setSelectedGame, createRoom, selectedCategory, setTvView } = useGame();
   const [games, setGames] = useState<GameCatalogItem[]>(() => adminCms.getGamesCatalog());
   const [spotlightGame, setSpotlightGame] = useState<GameCatalogItem>(games[0]);
+  const [branding, setBranding] = useState<PlatformBranding>(() => adminCms.getPlatformBranding());
   const carouselRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -18,6 +20,7 @@ export const TVHomeView: React.FC = () => {
     const unsub = adminCms.subscribe(() => {
       const updated = adminCms.getGamesCatalog();
       setGames(updated);
+      setBranding(adminCms.getPlatformBranding());
       if (updated.length > 0 && !spotlightGame) {
         setSpotlightGame(updated[0]);
       }
@@ -70,28 +73,38 @@ export const TVHomeView: React.FC = () => {
   const activeGame = spotlightGame || displayedGames[0] || games[0] || GAMES_CATALOG[0];
   const currentPoster = activeGame?.heroImage || activeGame?.coverImage;
 
+  const isLandscapeMode = branding.homeBackgroundMode === 'landscapes';
+
   return (
     <div className="relative min-h-screen bg-[#0A1118] text-white select-none overflow-hidden flex flex-col justify-between">
-      {/* 1. Arrière-plan cinématique (Visuel du jeu à droite avec fondu dégradé subtil à gauche et en bas) */}
-      <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden select-none bg-[#0A1118]">
-        {currentPoster && (
-          <img
-            key={activeGame.id}
-            src={currentPoster}
-            alt={activeGame.title}
-            className="w-full h-full object-cover object-right-top md:object-right filter brightness-[0.78] contrast-[1.10] transition-opacity duration-700 animate-fade-in"
-          />
-        )}
+      {/* 1. Arrière-plan cinématique : Bannières Paysages défilantes ou Visuel du jeu */}
+      {isLandscapeMode ? (
+        <WorldLandscapeBackground
+          overlayDarkness={0.70}
+          showLocationBadge={true}
+          tintClass="from-slate-950/40 via-[#0A1118]/70 to-[#0A1118]/95"
+        />
+      ) : (
+        <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden select-none bg-[#0A1118]">
+          {currentPoster && (
+            <img
+              key={activeGame.id}
+              src={currentPoster}
+              alt={activeGame.title}
+              className="w-full h-full object-cover object-right-top md:object-right filter brightness-[0.78] contrast-[1.10] transition-opacity duration-700 animate-fade-in"
+            />
+          )}
 
-        {/* Dégradé latéral gauche : préserve une lisibilité parfaite des textes et boutons */}
-        <div className="absolute inset-0 bg-gradient-to-r from-[#0A1118] via-[#0A1118]/90 via-48% to-transparent" />
+          {/* Dégradé latéral gauche : préserve une lisibilité parfaite des textes et boutons */}
+          <div className="absolute inset-0 bg-gradient-to-r from-[#0A1118] via-[#0A1118]/90 via-48% to-transparent" />
 
-        {/* Dégradé supérieur pour la Navbar */}
-        <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-[#0A1118] via-[#0A1118]/70 to-transparent" />
+          {/* Dégradé supérieur pour la Navbar */}
+          <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-[#0A1118] via-[#0A1118]/70 to-transparent" />
 
-        {/* Dégradé inférieur pour le carrousel de vignettes */}
-        <div className="absolute bottom-0 left-0 right-0 h-[62vh] bg-gradient-to-t from-[#0A1118] via-[#0A1118]/95 via-50% to-transparent" />
-      </div>
+          {/* Dégradé inférieur pour le carrousel de vignettes */}
+          <div className="absolute bottom-0 left-0 right-0 h-[62vh] bg-gradient-to-t from-[#0A1118] via-[#0A1118]/95 via-50% to-transparent" />
+        </div>
+      )}
 
       {/* 2. Section Héro (Titre, Saison/Joueurs, Étoiles, Catégorie, Boutons Jouer & Plus, Synopsis) */}
       <div className="relative z-10 pt-28 md:pt-32 px-8 md:px-14 max-w-2xl flex flex-col space-y-3.5 animate-fade-in">
