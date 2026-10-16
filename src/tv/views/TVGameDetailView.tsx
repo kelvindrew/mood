@@ -273,7 +273,7 @@ export const TVGameDetailView: React.FC = () => {
           alt={selectedGame.title}
           className="w-full h-full object-cover object-center opacity-20 filter blur-xl scale-105"
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-[#0A0F1D]/80 via-[#0A0F1D]/90 to-[#0A0F1D]" />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#07090E]/85 via-[#07090E]/95 to-[#07090E]" />
       </div>
 
       {/* Top Back Button */}
@@ -285,44 +285,32 @@ export const TVGameDetailView: React.FC = () => {
             audio.playBack();
             setTvView('home');
           }}
-          className="flex items-center space-x-2 px-5 py-2.5 rounded-xl bg-slate-800/80 border border-slate-700/60 text-slate-200 hover:text-white focus:bg-cyan-400 focus:text-slate-950 focus:border-cyan-300 transition-all outline-none"
+          className="flex items-center space-x-2 px-5 py-2.5 rounded-xl liquid-glass hover:bg-white/10 text-slate-200 hover:text-white transition-all outline-none focus:scale-105 focus:ring-4 focus:ring-white cursor-pointer"
         >
           <ArrowLeft className="w-4 h-4" />
-          <span className="font-bold text-xs sm:text-sm">Retour au catalogue</span>
+          <span className="font-display font-bold text-xs sm:text-sm uppercase tracking-wider">Retour au catalogue</span>
         </button>
       </div>
 
       {/* Main Game Showcase */}
       <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8">
         {/* Left Column: Big Visual & Quick Actions */}
-        <div className="lg:col-span-5 flex flex-col space-y-5">
-          <div className="relative w-full aspect-video lg:aspect-[4/3] rounded-3xl overflow-hidden border border-slate-700/80 shadow-2xl group bg-slate-900">
+        <div className="lg:col-span-5 flex flex-col space-y-4">
+          <div className="relative w-full aspect-video lg:aspect-[4/3] rounded-3xl overflow-hidden border border-white/10 shadow-2xl group bg-neutral-900">
             <img
               src={selectedGame.coverImage}
               alt={selectedGame.title}
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#0A0F1D] via-transparent to-transparent opacity-80" />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#07090E] via-transparent to-transparent opacity-80" />
 
             {selectedGame.badge && (
-              <div className="absolute top-4 left-4 px-3 py-0.5 rounded-md bg-amber-500/20 border border-amber-400/40 text-amber-200 text-xs font-black uppercase tracking-wider shadow-sm">
+              <div className="absolute top-4 left-4 px-3 py-1 rounded-md bg-amber-400 text-neutral-950 text-xs font-black uppercase tracking-wider shadow-md">
                 {selectedGame.badge}
               </div>
             )}
-          </div>
 
-          {/* Action Buttons */}
-          <div className="grid grid-cols-3 gap-2.5">
-            <button
-              data-tv-focus
-              tabIndex={0}
-              onClick={() => setShowCreateModal(true)}
-              className="col-span-3 flex items-center justify-center space-x-2.5 py-3.5 px-6 rounded-xl bg-cyan-400 hover:bg-cyan-300 text-slate-950 font-black text-sm uppercase tracking-wider shadow-[0_4px_25px_rgba(6,182,212,0.35)] hover:scale-105 focus:scale-105 focus:bg-white focus:text-slate-950 focus:ring-4 focus:ring-white transition-all outline-none"
-            >
-              <Play className="w-4 h-4 sm:w-5 sm:h-5 fill-current" />
-              <span>CRÉER UN SALON</span>
-            </button>
-
+            {/* Favorite toggle as discreet overlay icon on the artwork */}
             <button
               data-tv-focus
               tabIndex={0}
@@ -330,14 +318,23 @@ export const TVGameDetailView: React.FC = () => {
                 audio.playSelect();
                 setIsFavorite(!isFavorite);
               }}
-              className={`flex items-center justify-center space-x-1.5 py-2.5 rounded-xl border text-xs sm:text-sm font-bold transition-all outline-none ${
-                isFavorite
-                  ? 'bg-rose-950/80 border-rose-500 text-rose-300'
-                  : 'bg-slate-800/80 border-slate-700/60 text-slate-300 hover:text-white focus:bg-white focus:text-slate-950 focus:ring-2 focus:ring-white'
-              }`}
+              className="absolute top-4 right-4 w-10 h-10 rounded-full liquid-glass-pill hover:bg-white/20 flex items-center justify-center transition-all outline-none focus:scale-110 focus:ring-2 focus:ring-white cursor-pointer"
+              title={isFavorite ? 'Retirer des favoris' : 'Ajouter aux favoris'}
             >
-              <Heart className={`w-4 h-4 ${isFavorite ? 'fill-current text-rose-500' : ''}`} />
-              <span>{isFavorite ? 'FAVORI ♡' : 'FAVORIS'}</span>
+              <Heart className={`w-5 h-5 ${isFavorite ? 'fill-rose-500 text-rose-500' : 'text-white'}`} />
+            </button>
+          </div>
+
+          {/* RÈGLE STRICTE DES DEUX BOUTONS D'ACTION VISIBLES : CRÉER UN SALON & RÈGLES DU JEU */}
+          <div className="grid grid-cols-2 gap-3 pt-1">
+            <button
+              data-tv-focus
+              tabIndex={0}
+              onClick={() => setShowCreateModal(true)}
+              className="flex items-center justify-center space-x-2 py-3.5 px-6 rounded-xl bg-white hover:bg-neutral-200 text-neutral-950 font-display font-black text-xs sm:text-sm uppercase tracking-wider shadow-[0_4px_25px_rgba(255,255,255,0.25)] hover:scale-105 focus:scale-105 focus:ring-4 focus:ring-white transition-all outline-none cursor-pointer"
+            >
+              <Play className="w-4 h-4 sm:w-5 sm:h-5 fill-neutral-950 translate-x-0.5" />
+              <span>CRÉER UN SALON</span>
             </button>
 
             <button
@@ -347,7 +344,7 @@ export const TVGameDetailView: React.FC = () => {
                 audio.playSelect();
                 setShowRulesModal(true);
               }}
-              className="col-span-2 flex items-center justify-center space-x-2 py-2.5 rounded-xl bg-slate-800/80 border border-slate-700/60 hover:border-slate-500 text-slate-200 text-xs sm:text-sm font-bold focus:bg-white focus:text-slate-950 focus:ring-2 focus:ring-white transition-all outline-none"
+              className="flex items-center justify-center space-x-2 py-3.5 px-6 rounded-xl liquid-glass hover:bg-white/10 text-white font-display font-bold text-xs sm:text-sm uppercase tracking-wider hover:scale-105 focus:scale-105 focus:ring-4 focus:ring-white transition-all outline-none cursor-pointer"
             >
               <BookOpen className="w-4 h-4 text-amber-400" />
               <span>RÈGLES DU JEU</span>
