@@ -8,56 +8,86 @@ export interface WorldLandscapeItem {
   url: string;
 }
 
-// Collection de paysages emblématiques du monde (haute résolution, optimisés web)
+// Collection de 12 paysages panoramiques cinématiques (haute résolution, 100% sans texte)
 export const WORLD_LANDSCAPES: WorldLandscapeItem[] = [
   {
     id: 'japan-fuji',
-    name: 'Mont Fuji & Pagode Chureito',
+    name: 'Mont Fuji & Lac Kawaguchi',
     country: 'Japon',
-    url: 'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?q=80&w=1920&auto=format&fit=crop',
+    url: '/landscapes/banner_1_fuji.jpg',
   },
   {
     id: 'italy-dolomites',
     name: 'Pics Alpins des Dolomites',
     country: 'Italie',
-    url: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?q=80&w=1920&auto=format&fit=crop',
+    url: '/landscapes/banner_2_dolomites.jpg',
   },
   {
     id: 'iceland-aurora',
     name: 'Fjords & Aurore Boréale',
     country: 'Islande',
-    url: 'https://images.unsplash.com/photo-1517411032315-54ef2cb783bb?q=80&w=1920&auto=format&fit=crop',
+    url: '/landscapes/banner_3_aurora.jpg',
   },
   {
     id: 'morocco-sahara',
     name: 'Dunes de Merzouga au Crépuscule',
     country: 'Maroc',
-    url: 'https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?q=80&w=1920&auto=format&fit=crop',
+    url: '/landscapes/banner_4_sahara.jpg',
+  },
+  {
+    id: 'polynesia-lagoon',
+    name: 'Lagon Turquoise & Mont Otemanu',
+    country: 'Polynésie',
+    url: '/landscapes/banner_5_lagoon.jpg',
   },
   {
     id: 'canada-banff',
     name: 'Lac Moraine & Forêts Boréales',
     country: 'Canada',
-    url: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=1920&auto=format&fit=crop',
+    url: '/landscapes/banner_6_moraine.jpg',
   },
   {
     id: 'vietnam-halong',
     name: 'Baie d’Hạ Long',
     country: 'Vietnam',
-    url: 'https://images.unsplash.com/photo-1528127269322-539801943592?q=80&w=1920&auto=format&fit=crop',
+    url: '/landscapes/banner_7_halong.jpg',
   },
   {
     id: 'greece-santorini',
     name: 'Falaises & Mer Égée',
     country: 'Grèce',
-    url: 'https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?q=80&w=1920&auto=format&fit=crop',
+    url: '/landscapes/banner_8_santorini.jpg',
+  },
+  {
+    id: 'usa-redwoods',
+    name: 'Forêt des Redwoods',
+    country: 'Californie',
+    url: '/landscapes/banner_9_redwoods.jpg',
+  },
+  {
+    id: 'patagonia-peaks',
+    name: 'Torres del Paine',
+    country: 'Patagonie',
+    url: '/landscapes/banner_10_patagonia.jpg',
+  },
+  {
+    id: 'usa-canyon',
+    name: 'Grand Canyon',
+    country: 'Arizona',
+    url: '/landscapes/banner_11_grand_canyon.jpg',
+  },
+  {
+    id: 'maldives-sunset',
+    name: 'Océan Indien au Crépuscule',
+    country: 'Maldives',
+    url: '/landscapes/banner_12_maldives.jpg',
   },
 ];
 
 interface WorldLandscapeBackgroundProps {
   /** Opacité de base de l'assombrissement pour garantir la lisibilité (défaut: 0.82) */
   overlayDarkness?: number;
-  /** Afficher la discrète étiquette de localisation (défaut: true) */
+  /** Afficher la discrète étiquette de localisation (défaut: false pour un affichage épuré sans texte) */
   showLocationBadge?: boolean;
   /** Teinte supplémentaire spécifique au jeu (ex: vert émeraude pour Scrabble) */
   tintClass?: string;
@@ -69,7 +99,7 @@ interface WorldLandscapeBackgroundProps {
 
 export const WorldLandscapeBackground: React.FC<WorldLandscapeBackgroundProps> = ({
   overlayDarkness = 0.82,
-  showLocationBadge = true,
+  showLocationBadge = false,
   tintClass = 'from-emerald-950/40 via-[#070D0B]/70 to-[#070D0B]/90',
   landscapes: propLandscapes,
   intervalMs = 5000,

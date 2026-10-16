@@ -91,7 +91,7 @@ export const TVHomeView: React.FC = () => {
       {isLandscapeMode ? (
         <WorldLandscapeBackground
           overlayDarkness={0.25}
-          showLocationBadge={true}
+          showLocationBadge={false}
           tintClass="from-black/30 via-transparent to-[#07090E]/90"
         />
       ) : (
