@@ -2,6 +2,8 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
 // https://vitejs.dev/config/
+const buildStamp = Date.now().toString(36);
+
 export default defineConfig({
   plugins: [react()],
   define: {
@@ -11,6 +13,9 @@ export default defineConfig({
     chunkSizeWarningLimit: 600,
     rollupOptions: {
       output: {
+        entryFileNames: `assets/[name]-[hash]-${buildStamp}.js`,
+        chunkFileNames: `assets/[name]-[hash]-${buildStamp}.js`,
+        assetFileNames: `assets/[name]-[hash]-${buildStamp}.[ext]`,
         manualChunks(id) {
           if (id.includes('node_modules')) {
             if (id.includes('react') || id.includes('react-dom')) {
