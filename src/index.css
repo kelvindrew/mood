@@ -128,6 +128,53 @@ html.tv-ui .animate-bounce {
   animation: scaleIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
+@keyframes heroContentSlideIn {
+  0% {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-hero-content {
+  animation: heroContentSlideIn 0.38s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes kenBurnsSlow {
+  0% {
+    transform: scale(1.0);
+  }
+  50% {
+    transform: scale(1.05) translate(-0.3%, -0.2%);
+  }
+  100% {
+    transform: scale(1.0);
+  }
+}
+
+.animate-ken-burns {
+  animation: kenBurnsSlow 20s ease-in-out infinite;
+  will-change: transform;
+}
+
+@keyframes pulseGlowSlow {
+  0%, 100% {
+    opacity: 0.45;
+    transform: scale(0.98);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.02);
+  }
+}
+
+.animate-pulse-glow {
+  animation: pulseGlowSlow 5s ease-in-out infinite;
+}
+
 /* ============================================================
    MOOD SMART TV PLATFORM DESIGN SYSTEM
    Inspiré des paysages stylisés en couches (Canyon nocturne, Dunes coucher de soleil, Jungle émeraude)

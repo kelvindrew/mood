@@ -91,9 +91,13 @@ interface WorldLandscapeBackgroundProps {
   showLocationBadge?: boolean;
   /** Teinte supplémentaire spécifique au jeu (ex: vert émeraude pour Scrabble) */
   tintClass?: string;
+  /** Index contrôlé externe optionnel */
+  controlledIndex?: number;
+  /** Callback lors du changement d'index */
+  onIndexChange?: (index: number) => void;
   /** Liste personnalisée optionnelle de paysages */
   landscapes?: WorldLandscapeItem[];
-  /** Délai de rotation en millisecondes (défaut: 5000ms) */
+  /** Délai de rotation en millisecondes (défaut: 6000ms) */
   intervalMs?: number;
 }
 
@@ -101,8 +105,10 @@ export const WorldLandscapeBackground: React.FC<WorldLandscapeBackgroundProps> =
   overlayDarkness = 0.82,
   showLocationBadge = false,
   tintClass = 'from-emerald-950/40 via-[#070D0B]/70 to-[#070D0B]/90',
+  controlledIndex,
+  onIndexChange,
   landscapes: propLandscapes,
-  intervalMs = 5000,
+  intervalMs = 6000,
 }) => {
   const [customLandscapes, setCustomLandscapes] = useState<WorldLandscapeItem[]>(() =>
     adminCms.getCustomLandscapes()
@@ -122,21 +128,26 @@ export const WorldLandscapeBackground: React.FC<WorldLandscapeBackgroundProps> =
     return WORLD_LANDSCAPES;
   }, [propLandscapes, customLandscapes]);
 
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [internalIndex, setInternalIndex] = useState(0);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  const currentIndex = controlledIndex !== undefined ? controlledIndex : internalIndex;
 
   // Remise à zéro de l'index si la liste change
   useEffect(() => {
-    setCurrentIndex(0);
-  }, [activeLandscapes.length]);
+    if (controlledIndex === undefined) {
+      setInternalIndex(0);
+    }
+  }, [activeLandscapes.length, controlledIndex]);
 
-  // Rotation automatique toutes les N secondes (défaut 5s)
+  // Rotation automatique toutes les N secondes
   useEffect(() => {
-    if (activeLandscapes.length <= 1) return;
+    if (activeLandscapes.length <= 1 || controlledIndex !== undefined) return;
 
     intervalRef.current = setInterval(() => {
-      setCurrentIndex((prev) => {
+      setInternalIndex((prev) => {
         const next = (prev + 1) % activeLandscapes.length;
+        if (onIndexChange) onIndexChange(next);
         // Préchargement de l'image suivante
         const preloadNext = (next + 1) % activeLandscapes.length;
         const img = new Image();
@@ -148,7 +159,7 @@ export const WorldLandscapeBackground: React.FC<WorldLandscapeBackgroundProps> =
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
-  }, [activeLandscapes, intervalMs]);
+  }, [activeLandscapes, intervalMs, controlledIndex, onIndexChange]);
 
   const currentLandscape = activeLandscapes[currentIndex] || WORLD_LANDSCAPES[0];
 
@@ -157,7 +168,7 @@ export const WorldLandscapeBackground: React.FC<WorldLandscapeBackgroundProps> =
       {/* 1. Fond sombre de base pour éviter tout flash blanc lors du premier chargement */}
       <div className="absolute inset-0 bg-[#070D0B]" />
 
-      {/* 2. Couche d'images avec transition fluide croisée (crossfade sans à-coup) */}
+      {/* 2. Couche d'images avec transition fluide croisée et Ken Burns cinématique */}
       {activeLandscapes.map((landscape, index) => {
         const isCurrent = index === currentIndex;
         return (
@@ -171,7 +182,9 @@ export const WorldLandscapeBackground: React.FC<WorldLandscapeBackgroundProps> =
               src={landscape.url}
               alt={`${landscape.name || 'Paysage'}, ${landscape.country || ''}`}
               loading={index <= 1 ? 'eager' : 'lazy'}
-              className="w-full h-full object-cover object-center filter brightness-[0.92] contrast-[1.05] transform scale-100"
+              className={`w-full h-full object-cover object-center filter brightness-[0.93] contrast-[1.06] will-change-transform ${
+                isCurrent ? 'animate-ken-burns' : 'scale-100'
+              }`}
             />
           </div>
         );

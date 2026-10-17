@@ -42,7 +42,7 @@ export const TVNavbar: React.FC = () => {
       </div>
 
       {/* Center Navigation Links */}
-      <nav className="flex items-center space-x-6 md:space-x-8 pointer-events-auto">
+      <nav className="flex items-center space-x-2 md:space-x-3 pointer-events-auto bg-black/30 backdrop-blur-md p-1.5 rounded-full border border-white/[0.08]">
         {NAV_TABS.map((tab) => {
           const isActive = selectedCategory === tab.id && tvView === 'home';
           return (
@@ -51,23 +51,20 @@ export const TVNavbar: React.FC = () => {
               data-tv-focus
               tabIndex={0}
               onClick={() => handleSelectTab(tab.id)}
-              className={`text-xs md:text-sm font-bold tracking-wide transition-all outline-none cursor-pointer py-1.5 relative ${
+              className={`text-xs md:text-sm font-bold tracking-wide transition-all outline-none cursor-pointer px-4 py-1.5 rounded-full ${
                 isActive
-                  ? 'text-white font-black'
-                  : 'text-slate-400 hover:text-white focus:text-white'
+                  ? 'bg-white text-neutral-950 font-black shadow-[0_2px_15px_rgba(255,255,255,0.35)] scale-105'
+                  : 'text-slate-300 hover:text-white hover:bg-white/10 focus:bg-white/15 focus:text-white'
               }`}
             >
               <span>{tab.label}</span>
-              {isActive && (
-                <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-white rounded-full shadow-[0_0_10px_rgba(255,255,255,0.8)]" />
-              )}
             </button>
           );
         })}
       </nav>
 
-      {/* Right Action: Search / Live Room Pill */}
-      <div className="flex items-center space-x-3.5 pointer-events-auto">
+      {/* Right Action: Search / Live Room Pill / Manette Switch */}
+      <div className="flex items-center space-x-3 pointer-events-auto">
         {room && (
           <div className="flex items-center space-x-2.5 liquid-glass-pill px-3.5 py-1.5 shadow-lg">
             <span className="flex h-2 w-2 relative">
@@ -83,6 +80,15 @@ export const TVNavbar: React.FC = () => {
             </div>
           </div>
         )}
+
+        {/* Bouton direct manette mobile pour tester ou connecter */}
+        <a
+          href="/?mode=mobile"
+          className="hidden sm:inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-full liquid-glass-pill hover:bg-white/15 text-xs font-bold text-slate-300 hover:text-white transition-all shadow-sm active:scale-95"
+          title="Ouvrir la Manette Smartphone"
+        >
+          <span>📱 Manette</span>
+        </a>
 
         {/* Circular Admin / Settings Button */}
         <button
