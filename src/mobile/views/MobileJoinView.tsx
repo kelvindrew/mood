@@ -195,6 +195,13 @@ export const MobileJoinView: React.FC<MobileJoinViewProps> = ({ defaultRoomCode 
             </p>
           </div>
 
+          <a
+            href="/?mode=tv"
+            className="inline-flex items-center space-x-1.5 px-3.5 py-1.5 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-xs font-bold text-amber-300 shadow-md transition-all active:scale-95"
+          >
+            <span>📺 Afficher l'Écran TV & Catalogue</span>
+          </a>
+
           {/* Compact Theme Atmosphere Selector */}
           <div className="pt-1">
             <MoodThemeSwitcher compact={true} />

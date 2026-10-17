@@ -40,7 +40,10 @@ export interface FourPicsPuzzleItem {
   images: [string, string, string, string];
 }
 
+const CURRENT_CMS_VERSION = 'mood_2026_10_17_clean_v5';
+
 const STORAGE_KEYS = {
+  CMS_VERSION: 'mood_cms_version',
   ADMIN_AUTH: 'playflix_admin_auth',
   ADMIN_PASSWORD: 'playflix_admin_password',
   GAMES_CATALOG: 'playflix_cms_games_catalog',
@@ -83,6 +86,27 @@ class AdminCmsService {
     });
   }
 
+  private ensureUpToDateCache() {
+    if (typeof window === 'undefined') return;
+    try {
+      const storedVersion = localStorage.getItem(STORAGE_KEYS.CMS_VERSION);
+      if (storedVersion !== CURRENT_CMS_VERSION) {
+        localStorage.removeItem(STORAGE_KEYS.GAMES_CATALOG);
+        const storedBranding = localStorage.getItem(STORAGE_KEYS.PLATFORM_BRANDING);
+        if (storedBranding) {
+          try {
+            const parsed = JSON.parse(storedBranding);
+            parsed.homeBackgroundMode = 'landscapes';
+            localStorage.setItem(STORAGE_KEYS.PLATFORM_BRANDING, JSON.stringify(parsed));
+          } catch {
+            localStorage.removeItem(STORAGE_KEYS.PLATFORM_BRANDING);
+          }
+        }
+        localStorage.setItem(STORAGE_KEYS.CMS_VERSION, CURRENT_CMS_VERSION);
+      }
+    } catch {}
+  }
+
   // 1. Authentication
   public isAuthenticated(): boolean {
     if (typeof window === 'undefined') return false;
@@ -119,6 +143,7 @@ class AdminCmsService {
 
   // 2. Games Catalog Management
   public getGamesCatalog(): GameCatalogItem[] {
+    this.ensureUpToDateCache();
     if (typeof window === 'undefined') return GAMES_CATALOG;
     try {
       const stored = localStorage.getItem(STORAGE_KEYS.GAMES_CATALOG);
@@ -228,11 +253,17 @@ class AdminCmsService {
 
   // 4. Platform Branding & Settings
   public getPlatformBranding(): PlatformBranding {
+    this.ensureUpToDateCache();
     if (typeof window === 'undefined') return DEFAULT_BRANDING;
     try {
       const stored = localStorage.getItem(STORAGE_KEYS.PLATFORM_BRANDING);
       if (stored) {
-        return { ...DEFAULT_BRANDING, ...JSON.parse(stored) };
+        const parsed = JSON.parse(stored);
+        return {
+          ...DEFAULT_BRANDING,
+          ...parsed,
+          homeBackgroundMode: parsed.homeBackgroundMode || 'landscapes',
+        };
       }
     } catch {}
     return DEFAULT_BRANDING;
