@@ -6,7 +6,7 @@ import { ReactionFlinger } from '../../components/ReactionFlinger';
 import { triggerHaptic, hapticPatterns } from '../../components/HapticFeedback';
 import { audio } from '../../../services/audio';
 import { ShakeDetector } from '../../components/MotionControls';
-import { Dices, Smartphone, ArrowRight, Shield, Swords, Sparkles, Trophy, Clock } from 'lucide-react';
+import { Dices, Smartphone, ArrowRight, Shield, Swords, Sparkles, Trophy, Clock, Box } from 'lucide-react';
 
 const COLOR_NAMES: Record<string, { name: string; bg: string; border: string; text: string; dot: string }> = {
   red: { name: 'Rouge', bg: 'bg-red-600', border: 'border-red-500', text: 'text-red-400', dot: 'bg-red-500' },
@@ -87,6 +87,26 @@ export const LudoController: React.FC = () => {
           <span className="text-[11px] font-bold text-gray-400">
             {localPlayer.name}
           </span>
+        </div>
+
+        {/* TV View Mode Toggle (3D / 2D) */}
+        <div className="flex items-center justify-between px-1">
+          <span className="text-[11px] font-bold text-gray-400">Affichage Écran TV :</span>
+          <button
+            onClick={() => {
+              triggerHaptic(hapticPatterns.tap);
+              audio.playSelect();
+              sendGameAction('ludo_toggle_3d', { enabled: !(gameState.viewMode3D ?? true) });
+            }}
+            className={`flex items-center space-x-1.5 px-3 py-1 rounded-full text-xs font-black transition-all border ${
+              (gameState.viewMode3D ?? true)
+                ? 'bg-amber-400 text-neutral-950 border-amber-300 shadow-md font-black'
+                : 'bg-white/10 text-white border-white/20'
+            }`}
+          >
+            <Box className="w-3.5 h-3.5" />
+            <span>{(gameState.viewMode3D ?? true) ? 'Écran en 3D' : 'Écran en 2D'}</span>
+          </button>
         </div>
 
         {/* Turn Status Alert Banner */}

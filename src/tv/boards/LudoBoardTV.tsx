@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useGame } from '../../context/GameContext';
 import { LudoGameState, LudoPawn } from '../../types/game';
-import { Clock, Trophy, Sparkles, Shield, Award, Users, Play, Crown, Dices, Palette, Zap, Flame } from 'lucide-react';
+import { Clock, Trophy, Sparkles, Shield, Crown, Box, Layers } from 'lucide-react';
 import { playCamera, CameraState } from '../../engine/PlayCamera';
 import { playParticles } from '../../engine/PlayParticleEngine';
 import { playSoundFX } from '../../engine/PlaySoundFX';
 import { GAME_THEMES, GameThemeId } from '../../engine/PlayThemes';
+import { LudoBoard3D } from './LudoBoard3D';
 
 const CELL_SIZE = 40;
 
@@ -62,12 +63,33 @@ export const LudoBoardTV: React.FC = () => {
   const [isRollingAnimation, setIsRollingAnimation] = useState(false);
   const [animatedDiceVal, setAnimatedDiceVal] = useState<number | null>(null);
 
+  // 3D View Mode State
+  const [is3DMode, setIs3DMode] = useState<boolean>(() => {
+    const saved = localStorage.getItem('mood_ludo_view_3d');
+    return saved !== null ? saved === 'true' : true; // Default 3D mode enabled!
+  });
+
   const particleCanvasRef = useRef<HTMLCanvasElement>(null);
   const prevActionLogRef = useRef<string>('');
 
   const theme = GAME_THEMES[currentTheme] || GAME_THEMES.classic_royal;
 
-  // Subscribe to 2.5D Camera
+  // Sync with gameState viewMode3D if updated by a player
+  useEffect(() => {
+    if (gameState?.viewMode3D !== undefined && gameState.viewMode3D !== is3DMode) {
+      setIs3DMode(gameState.viewMode3D);
+    }
+  }, [gameState?.viewMode3D]);
+
+  const handleToggle3D = () => {
+    playSoundFX.playHop();
+    const nextVal = !is3DMode;
+    setIs3DMode(nextVal);
+    localStorage.setItem('mood_ludo_view_3d', String(nextVal));
+    sendGameAction('ludo_toggle_3d', { enabled: nextVal });
+  };
+
+  // Subscribe to 2.5D Camera (used in 2D mode)
   useEffect(() => {
     const unsub = playCamera.subscribe((cam) => {
       setCameraState(cam);
@@ -77,7 +99,7 @@ export const LudoBoardTV: React.FC = () => {
 
   // Attach particle canvas engine safely
   useEffect(() => {
-    if (particleCanvasRef.current) {
+    if (!is3DMode && particleCanvasRef.current) {
       try {
         playParticles.attach(particleCanvasRef.current);
       } catch {}
@@ -87,7 +109,7 @@ export const LudoBoardTV: React.FC = () => {
         playParticles.detach();
       } catch {}
     };
-  }, []);
+  }, [is3DMode]);
 
   // Dice roll & action sound/particle animations
   useEffect(() => {
@@ -114,8 +136,10 @@ export const LudoBoardTV: React.FC = () => {
           if (gameState.diceValue === 6) {
             playSoundFX.playDiceSixBonus();
             playCamera.shake(10);
-            playParticles.emitExplosion(350, 350, '#FFD700', 30);
-          } else {
+            if (!is3DMode) {
+              playParticles.emitExplosion(350, 350, '#FFD700', 30);
+            }
+          } else if (!is3DMode) {
             playParticles.emitDiceSparks(350, 350, 12);
           }
 
@@ -133,13 +157,19 @@ export const LudoBoardTV: React.FC = () => {
       if (gameState.lastActionLog.includes('capturé')) {
         playSoundFX.playCaptureExplosion();
         playCamera.focusCapture(300, 300);
-        playParticles.emitExplosion(350, 350, '#FF3B30', 40);
+        if (!is3DMode) {
+          playParticles.emitExplosion(350, 350, '#FF3B30', 40);
+        }
       } else if (gameState.lastActionLog.includes('sort son pion')) {
         playSoundFX.playHop();
-        playParticles.emitImpact(350, 350, '#34C759', 20);
+        if (!is3DMode) {
+          playParticles.emitImpact(350, 350, '#34C759', 20);
+        }
       } else if (gameState.lastActionLog.includes('maison centrale')) {
         playSoundFX.playDiceSixBonus();
-        playParticles.emitExplosion(350, 350, '#FFD700', 45);
+        if (!is3DMode) {
+          playParticles.emitExplosion(350, 350, '#FFD700', 45);
+        }
       } else {
         playSoundFX.playHop();
       }
@@ -148,9 +178,11 @@ export const LudoBoardTV: React.FC = () => {
     // Winner detection
     if (gameState.winner) {
       playCamera.victoryPanorama();
-      playParticles.emitExplosion(350, 300, '#FFD700', 60);
+      if (!is3DMode) {
+        playParticles.emitExplosion(350, 300, '#FFD700', 60);
+      }
     }
-  }, [gameState?.diceValue, gameState?.canRollDice, gameState?.lastActionLog, gameState?.winner]);
+  }, [gameState?.diceValue, gameState?.canRollDice, gameState?.lastActionLog, gameState?.winner, is3DMode]);
 
   if (!gameState) {
     return <div className="p-10 text-white">Chargement du Ludo 3D Deluxe...</div>;
@@ -160,7 +192,7 @@ export const LudoBoardTV: React.FC = () => {
   const activeSkin = theme.pawnSkins[activeColor] || theme.pawnSkins.red;
   const activePlayer = room?.players.find((p) => p.color === activeColor);
 
-  // Position resolver for pawns
+  // Position resolver for 2D pawns
   const getPawnPixelPosition = (pawn: LudoPawn): { x: number; y: number } => {
     if (pawn.isFinished) return { x: 300, y: 300 };
     if (pawn.isHome) {
@@ -190,14 +222,24 @@ export const LudoBoardTV: React.FC = () => {
 
   return (
     <div className={`relative w-full h-full flex items-center justify-between px-8 py-2 select-none overflow-hidden bg-gradient-to-br ${theme.bgGradient} transition-colors duration-1000`}>
-      {/* Left HUD: Active Turn Card, Theme Switcher & Roll Box */}
+      {/* Left HUD: Active Turn Card, 3D Toggle & Roll Box */}
       <div className="w-[280px] flex flex-col justify-between h-[88vh] py-2 z-20">
         <div className="space-y-3">
-          {/* Header & Theme Switcher */}
+          {/* Header & Controls: 3D Toggle + Theme Switcher */}
           <div className="flex items-center justify-between">
-            <span className="px-3 py-1 rounded-full bg-white/10 text-white text-[10px] font-black uppercase tracking-wider border border-white/20">
-              LUDO 3D CARTOON
-            </span>
+            {/* 3D Mode Toggle Button */}
+            <button
+              onClick={handleToggle3D}
+              className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-xl border text-xs font-black transition-all shadow-md active:scale-95 cursor-pointer ${
+                is3DMode
+                  ? 'bg-gradient-to-r from-amber-400 to-amber-500 text-neutral-950 border-amber-300 shadow-[0_0_15px_rgba(245,158,11,0.45)] scale-105'
+                  : 'bg-white/10 hover:bg-white/20 text-white border-white/20'
+              }`}
+              title="Basculer entre l'interface 3D et 2D"
+            >
+              <Box className="w-3.5 h-3.5" />
+              <span>{is3DMode ? 'VUE 3D' : 'VUE 2D'}</span>
+            </button>
 
             {/* Quick Theme Cycle Button */}
             <button
@@ -207,7 +249,7 @@ export const LudoBoardTV: React.FC = () => {
                 setCurrentTheme(themeKeys[nextIdx]);
                 playSoundFX.playHop();
               }}
-              className="flex items-center space-x-1.5 px-3 py-1 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-xs font-bold text-brand-gold transition-all"
+              className="flex items-center space-x-1.5 px-3 py-1 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-xs font-bold text-brand-gold transition-all cursor-pointer"
             >
               <span>{theme.emoji}</span>
               <span className="text-[10px]">{theme.name}</span>
@@ -233,7 +275,7 @@ export const LudoBoardTV: React.FC = () => {
             </div>
           </div>
 
-          {/* 3D Physical Rolling Dice Showcase */}
+          {/* Rolling Dice Showcase */}
           <div className="p-4 rounded-3xl bg-surface-card/85 border border-white/15 backdrop-blur-xl flex flex-col items-center justify-center space-y-2">
             <span className="text-[10px] font-black uppercase tracking-wider text-gray-400">DÉ DU JOUEUR</span>
             
@@ -311,191 +353,234 @@ export const LudoBoardTV: React.FC = () => {
         </div>
       </div>
 
-      {/* Center Stable High-Definition Board & Particle Layer */}
+      {/* Center High-Definition Board Stage (3D vs 2D) */}
       <div className="relative w-[700px] h-[700px] max-w-[55vw] max-h-[88vh] aspect-square flex items-center justify-center">
-        {/* Particle Canvas Overlay Layer */}
-        <canvas
-          ref={particleCanvasRef}
-          width={700}
-          height={700}
-          className="absolute inset-0 w-full h-full pointer-events-none z-30"
-        />
+        {/* Floating Quick View Switcher at Top of Board */}
+        <div className="absolute top-2 right-4 z-40 flex items-center space-x-1 bg-neutral-900/85 backdrop-blur-md px-2.5 py-1 rounded-full border border-white/15 shadow-xl">
+          <button
+            onClick={handleToggle3D}
+            className={`flex items-center space-x-1.5 text-xs font-black px-3 py-1 rounded-full transition-all cursor-pointer ${
+              is3DMode
+                ? 'bg-amber-400 text-neutral-950 shadow-md font-black'
+                : 'text-slate-400 hover:text-white'
+            }`}
+            title="Activer la vue 3D"
+          >
+            <Box className="w-3.5 h-3.5" />
+            <span>Mode 3D</span>
+          </button>
+          <button
+            onClick={handleToggle3D}
+            className={`flex items-center space-x-1.5 text-xs font-black px-3 py-1 rounded-full transition-all cursor-pointer ${
+              !is3DMode
+                ? 'bg-white text-neutral-950 shadow-md font-black'
+                : 'text-slate-400 hover:text-white'
+            }`}
+            title="Activer la vue 2D"
+          >
+            <Layers className="w-3.5 h-3.5" />
+            <span>Mode 2D</span>
+          </button>
+        </div>
 
-        {/* Completely Stable Solid Board Stage */}
-        <div className="relative w-[600px] h-[600px] rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.8)] border-[10px] border-[#181D2E] bg-white">
-          <svg viewBox="0 0 600 600" className="w-full h-full rounded-2xl overflow-visible bg-white">
-            <defs>
-              {/* Radial 3D Pawn Gradients for each Theme */}
-              <radialGradient id="volcano-red" cx="35%" cy="35%" r="65%">
-                <stop offset="0%" stopColor="#FFA0A0" />
-                <stop offset="45%" stopColor="#FF3B30" />
-                <stop offset="100%" stopColor="#7A0B05" />
-              </radialGradient>
-              <radialGradient id="volcano-green" cx="35%" cy="35%" r="65%">
-                <stop offset="0%" stopColor="#85FFA8" />
-                <stop offset="45%" stopColor="#30D158" />
-                <stop offset="100%" stopColor="#0B5C20" />
-              </radialGradient>
-              <radialGradient id="volcano-yellow" cx="35%" cy="35%" r="65%">
-                <stop offset="0%" stopColor="#FFF4A0" />
-                <stop offset="45%" stopColor="#FFD60A" />
-                <stop offset="100%" stopColor="#7A6000" />
-              </radialGradient>
-              <radialGradient id="volcano-blue" cx="35%" cy="35%" r="65%">
-                <stop offset="0%" stopColor="#AEE9FF" />
-                <stop offset="45%" stopColor="#64D2FF" />
-                <stop offset="100%" stopColor="#0B4B6E" />
-              </radialGradient>
-            </defs>
+        {is3DMode ? (
+          /* 3D Realistic Three.js Interactive Board */
+          <LudoBoard3D
+            gameState={gameState}
+            currentTheme={currentTheme}
+            isRollingAnimation={isRollingAnimation}
+            animatedDiceVal={animatedDiceVal}
+            onSelectPawn={(pawnId) => {
+              sendGameAction('ludo_move_pawn', { pawnId });
+            }}
+          />
+        ) : (
+          /* 2D Classic Vector Board */
+          <>
+            {/* Particle Canvas Overlay Layer */}
+            <canvas
+              ref={particleCanvasRef}
+              width={700}
+              height={700}
+              className="absolute inset-0 w-full h-full pointer-events-none z-30"
+            />
 
-            {/* Board Background */}
-            <rect x="0" y="0" width="600" height="600" fill="#FFFFFF" />
+            {/* Solid 2D Board Stage */}
+            <div className="relative w-[600px] h-[600px] rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.8)] border-[10px] border-[#181D2E] bg-white">
+              <svg viewBox="0 0 600 600" className="w-full h-full rounded-2xl overflow-visible bg-white">
+                <defs>
+                  {/* Radial 3D Pawn Gradients for each Theme */}
+                  <radialGradient id="volcano-red" cx="35%" cy="35%" r="65%">
+                    <stop offset="0%" stopColor="#FFA0A0" />
+                    <stop offset="45%" stopColor="#FF3B30" />
+                    <stop offset="100%" stopColor="#7A0B05" />
+                  </radialGradient>
+                  <radialGradient id="volcano-green" cx="35%" cy="35%" r="65%">
+                    <stop offset="0%" stopColor="#85FFA8" />
+                    <stop offset="45%" stopColor="#30D158" />
+                    <stop offset="100%" stopColor="#0B5C20" />
+                  </radialGradient>
+                  <radialGradient id="volcano-yellow" cx="35%" cy="35%" r="65%">
+                    <stop offset="0%" stopColor="#FFF4A0" />
+                    <stop offset="45%" stopColor="#FFD60A" />
+                    <stop offset="100%" stopColor="#7A6000" />
+                  </radialGradient>
+                  <radialGradient id="volcano-blue" cx="35%" cy="35%" r="65%">
+                    <stop offset="0%" stopColor="#AEE9FF" />
+                    <stop offset="45%" stopColor="#64D2FF" />
+                    <stop offset="100%" stopColor="#0B4B6E" />
+                  </radialGradient>
+                </defs>
 
-            {/* 1. Four Bases */}
-            {/* Red Base (Top-Left) */}
-            <rect x="0" y="0" width="240" height="240" fill={theme.pawnSkins.red.accent} stroke="#000000" strokeWidth="2" />
-            <rect x="40" y="40" width="160" height="160" fill="#FFFFFF" stroke="#000000" strokeWidth="2" />
-            {BASE_NESTS.red.map((nest, i) => (
-              <circle key={`red_nest_${i}`} cx={nest.x} cy={nest.y} r="20" fill={theme.pawnSkins.red.accent} stroke="#000000" strokeWidth="2" />
-            ))}
+                {/* Board Background */}
+                <rect x="0" y="0" width="600" height="600" fill="#FFFFFF" />
 
-            {/* Green Base (Top-Right) */}
-            <rect x="360" y="0" width="240" height="240" fill={theme.pawnSkins.green.accent} stroke="#000000" strokeWidth="2" />
-            <rect x="400" y="40" width="160" height="160" fill="#FFFFFF" stroke="#000000" strokeWidth="2" />
-            {BASE_NESTS.green.map((nest, i) => (
-              <circle key={`green_nest_${i}`} cx={nest.x} cy={nest.y} r="20" fill={theme.pawnSkins.green.accent} stroke="#000000" strokeWidth="2" />
-            ))}
+                {/* 1. Four Bases */}
+                {/* Red Base (Top-Left) */}
+                <rect x="0" y="0" width="240" height="240" fill={theme.pawnSkins.red.accent} stroke="#000000" strokeWidth="2" />
+                <rect x="40" y="40" width="160" height="160" fill="#FFFFFF" stroke="#000000" strokeWidth="2" />
+                {BASE_NESTS.red.map((nest, i) => (
+                  <circle key={`red_nest_${i}`} cx={nest.x} cy={nest.y} r="20" fill={theme.pawnSkins.red.accent} stroke="#000000" strokeWidth="2" />
+                ))}
 
-            {/* Blue Base (Bottom-Left) */}
-            <rect x="0" y="360" width="240" height="240" fill={theme.pawnSkins.blue.accent} stroke="#000000" strokeWidth="2" />
-            <rect x="40" y="400" width="160" height="160" fill="#FFFFFF" stroke="#000000" strokeWidth="2" />
-            {BASE_NESTS.blue.map((nest, i) => (
-              <circle key={`blue_nest_${i}`} cx={nest.x} cy={nest.y} r="20" fill={theme.pawnSkins.blue.accent} stroke="#000000" strokeWidth="2" />
-            ))}
+                {/* Green Base (Top-Right) */}
+                <rect x="360" y="0" width="240" height="240" fill={theme.pawnSkins.green.accent} stroke="#000000" strokeWidth="2" />
+                <rect x="400" y="40" width="160" height="160" fill="#FFFFFF" stroke="#000000" strokeWidth="2" />
+                {BASE_NESTS.green.map((nest, i) => (
+                  <circle key={`green_nest_${i}`} cx={nest.x} cy={nest.y} r="20" fill={theme.pawnSkins.green.accent} stroke="#000000" strokeWidth="2" />
+                ))}
 
-            {/* Yellow Base (Bottom-Right) */}
-            <rect x="360" y="360" width="240" height="240" fill={theme.pawnSkins.yellow.accent} stroke="#000000" strokeWidth="2" />
-            <rect x="400" y="400" width="160" height="160" fill="#FFFFFF" stroke="#000000" strokeWidth="2" />
-            {BASE_NESTS.yellow.map((nest, i) => (
-              <circle key={`yellow_nest_${i}`} cx={nest.x} cy={nest.y} r="20" fill={theme.pawnSkins.yellow.accent} stroke="#000000" strokeWidth="2" />
-            ))}
+                {/* Blue Base (Bottom-Left) */}
+                <rect x="0" y="360" width="240" height="240" fill={theme.pawnSkins.blue.accent} stroke="#000000" strokeWidth="2" />
+                <rect x="40" y="400" width="160" height="160" fill="#FFFFFF" stroke="#000000" strokeWidth="2" />
+                {BASE_NESTS.blue.map((nest, i) => (
+                  <circle key={`blue_nest_${i}`} cx={nest.x} cy={nest.y} r="20" fill={theme.pawnSkins.blue.accent} stroke="#000000" strokeWidth="2" />
+                ))}
 
-            {/* 2. Track Cells with Relief Borders */}
-            {TRACK_COORDS.map((coord, idx) => {
-              let cellBg = '#FFFFFF';
-              if (idx === 0) cellBg = theme.pawnSkins.red.accent;
-              else if (idx === 13) cellBg = theme.pawnSkins.green.accent;
-              else if (idx === 26) cellBg = theme.pawnSkins.yellow.accent;
-              else if (idx === 39) cellBg = theme.pawnSkins.blue.accent;
+                {/* Yellow Base (Bottom-Right) */}
+                <rect x="360" y="360" width="240" height="240" fill={theme.pawnSkins.yellow.accent} stroke="#000000" strokeWidth="2" />
+                <rect x="400" y="400" width="160" height="160" fill="#FFFFFF" stroke="#000000" strokeWidth="2" />
+                {BASE_NESTS.yellow.map((nest, i) => (
+                  <circle key={`yellow_nest_${i}`} cx={nest.x} cy={nest.y} r="20" fill={theme.pawnSkins.yellow.accent} stroke="#000000" strokeWidth="2" />
+                ))}
 
-              return (
-                <rect
-                  key={`track_cell_${idx}`}
-                  x={coord.x - CELL_SIZE / 2}
-                  y={coord.y - CELL_SIZE / 2}
-                  width={CELL_SIZE}
-                  height={CELL_SIZE}
-                  fill={cellBg}
-                  stroke="#000000"
-                  strokeWidth="1.5"
-                />
-              );
-            })}
+                {/* 2. Track Cells with Relief Borders */}
+                {TRACK_COORDS.map((coord, idx) => {
+                  let cellBg = '#FFFFFF';
+                  if (idx === 0) cellBg = theme.pawnSkins.red.accent;
+                  else if (idx === 13) cellBg = theme.pawnSkins.green.accent;
+                  else if (idx === 26) cellBg = theme.pawnSkins.yellow.accent;
+                  else if (idx === 39) cellBg = theme.pawnSkins.blue.accent;
 
-            {/* 3. Home Stretch Columns */}
-            {Object.entries(HOME_STRETCH_COORDS).map(([color, coords]) => {
-              const skin = theme.pawnSkins[color as keyof typeof theme.pawnSkins] || theme.pawnSkins.red;
-              return (
-                <g key={`stretch_${color}`}>
-                  {coords.map((coord, idx) => (
+                  return (
                     <rect
-                      key={`stretch_${color}_${idx}`}
+                      key={`track_cell_${idx}`}
                       x={coord.x - CELL_SIZE / 2}
                       y={coord.y - CELL_SIZE / 2}
                       width={CELL_SIZE}
                       height={CELL_SIZE}
-                      fill={skin.accent}
+                      fill={cellBg}
                       stroke="#000000"
                       strokeWidth="1.5"
                     />
-                  ))}
-                </g>
-              );
-            })}
+                  );
+                })}
 
-            {/* 4. Central Goal Triangles */}
-            <polygon points="240,240 300,300 240,360" fill={theme.pawnSkins.red.accent} stroke="#000000" strokeWidth="1.5" />
-            <polygon points="240,240 360,240 300,300" fill={theme.pawnSkins.green.accent} stroke="#000000" strokeWidth="1.5" />
-            <polygon points="360,240 360,360 300,300" fill={theme.pawnSkins.yellow.accent} stroke="#000000" strokeWidth="1.5" />
-            <polygon points="240,360 360,360 300,300" fill={theme.pawnSkins.blue.accent} stroke="#000000" strokeWidth="1.5" />
+                {/* 3. Home Stretch Columns */}
+                {Object.entries(HOME_STRETCH_COORDS).map(([color, coords]) => {
+                  const skin = theme.pawnSkins[color as keyof typeof theme.pawnSkins] || theme.pawnSkins.red;
+                  return (
+                    <g key={`stretch_${color}`}>
+                      {coords.map((coord, idx) => (
+                        <rect
+                          key={`stretch_${color}_${idx}`}
+                          x={coord.x - CELL_SIZE / 2}
+                          y={coord.y - CELL_SIZE / 2}
+                          width={CELL_SIZE}
+                          height={CELL_SIZE}
+                          fill={skin.accent}
+                          stroke="#000000"
+                          strokeWidth="1.5"
+                        />
+                      ))}
+                    </g>
+                  );
+                })}
 
-            {/* 5. 3D Cartoon Pawns with Kinetic Hop Physics */}
-            {renderedPawns.map(({ pawn, x, y, isMovable }) => {
-              const skin = theme.pawnSkins[pawn.color as keyof typeof theme.pawnSkins] || theme.pawnSkins.red;
-              return (
-                <g
-                  key={`pawn_${pawn.color}_${pawn.id}`}
-                  style={{
-                    transform: `translate(${x}px, ${y}px)`,
-                    transition: 'transform 0.55s cubic-bezier(0.34, 1.45, 0.64, 1)',
-                  }}
-                  filter="url(#pawn-3d-shadow)"
-                  className="cursor-pointer"
-                  onClick={() => {
-                    if (isMovable) {
-                      playSoundFX.playHop();
-                      sendGameAction('ludo_move_pawn', { pawnId: pawn.id });
-                    }
-                  }}
-                >
-                  {/* Dynamic Shadow on Ground */}
-                  <ellipse cx="0" cy="12" rx="15" ry="5.5" fill="#000000" opacity="0.6" />
+                {/* 4. Central Goal Triangles */}
+                <polygon points="240,240 300,300 240,360" fill={theme.pawnSkins.red.accent} stroke="#000000" strokeWidth="1.5" />
+                <polygon points="240,240 360,240 300,300" fill={theme.pawnSkins.green.accent} stroke="#000000" strokeWidth="1.5" />
+                <polygon points="360,240 360,360 300,300" fill={theme.pawnSkins.yellow.accent} stroke="#000000" strokeWidth="1.5" />
+                <polygon points="240,360 360,360 300,300" fill={theme.pawnSkins.blue.accent} stroke="#000000" strokeWidth="1.5" />
 
-                  {/* Pulsing Selection Aura if movable */}
-                  {isMovable && (
-                    <circle
-                      cx="0"
-                      cy="0"
-                      r="22"
-                      fill="none"
-                      stroke="#FFD100"
-                      strokeWidth="3.5"
-                      strokeDasharray="5 3"
-                      className="animate-spin"
-                      style={{ animationDuration: '3s' }}
-                    />
-                  )}
+                {/* 5. 2D Pawns */}
+                {renderedPawns.map(({ pawn, x, y, isMovable }) => {
+                  const skin = theme.pawnSkins[pawn.color as keyof typeof theme.pawnSkins] || theme.pawnSkins.red;
+                  return (
+                    <g
+                      key={`pawn_${pawn.color}_${pawn.id}`}
+                      style={{
+                        transform: `translate(${x}px, ${y}px)`,
+                        transition: 'transform 0.55s cubic-bezier(0.34, 1.45, 0.64, 1)',
+                      }}
+                      className="cursor-pointer"
+                      onClick={() => {
+                        if (isMovable) {
+                          playSoundFX.playHop();
+                          sendGameAction('ludo_move_pawn', { pawnId: pawn.id });
+                        }
+                      }}
+                    >
+                      {/* Dynamic Shadow on Ground */}
+                      <ellipse cx="0" cy="12" rx="15" ry="5.5" fill="#000000" opacity="0.6" />
 
-                  {/* 3D Glossy Pawn Body */}
-                  <circle
-                    cx="0"
-                    cy="0"
-                    r="15"
-                    fill={skin.accent}
-                    stroke="#FFFFFF"
-                    strokeWidth="2.5"
-                  />
+                      {/* Pulsing Selection Aura if movable */}
+                      {isMovable && (
+                        <circle
+                          cx="0"
+                          cy="0"
+                          r="22"
+                          fill="none"
+                          stroke="#FFD100"
+                          strokeWidth="3.5"
+                          strokeDasharray="5 3"
+                          className="animate-spin"
+                          style={{ animationDuration: '3s' }}
+                        />
+                      )}
 
-                  {/* Specular Highlight */}
-                  <circle cx="-4" cy="-5" r="4" fill="#FFFFFF" opacity="0.75" />
+                      {/* Glossy Pawn Body */}
+                      <circle
+                        cx="0"
+                        cy="0"
+                        r="15"
+                        fill={skin.accent}
+                        stroke="#FFFFFF"
+                        strokeWidth="2.5"
+                      />
 
-                  {/* Pawn Number */}
-                  <text
-                    x="0"
-                    y="4"
-                    textAnchor="middle"
-                    fill="#FFFFFF"
-                    fontSize="11"
-                    fontWeight="900"
-                    fontFamily="sans-serif"
-                  >
-                    {pawn.id + 1}
-                  </text>
-                </g>
-              );
-            })}
-          </svg>
-        </div>
+                      {/* Specular Highlight */}
+                      <circle cx="-4" cy="-5" r="4" fill="#FFFFFF" opacity="0.75" />
+
+                      {/* Pawn Number */}
+                      <text
+                        x="0"
+                        y="4"
+                        textAnchor="middle"
+                        fill="#FFFFFF"
+                        fontSize="11"
+                        fontWeight="900"
+                        fontFamily="sans-serif"
+                      >
+                        {pawn.id + 1}
+                      </text>
+                    </g>
+                  );
+                })}
+              </svg>
+            </div>
+          </>
+        )}
       </div>
 
       {/* Right HUD: Rules & Victory Overlay */}

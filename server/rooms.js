@@ -635,6 +635,9 @@ export class RoomManager {
       case 'ludo_move_pawn':
         if (room.gameId === 'ludo') room.gameEngine.movePawn(player.color, payload.pawnId);
         break;
+      case 'ludo_toggle_3d':
+        if (room.gameId === 'ludo' && room.gameEngine.toggle3D) room.gameEngine.toggle3D(payload.enabled);
+        break;
       case 'word_play_word':
         if (room.gameId === 'scrabble') {
           const res = room.gameEngine.playWord(player.id, payload.tilesPlaced);

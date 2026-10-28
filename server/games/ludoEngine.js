@@ -40,6 +40,7 @@ export class LudoEngine {
     this.winner = null;
     this.turnTimeLeft = 30;
     this.lastActionLog = 'La partie de Ludo commence ! À vos dés !';
+    this.viewMode3D = true;
     this.onStateChange = onStateChange;
     this.onGameOver = onGameOver;
 
@@ -397,6 +398,11 @@ export class LudoEngine {
     this.notify();
   }
 
+  toggle3D(enabled) {
+    this.viewMode3D = typeof enabled === 'boolean' ? enabled : !this.viewMode3D;
+    this.notify();
+  }
+
   getState() {
     return {
       players: this.playerColors,
@@ -409,6 +415,7 @@ export class LudoEngine {
       winner: this.winner,
       turnTimeLeft: this.turnTimeLeft,
       lastActionLog: this.lastActionLog,
+      viewMode3D: this.viewMode3D,
     };
   }
 

@@ -109,6 +109,7 @@ export interface LudoGameState {
   winner: PlayerColor | null;
   turnTimeLeft: number;
   lastActionLog: string;
+  viewMode3D?: boolean;
 }
 
 // ----------------------------------------------------
