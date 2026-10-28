@@ -228,19 +228,22 @@ export const LudoBoardTV: React.FC = () => {
             onSelectPawn={(pawnId) => {
               sendGameAction('ludo_move_pawn', { pawnId });
             }}
+            onRollDice={() => {
+              sendGameAction('ludo_roll_dice');
+            }}
           />
         </div>
       ) : (
-        /* 2D Classic Vector Board Grand Format */
-        <div className="absolute inset-0 w-full h-full flex items-center justify-center z-0 pt-8 pb-10">
+        /* 2D Classic Vector Board Grand Format - Occupe tout l'écran */
+        <div className="absolute inset-0 w-full h-full flex items-center justify-center z-0 p-4 sm:p-6 md:p-8">
           <canvas
             ref={particleCanvasRef}
-            width={720}
-            height={720}
+            width={1000}
+            height={1000}
             className="absolute inset-0 w-full h-full pointer-events-none z-30"
           />
 
-          <div className="relative w-[680px] h-[680px] max-w-[85vw] max-h-[82vh] aspect-square rounded-3xl shadow-[0_25px_60px_rgba(0,0,0,0.85)] border-[10px] border-[#181D2E] bg-white">
+          <div className="relative w-[min(94vw,calc(100vh-100px))] h-[min(94vw,calc(100vh-100px))] aspect-square rounded-3xl shadow-[0_25px_60px_rgba(0,0,0,0.85)] border-4 sm:border-8 border-[#181D2E] bg-white">
             <svg viewBox="0 0 600 600" className="w-full h-full rounded-2xl overflow-visible bg-white">
               <defs>
                 <radialGradient id="volcano-red" cx="35%" cy="35%" r="65%">
@@ -419,7 +422,18 @@ export const LudoBoardTV: React.FC = () => {
         {/* Center: Live Action Ticker & Dice Preview */}
         <div className="pointer-events-auto hidden md:flex items-center space-x-3 bg-black/70 backdrop-blur-xl border border-white/20 px-4 py-2 rounded-2xl shadow-2xl max-w-md">
           {/* 3D Dice Showcase */}
-          <div className="relative shrink-0">
+          <div
+            onClick={() => {
+              if (gameState.canRollDice) {
+                playSoundFX.playDiceRoll();
+                sendGameAction('ludo_roll_dice');
+              }
+            }}
+            className={`relative shrink-0 ${
+              gameState.canRollDice ? 'cursor-pointer animate-pulse ring-2 ring-amber-400 rounded-xl' : ''
+            }`}
+            title={gameState.canRollDice ? 'Cliquer pour lancer le dé' : undefined}
+          >
             <div className={`w-10 h-10 rounded-xl bg-white text-neutral-950 font-display font-black text-2xl flex items-center justify-center border-2 border-amber-300 shadow-lg ${
               isRollingAnimation ? 'animate-spin-slow' : ''
             }`}>

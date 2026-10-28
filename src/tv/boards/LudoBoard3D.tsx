@@ -11,6 +11,7 @@ interface LudoBoard3DProps {
   isRollingAnimation: boolean;
   animatedDiceVal: number | null;
   onSelectPawn: (pawnId: number) => void;
+  onRollDice?: () => void;
 }
 
 // 15x15 Grid - Cell size in 3D world units
@@ -208,6 +209,7 @@ export const LudoBoard3D: React.FC<LudoBoard3DProps> = ({
   isRollingAnimation,
   animatedDiceVal,
   onSelectPawn,
+  onRollDice,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [cameraPreset, setCameraPreset] = useState<'isometric' | 'top' | 'follow'>('isometric');
@@ -298,9 +300,9 @@ export const LudoBoard3D: React.FC<LudoBoard3DProps> = ({
     scene.background = new THREE.Color(themeBgColors[currentTheme] || 0x07090e);
     scene.fog = new THREE.FogExp2(scene.background.getHex(), 0.012);
 
-    // 2. Camera: Optimized closer distance (radius: 13.5) for MAXIMAL visibility!
-    const camera = new THREE.PerspectiveCamera(42, width / height, 0.1, 100);
-    const initialCamPos = new THREE.Vector3(0, 10.8, 9.2);
+    // 2. Camera: Balanced cinematic perspective (radius: 17.5, FOV: 45) framing the entire board edge-to-edge
+    const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 100);
+    const initialCamPos = new THREE.Vector3(0, 10.0, 14.3);
     const initialLookAt = new THREE.Vector3(0, 0, 0);
     camera.position.copy(initialCamPos);
     camera.lookAt(initialLookAt);
@@ -553,11 +555,11 @@ export const LudoBoard3D: React.FC<LudoBoard3DProps> = ({
     const pawnMeshes = new Map<string, THREE.Group>();
     const haloMeshes = new Map<string, THREE.Mesh>();
 
-    // 8. Raycasting & Mouse Controls: Closer default radius (13.5) for MAX board size!
+    // 8. Raycasting & Mouse Controls: Natural framing (radius: 17.5) with full-screen tabletop geometry
     const raycaster = new THREE.Raycaster();
     const mouse = new THREE.Vector2();
 
-    const orbitAngle = { theta: 0, phi: 0.95, radius: 13.5 };
+    const orbitAngle = { theta: 0, phi: 0.96, radius: 17.5 };
 
     threeRef.current = {
       scene,
@@ -603,6 +605,30 @@ export const LudoBoard3D: React.FC<LudoBoard3DProps> = ({
           0.3,
           Math.min(1.4, threeRef.current.orbitAngle.phi + dy * 0.007)
         );
+      } else {
+        // Interactive cursor detection on hover
+        threeRef.current.raycaster.setFromCamera(threeRef.current.mouse, camera);
+        const allPawnGroups = Array.from(threeRef.current.pawnMeshes.values());
+        const hits = threeRef.current.raycaster.intersectObjects(allPawnGroups, true);
+        let isHoveringInteractive = false;
+        if (hits.length > 0) {
+          let cur: THREE.Object3D | null = hits[0].object;
+          while (cur && !cur.userData?.pawnId && cur.parent) {
+            cur = cur.parent;
+          }
+          if (cur && cur.userData?.isMovable) {
+            isHoveringInteractive = true;
+          }
+        }
+        if (!isHoveringInteractive && gameState.canRollDice) {
+          const diceHit = threeRef.current.raycaster.intersectObject(threeRef.current.diceMesh, true);
+          if (diceHit.length > 0) isHoveringInteractive = true;
+        }
+        renderer.domElement.style.cursor = isHoveringInteractive
+          ? 'pointer'
+          : threeRef.current.isDragging
+          ? 'grabbing'
+          : 'grab';
       }
     };
 
@@ -615,8 +641,8 @@ export const LudoBoard3D: React.FC<LudoBoard3DProps> = ({
       e.preventDefault();
       if (!threeRef.current) return;
       threeRef.current.orbitAngle.radius = Math.max(
-        7.5,
-        Math.min(19, threeRef.current.orbitAngle.radius + e.deltaY * 0.012)
+        11.0,
+        Math.min(26.0, threeRef.current.orbitAngle.radius + e.deltaY * 0.012)
       );
     };
 
@@ -629,6 +655,8 @@ export const LudoBoard3D: React.FC<LudoBoard3DProps> = ({
       );
 
       threeRef.current.raycaster.setFromCamera(clickMouse, camera);
+
+      // 1. Check movable pawns
       const allPawnGroups = Array.from(threeRef.current.pawnMeshes.values());
       const intersects = threeRef.current.raycaster.intersectObjects(allPawnGroups, true);
 
@@ -642,7 +670,17 @@ export const LudoBoard3D: React.FC<LudoBoard3DProps> = ({
           if (isMovable) {
             playSoundFX.playHop();
             onSelectPawn(pawnId);
+            return;
           }
+        }
+      }
+
+      // 2. Check 3D dice click to roll
+      if (gameState.canRollDice && onRollDice) {
+        const diceIntersects = threeRef.current.raycaster.intersectObject(threeRef.current.diceMesh, true);
+        if (diceIntersects.length > 0) {
+          playSoundFX.playDiceRoll();
+          onRollDice();
         }
       }
     };
@@ -911,15 +949,15 @@ export const LudoBoard3D: React.FC<LudoBoard3DProps> = ({
     if (cameraPreset !== 'follow' || !threeRef.current) return;
     const activeColor = gameState.currentTurnColor || 'red';
     const angleMap: Record<string, { theta: number; phi: number }> = {
-      red: { theta: -Math.PI / 4, phi: 0.95 },
-      green: { theta: Math.PI / 4, phi: 0.95 },
-      yellow: { theta: (3 * Math.PI) / 4, phi: 0.95 },
-      blue: { theta: (-3 * Math.PI) / 4, phi: 0.95 },
+      red: { theta: -Math.PI / 4, phi: 0.94 },
+      green: { theta: Math.PI / 4, phi: 0.94 },
+      yellow: { theta: (3 * Math.PI) / 4, phi: 0.94 },
+      blue: { theta: (-3 * Math.PI) / 4, phi: 0.94 },
     };
     const targetAngle = angleMap[activeColor] || angleMap.red;
     threeRef.current.orbitAngle.theta = targetAngle.theta;
     threeRef.current.orbitAngle.phi = targetAngle.phi;
-    threeRef.current.orbitAngle.radius = 12.2; // Dramatic close-up on the active corner!
+    threeRef.current.orbitAngle.radius = 16.5; // Framing quadrant with perspective
   }, [gameState.currentTurnColor, cameraPreset]);
 
   return (
@@ -942,7 +980,9 @@ export const LudoBoard3D: React.FC<LudoBoard3DProps> = ({
           onClick={() => {
             playSoundFX.playHop();
             if (threeRef.current) {
-              threeRef.current.orbitAngle.radius = 13.5;
+              threeRef.current.orbitAngle.theta = 0;
+              threeRef.current.orbitAngle.phi = 0.96;
+              threeRef.current.orbitAngle.radius = 17.5;
             }
             setCameraPreset('isometric');
           }}
@@ -960,6 +1000,11 @@ export const LudoBoard3D: React.FC<LudoBoard3DProps> = ({
         <button
           onClick={() => {
             playSoundFX.playHop();
+            if (threeRef.current) {
+              threeRef.current.orbitAngle.theta = 0;
+              threeRef.current.orbitAngle.phi = 0.08;
+              threeRef.current.orbitAngle.radius = 20.0;
+            }
             setCameraPreset('top');
           }}
           className={`px-3 py-1 rounded-full text-xs font-bold transition-all cursor-pointer ${
@@ -995,7 +1040,7 @@ export const LudoBoard3D: React.FC<LudoBoard3DProps> = ({
           onClick={() => {
             playSoundFX.playHop();
             if (threeRef.current) {
-              threeRef.current.orbitAngle.radius = Math.max(7.5, threeRef.current.orbitAngle.radius - 1.8);
+              threeRef.current.orbitAngle.radius = Math.max(11.0, threeRef.current.orbitAngle.radius - 2.0);
             }
           }}
           className="w-7 h-7 rounded-full hover:bg-white/20 text-slate-200 hover:text-white flex items-center justify-center transition-all cursor-pointer"
@@ -1009,7 +1054,7 @@ export const LudoBoard3D: React.FC<LudoBoard3DProps> = ({
           onClick={() => {
             playSoundFX.playHop();
             if (threeRef.current) {
-              threeRef.current.orbitAngle.radius = Math.min(19, threeRef.current.orbitAngle.radius + 1.8);
+              threeRef.current.orbitAngle.radius = Math.min(26.0, threeRef.current.orbitAngle.radius + 2.0);
             }
           }}
           className="w-7 h-7 rounded-full hover:bg-white/20 text-slate-200 hover:text-white flex items-center justify-center transition-all cursor-pointer"
@@ -1024,13 +1069,13 @@ export const LudoBoard3D: React.FC<LudoBoard3DProps> = ({
             playSoundFX.playHop();
             if (threeRef.current) {
               threeRef.current.orbitAngle.theta = 0;
-              threeRef.current.orbitAngle.phi = 0.95;
-              threeRef.current.orbitAngle.radius = 13.5;
+              threeRef.current.orbitAngle.phi = 0.96;
+              threeRef.current.orbitAngle.radius = 17.5;
               setCameraPreset('isometric');
             }
           }}
           className="w-7 h-7 rounded-full hover:bg-white/20 text-slate-200 hover:text-white flex items-center justify-center transition-all cursor-pointer"
-          title="Réinitialiser la vue et le zoom"
+          title="Réinitialiser la vue et le cadrage"
         >
           <RotateCw className="w-3.5 h-3.5" />
         </button>
