@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useGame } from '../../context/GameContext';
 import { LudoGameState, LudoPawn } from '../../types/game';
-import { Clock, Trophy, Sparkles, Shield, Crown, Box, Layers } from 'lucide-react';
+import { Clock, Trophy, Sparkles, Shield, Crown, Box, Layers, Palette, X } from 'lucide-react';
 import { playCamera, CameraState } from '../../engine/PlayCamera';
 import { playParticles } from '../../engine/PlayParticleEngine';
 import { playSoundFX } from '../../engine/PlaySoundFX';
@@ -62,6 +62,7 @@ export const LudoBoardTV: React.FC = () => {
   const [cameraState, setCameraState] = useState<CameraState>(playCamera.getState());
   const [isRollingAnimation, setIsRollingAnimation] = useState(false);
   const [animatedDiceVal, setAnimatedDiceVal] = useState<number | null>(null);
+  const [showRulesModal, setShowRulesModal] = useState<boolean>(false);
 
   // 3D View Mode State
   const [is3DMode, setIs3DMode] = useState<boolean>(() => {
@@ -115,15 +116,11 @@ export const LudoBoardTV: React.FC = () => {
   useEffect(() => {
     if (!gameState) return;
 
-    // Detect new dice roll
     if (gameState.diceValue !== null && !gameState.canRollDice) {
       setIsRollingAnimation(true);
       playSoundFX.playDiceRoll();
-
-      // Trigger 3D Dice roll camera focus
       playCamera.focusDice(300, 300);
 
-      // Fast tumbling animation on TV
       let count = 0;
       const diceInterval = setInterval(() => {
         setAnimatedDiceVal(Math.floor(Math.random() * 6) + 1);
@@ -150,7 +147,6 @@ export const LudoBoardTV: React.FC = () => {
       }, 70);
     }
 
-    // Detect capture or home entrance in action logs
     if (gameState.lastActionLog && gameState.lastActionLog !== prevActionLogRef.current) {
       prevActionLogRef.current = gameState.lastActionLog;
 
@@ -175,7 +171,6 @@ export const LudoBoardTV: React.FC = () => {
       }
     }
 
-    // Winner detection
     if (gameState.winner) {
       playCamera.victoryPanorama();
       if (!is3DMode) {
@@ -192,7 +187,6 @@ export const LudoBoardTV: React.FC = () => {
   const activeSkin = theme.pawnSkins[activeColor] || theme.pawnSkins.red;
   const activePlayer = room?.players.find((p) => p.color === activeColor);
 
-  // Position resolver for 2D pawns
   const getPawnPixelPosition = (pawn: LudoPawn): { x: number; y: number } => {
     if (pawn.isFinished) return { x: 300, y: 300 };
     if (pawn.isHome) {
@@ -221,174 +215,11 @@ export const LudoBoardTV: React.FC = () => {
   });
 
   return (
-    <div className={`relative w-full h-full flex items-center justify-between px-4 lg:px-8 py-2 select-none overflow-hidden bg-gradient-to-br ${theme.bgGradient} transition-colors duration-1000`}>
-      {/* Left HUD: Active Turn Card, 3D Toggle & Roll Box */}
-      <div className={`${is3DMode ? 'w-[245px] lg:w-[260px]' : 'w-[280px]'} flex flex-col justify-between h-[90vh] py-2 z-20 transition-all duration-300`}>
-        <div className="space-y-2.5">
-          {/* Header & Controls: 3D Toggle + Theme Switcher */}
-          <div className="flex items-center justify-between">
-            {/* 3D Mode Toggle Button */}
-            <button
-              onClick={handleToggle3D}
-              className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-xl border text-xs font-black transition-all shadow-md active:scale-95 cursor-pointer ${
-                is3DMode
-                  ? 'bg-gradient-to-r from-amber-400 to-amber-500 text-neutral-950 border-amber-300 shadow-[0_0_15px_rgba(245,158,11,0.45)] scale-105'
-                  : 'bg-white/10 hover:bg-white/20 text-white border-white/20'
-              }`}
-              title="Basculer entre l'interface 3D et 2D"
-            >
-              <Box className="w-3.5 h-3.5" />
-              <span>{is3DMode ? 'VUE 3D' : 'VUE 2D'}</span>
-            </button>
-
-            {/* Quick Theme Cycle Button */}
-            <button
-              onClick={() => {
-                const themeKeys: GameThemeId[] = ['volcano', 'ice', 'galaxy', 'jungle_congo', 'desert', 'classic_royal'];
-                const nextIdx = (themeKeys.indexOf(currentTheme) + 1) % themeKeys.length;
-                setCurrentTheme(themeKeys[nextIdx]);
-                playSoundFX.playHop();
-              }}
-              className="flex items-center space-x-1.5 px-2.5 py-1 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-xs font-bold text-brand-gold transition-all cursor-pointer"
-            >
-              <span>{theme.emoji}</span>
-              <span className="text-[10px]">{theme.name}</span>
-            </button>
-          </div>
-
-          <h1 className="text-xl lg:text-2xl font-black font-display text-white tracking-tight leading-none">
-            TOUR DE :
-          </h1>
-
-          {/* Active Player Card with 2.5D Glow */}
-          <div className={`p-3.5 rounded-3xl border-2 transition-all bg-surface-card/90 backdrop-blur-xl ${activeSkin.glow} border-white/30 flex items-center space-x-3`}>
-            <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-white/20 to-white/5 border-2 border-white flex items-center justify-center font-black text-white text-base shadow-lg">
-              {activePlayer?.name?.charAt(0) || activeColor.charAt(0).toUpperCase()}
-            </div>
-            <div className="flex-1 overflow-hidden">
-              <span className="text-[10px] font-black uppercase tracking-wider text-brand-gold">
-                ÉLÉMENT {activeSkin.name.toUpperCase()}
-              </span>
-              <h2 className="text-sm lg:text-base font-black text-white truncate">
-                {activePlayer?.name || `Joueur ${activeColor.toUpperCase()}`}
-              </h2>
-            </div>
-          </div>
-
-          {/* Rolling Dice Showcase */}
-          <div className="p-3.5 rounded-3xl bg-surface-card/85 border border-white/15 backdrop-blur-xl flex flex-col items-center justify-center space-y-1.5">
-            <span className="text-[10px] font-black uppercase tracking-wider text-gray-400">DÉ DU JOUEUR</span>
-            
-            <div className={`relative w-18 h-18 lg:w-20 lg:h-20 rounded-3xl bg-gradient-to-br from-white via-gray-100 to-gray-300 text-gray-950 font-display font-black text-4xl lg:text-5xl flex items-center justify-center shadow-[0_15px_30px_rgba(0,0,0,0.6),inset_0_-4px_8px_rgba(0,0,0,0.2)] border-4 border-white transition-all transform ${
-              isRollingAnimation ? 'animate-spin-slow scale-110' : ''
-            }`}>
-              {animatedDiceVal !== null ? animatedDiceVal : (gameState.diceValue !== null ? gameState.diceValue : '?')}
-
-              {/* 6 Bonus Star Aura */}
-              {(animatedDiceVal === 6 || gameState.diceValue === 6) && (
-                <div className="absolute -top-2 -right-2 w-7 h-7 rounded-full bg-brand-gold text-gray-900 text-xs font-black flex items-center justify-center shadow-glow-gold animate-bounce">
-                  ★
-                </div>
-              )}
-            </div>
-
-            <div className="flex items-center space-x-1 text-xs text-gray-400">
-              <Clock className="w-3.5 h-3.5 text-brand-gold" />
-              <span>Temps : <strong className="text-white font-mono">{gameState.turnTimeLeft}s</strong></span>
-            </div>
-          </div>
-        </div>
-
-        {/* Player Progress Summary */}
-        <div className="p-3 rounded-3xl bg-surface-card/85 border border-white/15 space-y-1.5">
-          <div className="flex items-center justify-between text-xs font-black uppercase tracking-wider text-gray-400">
-            <span>PIONS EN MAISON</span>
-            <Trophy className="w-4 h-4 text-brand-gold" />
-          </div>
-
-          <div className="space-y-1">
-            {gameState.players.map((col) => {
-              const skin = theme.pawnSkins[col] || theme.pawnSkins.red;
-              const pawns = gameState.pawns[col] || [];
-              const finishedCount = pawns.filter((p) => p.isFinished).length;
-              const isCurrent = col === activeColor;
-
-              return (
-                <div
-                  key={col}
-                  className={`flex items-center justify-between p-1.5 px-2 rounded-2xl border transition-all ${
-                    isCurrent
-                      ? `bg-surface-light border-2 border-white shadow-md scale-102`
-                      : 'bg-surface-dark/60 border-white/5 opacity-80'
-                  }`}
-                >
-                  <span className="text-xs font-black text-white capitalize">{skin.name}</span>
-                  <div className="flex items-center space-x-1">
-                    {Array.from({ length: 4 }).map((_, i) => (
-                      <div
-                        key={i}
-                        className={`w-2.5 h-2.5 rounded-full border ${
-                          i < finishedCount
-                            ? 'bg-brand-gold border-white shadow-glow-gold'
-                            : 'bg-surface-light border-white/20'
-                        }`}
-                      />
-                    ))}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Live Action Ticker */}
-        <div className="p-2.5 rounded-2xl bg-surface-card/75 border border-white/10 text-xs">
-          <div className="flex items-center space-x-1.5 text-brand-gold font-bold mb-0.5">
-            <Sparkles className="w-3.5 h-3.5" />
-            <span className="text-[10px] font-black uppercase">ÉVÉNEMENTS</span>
-          </div>
-          <p className="text-gray-300 text-xs font-medium italic truncate">
-            "{gameState.lastActionLog || 'À vos marques !'}"
-          </p>
-        </div>
-      </div>
-
-      {/* Center Grand Format Board Stage (3D vs 2D) */}
-      <div className={`relative aspect-square flex items-center justify-center transition-all duration-300 ${
-        is3DMode
-          ? 'w-[920px] h-[920px] max-w-[68vw] max-h-[95vh]'
-          : 'w-[680px] h-[680px] max-w-[54vw] max-h-[88vh]'
-      }`}>
-        {/* Floating Quick View Switcher at Top of Board */}
-        <div className="absolute top-2 right-4 z-40 flex items-center space-x-1 bg-neutral-900/85 backdrop-blur-md px-2.5 py-1 rounded-full border border-white/15 shadow-xl">
-          <button
-            onClick={handleToggle3D}
-            className={`flex items-center space-x-1.5 text-xs font-black px-3 py-1 rounded-full transition-all cursor-pointer ${
-              is3DMode
-                ? 'bg-amber-400 text-neutral-950 shadow-md font-black'
-                : 'text-slate-400 hover:text-white'
-            }`}
-            title="Activer la vue 3D agrandie"
-          >
-            <Box className="w-3.5 h-3.5" />
-            <span>Mode 3D</span>
-          </button>
-          <button
-            onClick={handleToggle3D}
-            className={`flex items-center space-x-1.5 text-xs font-black px-3 py-1 rounded-full transition-all cursor-pointer ${
-              !is3DMode
-                ? 'bg-white text-neutral-950 shadow-md font-black'
-                : 'text-slate-400 hover:text-white'
-            }`}
-            title="Activer la vue 2D classique"
-          >
-            <Layers className="w-3.5 h-3.5" />
-            <span>Mode 2D</span>
-          </button>
-        </div>
-
-        {is3DMode ? (
-          /* 3D Realistic Three.js Interactive Grand-Format Board */
+    <div className={`relative w-full h-screen select-none overflow-hidden bg-gradient-to-br ${theme.bgGradient} transition-colors duration-1000`}>
+      {/* ── 1. GRANDE ZONE DE JEU PLEIN ÉCRAN (3D ou 2D) ── */}
+      {is3DMode ? (
+        /* 3D Realistic Three.js Interactive Full-Screen Board */
+        <div className="absolute inset-0 w-full h-full z-0">
           <LudoBoard3D
             gameState={gameState}
             currentTheme={currentTheme}
@@ -398,233 +229,364 @@ export const LudoBoardTV: React.FC = () => {
               sendGameAction('ludo_move_pawn', { pawnId });
             }}
           />
-        ) : (
-          /* 2D Classic Vector Board */
-          <>
-            {/* Particle Canvas Overlay Layer */}
-            <canvas
-              ref={particleCanvasRef}
-              width={700}
-              height={700}
-              className="absolute inset-0 w-full h-full pointer-events-none z-30"
-            />
+        </div>
+      ) : (
+        /* 2D Classic Vector Board Grand Format */
+        <div className="absolute inset-0 w-full h-full flex items-center justify-center z-0 pt-8 pb-10">
+          <canvas
+            ref={particleCanvasRef}
+            width={720}
+            height={720}
+            className="absolute inset-0 w-full h-full pointer-events-none z-30"
+          />
 
-            {/* Solid 2D Board Stage */}
-            <div className="relative w-[600px] h-[600px] rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.8)] border-[10px] border-[#181D2E] bg-white">
-              <svg viewBox="0 0 600 600" className="w-full h-full rounded-2xl overflow-visible bg-white">
-                <defs>
-                  {/* Radial 3D Pawn Gradients for each Theme */}
-                  <radialGradient id="volcano-red" cx="35%" cy="35%" r="65%">
-                    <stop offset="0%" stopColor="#FFA0A0" />
-                    <stop offset="45%" stopColor="#FF3B30" />
-                    <stop offset="100%" stopColor="#7A0B05" />
-                  </radialGradient>
-                  <radialGradient id="volcano-green" cx="35%" cy="35%" r="65%">
-                    <stop offset="0%" stopColor="#85FFA8" />
-                    <stop offset="45%" stopColor="#30D158" />
-                    <stop offset="100%" stopColor="#0B5C20" />
-                  </radialGradient>
-                  <radialGradient id="volcano-yellow" cx="35%" cy="35%" r="65%">
-                    <stop offset="0%" stopColor="#FFF4A0" />
-                    <stop offset="45%" stopColor="#FFD60A" />
-                    <stop offset="100%" stopColor="#7A6000" />
-                  </radialGradient>
-                  <radialGradient id="volcano-blue" cx="35%" cy="35%" r="65%">
-                    <stop offset="0%" stopColor="#AEE9FF" />
-                    <stop offset="45%" stopColor="#64D2FF" />
-                    <stop offset="100%" stopColor="#0B4B6E" />
-                  </radialGradient>
-                </defs>
+          <div className="relative w-[680px] h-[680px] max-w-[85vw] max-h-[82vh] aspect-square rounded-3xl shadow-[0_25px_60px_rgba(0,0,0,0.85)] border-[10px] border-[#181D2E] bg-white">
+            <svg viewBox="0 0 600 600" className="w-full h-full rounded-2xl overflow-visible bg-white">
+              <defs>
+                <radialGradient id="volcano-red" cx="35%" cy="35%" r="65%">
+                  <stop offset="0%" stopColor="#FFA0A0" />
+                  <stop offset="45%" stopColor="#FF3B30" />
+                  <stop offset="100%" stopColor="#7A0B05" />
+                </radialGradient>
+                <radialGradient id="volcano-green" cx="35%" cy="35%" r="65%">
+                  <stop offset="0%" stopColor="#85FFA8" />
+                  <stop offset="45%" stopColor="#30D158" />
+                  <stop offset="100%" stopColor="#0B5C20" />
+                </radialGradient>
+                <radialGradient id="volcano-yellow" cx="35%" cy="35%" r="65%">
+                  <stop offset="0%" stopColor="#FFF4A0" />
+                  <stop offset="45%" stopColor="#FFD60A" />
+                  <stop offset="100%" stopColor="#7A6000" />
+                </radialGradient>
+                <radialGradient id="volcano-blue" cx="35%" cy="35%" r="65%">
+                  <stop offset="0%" stopColor="#AEE9FF" />
+                  <stop offset="45%" stopColor="#64D2FF" />
+                  <stop offset="100%" stopColor="#0B4B6E" />
+                </radialGradient>
+              </defs>
 
-                {/* Board Background */}
-                <rect x="0" y="0" width="600" height="600" fill="#FFFFFF" />
+              <rect x="0" y="0" width="600" height="600" fill="#FFFFFF" />
 
-                {/* 1. Four Bases */}
-                {/* Red Base (Top-Left) */}
-                <rect x="0" y="0" width="240" height="240" fill={theme.pawnSkins.red.accent} stroke="#000000" strokeWidth="2" />
-                <rect x="40" y="40" width="160" height="160" fill="#FFFFFF" stroke="#000000" strokeWidth="2" />
-                {BASE_NESTS.red.map((nest, i) => (
-                  <circle key={`red_nest_${i}`} cx={nest.x} cy={nest.y} r="20" fill={theme.pawnSkins.red.accent} stroke="#000000" strokeWidth="2" />
-                ))}
+              {/* Red Base */}
+              <rect x="0" y="0" width="240" height="240" fill={theme.pawnSkins.red.accent} stroke="#000000" strokeWidth="2" />
+              <rect x="40" y="40" width="160" height="160" fill="#FFFFFF" stroke="#000000" strokeWidth="2" />
+              {BASE_NESTS.red.map((nest, i) => (
+                <circle key={`red_nest_${i}`} cx={nest.x} cy={nest.y} r="20" fill={theme.pawnSkins.red.accent} stroke="#000000" strokeWidth="2" />
+              ))}
 
-                {/* Green Base (Top-Right) */}
-                <rect x="360" y="0" width="240" height="240" fill={theme.pawnSkins.green.accent} stroke="#000000" strokeWidth="2" />
-                <rect x="400" y="40" width="160" height="160" fill="#FFFFFF" stroke="#000000" strokeWidth="2" />
-                {BASE_NESTS.green.map((nest, i) => (
-                  <circle key={`green_nest_${i}`} cx={nest.x} cy={nest.y} r="20" fill={theme.pawnSkins.green.accent} stroke="#000000" strokeWidth="2" />
-                ))}
+              {/* Green Base */}
+              <rect x="360" y="0" width="240" height="240" fill={theme.pawnSkins.green.accent} stroke="#000000" strokeWidth="2" />
+              <rect x="400" y="40" width="160" height="160" fill="#FFFFFF" stroke="#000000" strokeWidth="2" />
+              {BASE_NESTS.green.map((nest, i) => (
+                <circle key={`green_nest_${i}`} cx={nest.x} cy={nest.y} r="20" fill={theme.pawnSkins.green.accent} stroke="#000000" strokeWidth="2" />
+              ))}
 
-                {/* Blue Base (Bottom-Left) */}
-                <rect x="0" y="360" width="240" height="240" fill={theme.pawnSkins.blue.accent} stroke="#000000" strokeWidth="2" />
-                <rect x="40" y="400" width="160" height="160" fill="#FFFFFF" stroke="#000000" strokeWidth="2" />
-                {BASE_NESTS.blue.map((nest, i) => (
-                  <circle key={`blue_nest_${i}`} cx={nest.x} cy={nest.y} r="20" fill={theme.pawnSkins.blue.accent} stroke="#000000" strokeWidth="2" />
-                ))}
+              {/* Blue Base */}
+              <rect x="0" y="360" width="240" height="240" fill={theme.pawnSkins.blue.accent} stroke="#000000" strokeWidth="2" />
+              <rect x="40" y="400" width="160" height="160" fill="#FFFFFF" stroke="#000000" strokeWidth="2" />
+              {BASE_NESTS.blue.map((nest, i) => (
+                <circle key={`blue_nest_${i}`} cx={nest.x} cy={nest.y} r="20" fill={theme.pawnSkins.blue.accent} stroke="#000000" strokeWidth="2" />
+              ))}
 
-                {/* Yellow Base (Bottom-Right) */}
-                <rect x="360" y="360" width="240" height="240" fill={theme.pawnSkins.yellow.accent} stroke="#000000" strokeWidth="2" />
-                <rect x="400" y="400" width="160" height="160" fill="#FFFFFF" stroke="#000000" strokeWidth="2" />
-                {BASE_NESTS.yellow.map((nest, i) => (
-                  <circle key={`yellow_nest_${i}`} cx={nest.x} cy={nest.y} r="20" fill={theme.pawnSkins.yellow.accent} stroke="#000000" strokeWidth="2" />
-                ))}
+              {/* Yellow Base */}
+              <rect x="360" y="360" width="240" height="240" fill={theme.pawnSkins.yellow.accent} stroke="#000000" strokeWidth="2" />
+              <rect x="400" y="400" width="160" height="160" fill="#FFFFFF" stroke="#000000" strokeWidth="2" />
+              {BASE_NESTS.yellow.map((nest, i) => (
+                <circle key={`yellow_nest_${i}`} cx={nest.x} cy={nest.y} r="20" fill={theme.pawnSkins.yellow.accent} stroke="#000000" strokeWidth="2" />
+              ))}
 
-                {/* 2. Track Cells with Relief Borders */}
-                {TRACK_COORDS.map((coord, idx) => {
-                  let cellBg = '#FFFFFF';
-                  if (idx === 0) cellBg = theme.pawnSkins.red.accent;
-                  else if (idx === 13) cellBg = theme.pawnSkins.green.accent;
-                  else if (idx === 26) cellBg = theme.pawnSkins.yellow.accent;
-                  else if (idx === 39) cellBg = theme.pawnSkins.blue.accent;
+              {/* Track Cells */}
+              {TRACK_COORDS.map((coord, idx) => {
+                let cellBg = '#FFFFFF';
+                if (idx === 0) cellBg = theme.pawnSkins.red.accent;
+                else if (idx === 13) cellBg = theme.pawnSkins.green.accent;
+                else if (idx === 26) cellBg = theme.pawnSkins.yellow.accent;
+                else if (idx === 39) cellBg = theme.pawnSkins.blue.accent;
 
-                  return (
-                    <rect
-                      key={`track_cell_${idx}`}
-                      x={coord.x - CELL_SIZE / 2}
-                      y={coord.y - CELL_SIZE / 2}
-                      width={CELL_SIZE}
-                      height={CELL_SIZE}
-                      fill={cellBg}
-                      stroke="#000000"
-                      strokeWidth="1.5"
-                    />
-                  );
-                })}
+                return (
+                  <rect
+                    key={`track_cell_${idx}`}
+                    x={coord.x - CELL_SIZE / 2}
+                    y={coord.y - CELL_SIZE / 2}
+                    width={CELL_SIZE}
+                    height={CELL_SIZE}
+                    fill={cellBg}
+                    stroke="#000000"
+                    strokeWidth="1.5"
+                  />
+                );
+              })}
 
-                {/* 3. Home Stretch Columns */}
-                {Object.entries(HOME_STRETCH_COORDS).map(([color, coords]) => {
-                  const skin = theme.pawnSkins[color as keyof typeof theme.pawnSkins] || theme.pawnSkins.red;
-                  return (
-                    <g key={`stretch_${color}`}>
-                      {coords.map((coord, idx) => (
-                        <rect
-                          key={`stretch_${color}_${idx}`}
-                          x={coord.x - CELL_SIZE / 2}
-                          y={coord.y - CELL_SIZE / 2}
-                          width={CELL_SIZE}
-                          height={CELL_SIZE}
-                          fill={skin.accent}
-                          stroke="#000000"
-                          strokeWidth="1.5"
-                        />
-                      ))}
-                    </g>
-                  );
-                })}
+              {/* Home Stretch Columns */}
+              {Object.entries(HOME_STRETCH_COORDS).map(([color, coords]) => {
+                const skin = theme.pawnSkins[color as keyof typeof theme.pawnSkins] || theme.pawnSkins.red;
+                return (
+                  <g key={`stretch_${color}`}>
+                    {coords.map((coord, idx) => (
+                      <rect
+                        key={`stretch_${color}_${idx}`}
+                        x={coord.x - CELL_SIZE / 2}
+                        y={coord.y - CELL_SIZE / 2}
+                        width={CELL_SIZE}
+                        height={CELL_SIZE}
+                        fill={skin.accent}
+                        stroke="#000000"
+                        strokeWidth="1.5"
+                      />
+                    ))}
+                  </g>
+                );
+              })}
 
-                {/* 4. Central Goal Triangles */}
-                <polygon points="240,240 300,300 240,360" fill={theme.pawnSkins.red.accent} stroke="#000000" strokeWidth="1.5" />
-                <polygon points="240,240 360,240 300,300" fill={theme.pawnSkins.green.accent} stroke="#000000" strokeWidth="1.5" />
-                <polygon points="360,240 360,360 300,300" fill={theme.pawnSkins.yellow.accent} stroke="#000000" strokeWidth="1.5" />
-                <polygon points="240,360 360,360 300,300" fill={theme.pawnSkins.blue.accent} stroke="#000000" strokeWidth="1.5" />
+              {/* Central Goal Triangles */}
+              <polygon points="240,240 300,300 240,360" fill={theme.pawnSkins.red.accent} stroke="#000000" strokeWidth="1.5" />
+              <polygon points="240,240 360,240 300,300" fill={theme.pawnSkins.green.accent} stroke="#000000" strokeWidth="1.5" />
+              <polygon points="360,240 360,360 300,300" fill={theme.pawnSkins.yellow.accent} stroke="#000000" strokeWidth="1.5" />
+              <polygon points="240,360 360,360 300,300" fill={theme.pawnSkins.blue.accent} stroke="#000000" strokeWidth="1.5" />
 
-                {/* 5. 2D Pawns */}
-                {renderedPawns.map(({ pawn, x, y, isMovable }) => {
-                  const skin = theme.pawnSkins[pawn.color as keyof typeof theme.pawnSkins] || theme.pawnSkins.red;
-                  return (
-                    <g
-                      key={`pawn_${pawn.color}_${pawn.id}`}
-                      style={{
-                        transform: `translate(${x}px, ${y}px)`,
-                        transition: 'transform 0.55s cubic-bezier(0.34, 1.45, 0.64, 1)',
-                      }}
-                      className="cursor-pointer"
-                      onClick={() => {
-                        if (isMovable) {
-                          playSoundFX.playHop();
-                          sendGameAction('ludo_move_pawn', { pawnId: pawn.id });
-                        }
-                      }}
-                    >
-                      {/* Dynamic Shadow on Ground */}
-                      <ellipse cx="0" cy="12" rx="15" ry="5.5" fill="#000000" opacity="0.6" />
-
-                      {/* Pulsing Selection Aura if movable */}
-                      {isMovable && (
-                        <circle
-                          cx="0"
-                          cy="0"
-                          r="22"
-                          fill="none"
-                          stroke="#FFD100"
-                          strokeWidth="3.5"
-                          strokeDasharray="5 3"
-                          className="animate-spin"
-                          style={{ animationDuration: '3s' }}
-                        />
-                      )}
-
-                      {/* Glossy Pawn Body */}
+              {/* 2D Pawns */}
+              {renderedPawns.map(({ pawn, x, y, isMovable }) => {
+                const skin = theme.pawnSkins[pawn.color as keyof typeof theme.pawnSkins] || theme.pawnSkins.red;
+                return (
+                  <g
+                    key={`pawn_${pawn.color}_${pawn.id}`}
+                    style={{
+                      transform: `translate(${x}px, ${y}px)`,
+                      transition: 'transform 0.55s cubic-bezier(0.34, 1.45, 0.64, 1)',
+                    }}
+                    className="cursor-pointer"
+                    onClick={() => {
+                      if (isMovable) {
+                        playSoundFX.playHop();
+                        sendGameAction('ludo_move_pawn', { pawnId: pawn.id });
+                      }
+                    }}
+                  >
+                    <ellipse cx="0" cy="12" rx="15" ry="5.5" fill="#000000" opacity="0.6" />
+                    {isMovable && (
                       <circle
                         cx="0"
                         cy="0"
-                        r="15"
-                        fill={skin.accent}
-                        stroke="#FFFFFF"
-                        strokeWidth="2.5"
+                        r="22"
+                        fill="none"
+                        stroke="#FFD100"
+                        strokeWidth="3.5"
+                        strokeDasharray="5 3"
+                        className="animate-spin"
+                        style={{ animationDuration: '3s' }}
                       />
-
-                      {/* Specular Highlight */}
-                      <circle cx="-4" cy="-5" r="4" fill="#FFFFFF" opacity="0.75" />
-
-                      {/* Pawn Number */}
-                      <text
-                        x="0"
-                        y="4"
-                        textAnchor="middle"
-                        fill="#FFFFFF"
-                        fontSize="11"
-                        fontWeight="900"
-                        fontFamily="sans-serif"
-                      >
-                        {pawn.id + 1}
-                      </text>
-                    </g>
-                  );
-                })}
-              </svg>
-            </div>
-          </>
-        )}
-      </div>
-
-      {/* Right HUD: Rules & Victory Overlay */}
-      <div className={`${is3DMode ? 'w-[245px] lg:w-[260px]' : 'w-[280px]'} flex flex-col justify-between h-[90vh] py-2 z-20 transition-all duration-300`}>
-        <div className="p-4 lg:p-5 rounded-3xl bg-surface-card/85 border border-white/15 backdrop-blur-xl space-y-2.5">
-          <div className="flex items-center space-x-2 text-xs font-black uppercase tracking-wider text-brand-cyan">
-            <Shield className="w-4 h-4" />
-            <span>RÈGLES OFFICIELLES</span>
+                    )}
+                    <circle cx="0" cy="0" r="15" fill={skin.accent} stroke="#FFFFFF" strokeWidth="2.5" />
+                    <circle cx="-4" cy="-5" r="4" fill="#FFFFFF" opacity="0.75" />
+                    <text x="0" y="4" textAnchor="middle" fill="#FFFFFF" fontSize="11" fontWeight="900" fontFamily="sans-serif">
+                      {pawn.id + 1}
+                    </text>
+                  </g>
+                );
+              })}
+            </svg>
           </div>
-          <ul className="text-[11px] lg:text-xs text-gray-300 space-y-2 leading-relaxed">
-            <li className="flex items-start space-x-1.5">
-              <span className="text-brand-gold font-bold">•</span>
-              <span>Faites un <strong>6</strong> pour sortir un pion et rejouer.</span>
-            </li>
-            <li className="flex items-start space-x-2">
-              <span className="text-brand-gold font-bold">•</span>
-              <span>Parcourez les <strong>52 cases</strong> dans le sens horaire.</span>
-            </li>
-            <li className="flex items-start space-x-2">
-              <span className="text-brand-gold font-bold">•</span>
-              <span>Capturer un pion adverse vous donne un <strong>re-roll bonus</strong> !</span>
-            </li>
-            <li className="flex items-start space-x-2">
-              <span className="text-brand-gold font-bold">•</span>
-              <span>Rentrez vos <strong>4 pions</strong> au centre pour gagner !</span>
-            </li>
-          </ul>
+        </div>
+      )}
+
+      {/* ── 2. BARRE SUPÉRIEURE FLOTTANTE MODERNE (GLASSMORPHISM CONSOLE) ── */}
+      <header className="fixed top-3 left-4 right-4 z-30 flex items-center justify-between pointer-events-none gap-3">
+        {/* Left: Active Player Banner + Turn Countdown */}
+        <div className="pointer-events-auto flex items-center space-x-3 bg-black/70 backdrop-blur-xl border border-white/20 px-4 py-2.5 rounded-2xl shadow-2xl">
+          <div className="relative">
+            <div className={`w-11 h-11 rounded-xl bg-gradient-to-tr from-white/20 to-white/5 border-2 border-white flex items-center justify-center font-black text-white text-base shadow-md ${activeSkin.glow}`}>
+              {activePlayer?.name?.charAt(0) || activeColor.charAt(0).toUpperCase()}
+            </div>
+            <span className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-emerald-400 border-2 border-black animate-pulse" />
+          </div>
+
+          <div>
+            <div className="flex items-center space-x-2">
+              <span className="text-[10px] font-black uppercase tracking-wider text-amber-400">
+                TOUR DE :
+              </span>
+              <span className="text-xs font-mono font-bold text-amber-300 flex items-center space-x-1">
+                <Clock className="w-3 h-3 inline text-amber-400" />
+                <span>{gameState.turnTimeLeft}s</span>
+              </span>
+            </div>
+            <h2 className="text-sm sm:text-base font-black text-white truncate max-w-[140px] sm:max-w-[200px]">
+              {activePlayer?.name || `Joueur ${activeColor.toUpperCase()}`}
+            </h2>
+          </div>
         </div>
 
-        {/* Victory Celebration Modal */}
-        {gameState.winner && (
-          <div className="p-5 lg:p-6 rounded-3xl bg-gradient-to-br from-amber-500 to-yellow-600 text-gray-900 shadow-2xl flex flex-col items-center text-center space-y-3 animate-scale-in">
-            <Crown className="w-9 h-9 lg:w-10 lg:h-10 text-white animate-bounce" />
-            <h3 className="text-xl lg:text-2xl font-black font-display">VICTOIRE !</h3>
-            <p className="text-xs font-bold uppercase tracking-wider">
+        {/* Center: Live Action Ticker & Dice Preview */}
+        <div className="pointer-events-auto hidden md:flex items-center space-x-3 bg-black/70 backdrop-blur-xl border border-white/20 px-4 py-2 rounded-2xl shadow-2xl max-w-md">
+          {/* 3D Dice Showcase */}
+          <div className="relative shrink-0">
+            <div className={`w-10 h-10 rounded-xl bg-white text-neutral-950 font-display font-black text-2xl flex items-center justify-center border-2 border-amber-300 shadow-lg ${
+              isRollingAnimation ? 'animate-spin-slow' : ''
+            }`}>
+              {animatedDiceVal !== null ? animatedDiceVal : (gameState.diceValue !== null ? gameState.diceValue : '?')}
+            </div>
+            {(animatedDiceVal === 6 || gameState.diceValue === 6) && (
+              <span className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-amber-400 text-neutral-950 text-[10px] font-black flex items-center justify-center shadow-md animate-bounce">
+                ★
+              </span>
+            )}
+          </div>
+
+          <div className="truncate text-xs">
+            <span className="text-[10px] font-black uppercase text-amber-400 block mb-0.5">
+              ACTION EN COURS
+            </span>
+            <p className="text-slate-200 font-medium truncate">
+              {gameState.lastActionLog || 'À vos marques !'}
+            </p>
+          </div>
+        </div>
+
+        {/* Right: Controls Capsule (3D/2D Toggle, Theme, Rules) */}
+        <div className="pointer-events-auto flex items-center space-x-2 bg-black/70 backdrop-blur-xl border border-white/20 p-1.5 px-2.5 rounded-2xl shadow-2xl">
+          {/* Mode 3D / 2D Button */}
+          <button
+            onClick={handleToggle3D}
+            className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-xl border text-xs font-black transition-all shadow-md active:scale-95 cursor-pointer ${
+              is3DMode
+                ? 'bg-gradient-to-r from-amber-400 to-amber-500 text-neutral-950 border-amber-300 shadow-[0_0_15px_rgba(245,158,11,0.5)] font-black scale-102'
+                : 'bg-white/10 hover:bg-white/20 text-white border-white/20'
+            }`}
+            title="Basculer entre l'interface 3D et 2D"
+          >
+            {is3DMode ? <Box className="w-4 h-4" /> : <Layers className="w-4 h-4" />}
+            <span>{is3DMode ? '3D' : '2D'}</span>
+          </button>
+
+          {/* Theme Cycler */}
+          <button
+            onClick={() => {
+              const themeKeys: GameThemeId[] = ['volcano', 'ice', 'galaxy', 'jungle_congo', 'desert', 'classic_royal'];
+              const nextIdx = (themeKeys.indexOf(currentTheme) + 1) % themeKeys.length;
+              setCurrentTheme(themeKeys[nextIdx]);
+              playSoundFX.playHop();
+            }}
+            className="flex items-center space-x-1 px-2.5 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-xs font-bold text-amber-300 transition-all cursor-pointer"
+            title="Changer de thème"
+          >
+            <span>{theme.emoji}</span>
+            <span className="hidden sm:inline text-[11px]">{theme.name}</span>
+          </button>
+
+          {/* Rules Button */}
+          <button
+            onClick={() => setShowRulesModal(!showRulesModal)}
+            className="p-1.5 rounded-xl hover:bg-white/20 text-slate-300 hover:text-white transition-all cursor-pointer border border-transparent hover:border-white/20"
+            title="Afficher les règles"
+          >
+            <Shield className="w-4 h-4" />
+          </button>
+        </div>
+      </header>
+
+      {/* ── 3. PODIUMS JOUEURS FLOTTANTS EN BAS (MINI-CHIPS) ── */}
+      <footer className="fixed bottom-3 left-4 right-4 z-20 pointer-events-none flex items-center justify-between gap-2 overflow-x-auto pb-1">
+        <div className="pointer-events-auto flex items-center space-x-2 bg-black/75 backdrop-blur-xl border border-white/15 p-2 rounded-2xl shadow-2xl mx-auto">
+          {gameState.players.map((col) => {
+            const skin = theme.pawnSkins[col] || theme.pawnSkins.red;
+            const pawns = gameState.pawns[col] || [];
+            const finishedCount = pawns.filter((p) => p.isFinished).length;
+            const isCurrent = col === activeColor;
+            const pl = room?.players.find((p) => p.color === col);
+
+            return (
+              <div
+                key={col}
+                className={`flex items-center space-x-2 px-3 py-1.5 rounded-xl border transition-all ${
+                  isCurrent
+                    ? 'bg-white/15 border-amber-400 text-white shadow-[0_0_15px_rgba(245,158,11,0.35)] scale-105'
+                    : 'bg-black/40 border-white/10 text-slate-400'
+                }`}
+              >
+                <div
+                  className="w-3 h-3 rounded-full shrink-0"
+                  style={{ backgroundColor: skin.accent }}
+                />
+                <span className="text-xs font-black truncate max-w-[90px]">
+                  {pl?.name || skin.name}
+                </span>
+
+                <div className="flex items-center space-x-1 pl-1">
+                  {Array.from({ length: 4 }).map((_, i) => (
+                    <div
+                      key={i}
+                      className={`w-2.5 h-2.5 rounded-full border ${
+                        i < finishedCount
+                          ? 'bg-amber-400 border-white shadow-md'
+                          : 'bg-white/10 border-white/20'
+                      }`}
+                    />
+                  ))}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </footer>
+
+      {/* ── 4. TIROIR MODAL DES RÈGLES OFFICIELLES (À LA DEMANDE) ── */}
+      {showRulesModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md animate-fade-in">
+          <div className="relative w-full max-w-md p-6 rounded-3xl bg-neutral-900 border-2 border-white/20 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between pb-2 border-b border-white/10">
+              <div className="flex items-center space-x-2 text-amber-400 font-display font-black text-lg">
+                <Shield className="w-5 h-5" />
+                <span>RÈGLES DU LUDO</span>
+              </div>
+              <button
+                onClick={() => setShowRulesModal(false)}
+                className="w-8 h-8 rounded-full hover:bg-white/20 text-slate-300 hover:text-white flex items-center justify-center transition-all cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <ul className="text-sm text-slate-200 space-y-3 leading-relaxed">
+              <li className="flex items-start space-x-2.5">
+                <span className="text-amber-400 font-black">•</span>
+                <span>Faites un <strong>6</strong> au dé pour sortir un pion de votre base et rejouer immédiatement.</span>
+              </li>
+              <li className="flex items-start space-x-2.5">
+                <span className="text-amber-400 font-black">•</span>
+                <span>Parcourez les <strong>52 cases</strong> dans le sens des aiguilles d'une montre.</span>
+              </li>
+              <li className="flex items-start space-x-2.5">
+                <span className="text-amber-400 font-black">•</span>
+                <span>Atterrissez sur un pion adverse pour le <strong>capturer</strong> et l'envoyer à sa base (+1 lancer bonus !).</span>
+              </li>
+              <li className="flex items-start space-x-2.5">
+                <span className="text-amber-400 font-black">•</span>
+                <span>Rentrez vos <strong>4 pions</strong> au centre du plateau pour remporter la partie !</span>
+              </li>
+            </ul>
+
+            <button
+              onClick={() => setShowRulesModal(false)}
+              className="w-full py-3 rounded-2xl bg-amber-400 hover:bg-amber-300 text-neutral-950 font-display font-black text-sm uppercase tracking-wider transition-all shadow-lg cursor-pointer"
+            >
+              Compris !
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ── 5. MODALE DE VICTOIRE MONUMENTALE ── */}
+      {gameState.winner && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in">
+          <div className="p-8 rounded-3xl bg-gradient-to-br from-amber-500 via-amber-400 to-yellow-600 text-neutral-950 shadow-2xl flex flex-col items-center text-center space-y-4 max-w-md border-4 border-white animate-scale-in">
+            <Crown className="w-16 h-16 text-neutral-950 animate-bounce" />
+            <h3 className="text-4xl font-black font-display tracking-tight">VICTOIRE !</h3>
+            <p className="text-base font-black uppercase tracking-wider">
               {gameState.winner.toUpperCase()} REMPORTE LA PARTIE !
             </p>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 };

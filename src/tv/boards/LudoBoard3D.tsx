@@ -91,12 +91,12 @@ function createDiceFaceTexture(value: number): THREE.CanvasTexture {
   ctx.fillRect(0, 0, 256, 256);
 
   // Border gradient
-  ctx.lineWidth = 12;
+  ctx.lineWidth = 14;
   ctx.strokeStyle = '#e2e8f0';
-  ctx.strokeRect(6, 6, 244, 244);
+  ctx.strokeRect(7, 7, 242, 242);
 
   // Soft inner shadow vignette
-  const grad = ctx.createRadialGradient(128, 128, 80, 128, 128, 140);
+  const grad = ctx.createRadialGradient(128, 128, 70, 128, 128, 140);
   grad.addColorStop(0, 'rgba(255,255,255,0)');
   grad.addColorStop(1, 'rgba(203,213,225,0.4)');
   ctx.fillStyle = grad;
@@ -106,7 +106,7 @@ function createDiceFaceTexture(value: number): THREE.CanvasTexture {
   const pipColor = value === 1 ? '#ef4444' : '#0f172a';
   ctx.fillStyle = pipColor;
 
-  const pip = (x: number, y: number, r = 24) => {
+  const pip = (x: number, y: number, r = 26) => {
     ctx.beginPath();
     ctx.arc(x, y, r, 0, Math.PI * 2);
     ctx.fill();
@@ -114,7 +114,7 @@ function createDiceFaceTexture(value: number): THREE.CanvasTexture {
     // Dot specular highlight
     ctx.beginPath();
     ctx.arc(x - r * 0.3, y - r * 0.3, r * 0.35, 0, Math.PI * 2);
-    ctx.fillStyle = 'rgba(255,255,255,0.6)';
+    ctx.fillStyle = 'rgba(255,255,255,0.65)';
     ctx.fill();
     ctx.fillStyle = pipColor;
   };
@@ -124,7 +124,7 @@ function createDiceFaceTexture(value: number): THREE.CanvasTexture {
   const r = 188;
 
   if (value === 1) {
-    pip(c, c, 34);
+    pip(c, c, 38);
   } else if (value === 2) {
     pip(l, l);
     pip(r, r);
@@ -144,12 +144,12 @@ function createDiceFaceTexture(value: number): THREE.CanvasTexture {
     pip(l, r);
     pip(r, r);
   } else if (value === 6) {
-    pip(l, 60);
+    pip(l, 58);
     pip(l, 128);
-    pip(l, 196);
-    pip(r, 60);
+    pip(l, 198);
+    pip(r, 58);
     pip(r, 128);
-    pip(r, 196);
+    pip(r, 198);
   }
 
   const texture = new THREE.CanvasTexture(canvas);
@@ -165,14 +165,14 @@ function createStarTexture(): THREE.CanvasTexture {
   const ctx = canvas.getContext('2d')!;
 
   ctx.clearRect(0, 0, 128, 128);
-  ctx.fillStyle = '#f59e0b';
-  ctx.strokeStyle = '#d97706';
-  ctx.lineWidth = 4;
+  ctx.fillStyle = '#fbbf24';
+  ctx.strokeStyle = '#b45309';
+  ctx.lineWidth = 5;
 
   const cx = 64;
   const cy = 64;
   const spikes = 5;
-  const outer = 44;
+  const outer = 46;
   const inner = 20;
 
   let rot = (Math.PI / 2) * 3;
@@ -212,7 +212,6 @@ export const LudoBoard3D: React.FC<LudoBoard3DProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const [cameraPreset, setCameraPreset] = useState<'isometric' | 'top' | 'follow'>('isometric');
 
-  // Internal Three.js state stored in ref
   const threeRef = useRef<{
     scene: THREE.Scene;
     camera: THREE.PerspectiveCamera;
@@ -281,27 +280,27 @@ export const LudoBoard3D: React.FC<LudoBoard3DProps> = ({
   useEffect(() => {
     if (!containerRef.current) return;
     const container = containerRef.current;
-    const width = container.clientWidth || 800;
-    const height = container.clientHeight || 800;
+    const width = container.clientWidth || window.innerWidth;
+    const height = container.clientHeight || window.innerHeight;
 
     // 1. Scene
     const scene = new THREE.Scene();
 
-    // Background color based on theme
+    // Dark luxury background
     const themeBgColors: Record<GameThemeId, number> = {
-      volcano: 0x12080a,
-      ice: 0x06111e,
-      galaxy: 0x040511,
-      jungle_congo: 0x04130a,
-      desert: 0x140e06,
-      classic_royal: 0x0a0c14,
+      volcano: 0x0f0709,
+      ice: 0x050c18,
+      galaxy: 0x03040e,
+      jungle_congo: 0x031008,
+      desert: 0x110c05,
+      classic_royal: 0x080a12,
     };
     scene.background = new THREE.Color(themeBgColors[currentTheme] || 0x07090e);
-    scene.fog = new THREE.FogExp2(scene.background.getHex(), 0.015);
+    scene.fog = new THREE.FogExp2(scene.background.getHex(), 0.012);
 
-    // 2. Camera: Optimized closer distance (radius: 16.5) so board fills the viewport!
-    const camera = new THREE.PerspectiveCamera(40, width / height, 0.1, 100);
-    const initialCamPos = new THREE.Vector3(0, 13.2, 11.5);
+    // 2. Camera: Optimized closer distance (radius: 13.5) for MAXIMAL visibility!
+    const camera = new THREE.PerspectiveCamera(42, width / height, 0.1, 100);
+    const initialCamPos = new THREE.Vector3(0, 10.8, 9.2);
     const initialLookAt = new THREE.Vector3(0, 0, 0);
     camera.position.copy(initialCamPos);
     camera.lookAt(initialLookAt);
@@ -317,61 +316,61 @@ export const LudoBoard3D: React.FC<LudoBoard3DProps> = ({
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.15;
+    renderer.toneMappingExposure = 1.18;
     container.innerHTML = '';
     container.appendChild(renderer.domElement);
 
-    // 4. Lights
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+    // 4. Lights: Vibrant Studio Tabletop Lighting
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.75);
     scene.add(ambientLight);
 
-    const dirLight = new THREE.DirectionalLight(0xfffaed, 1.8);
-    dirLight.position.set(14, 25, 12);
+    const dirLight = new THREE.DirectionalLight(0xfffaea, 2.0);
+    dirLight.position.set(12, 22, 10);
     dirLight.castShadow = true;
     dirLight.shadow.mapSize.width = 2048;
     dirLight.shadow.mapSize.height = 2048;
     dirLight.shadow.camera.near = 0.5;
-    dirLight.shadow.camera.far = 60;
-    dirLight.shadow.camera.left = -12;
-    dirLight.shadow.camera.right = 12;
-    dirLight.shadow.camera.top = 12;
-    dirLight.shadow.camera.bottom = -12;
-    dirLight.shadow.radius = 2.5;
+    dirLight.shadow.camera.far = 50;
+    dirLight.shadow.camera.left = -11;
+    dirLight.shadow.camera.right = 11;
+    dirLight.shadow.camera.top = 11;
+    dirLight.shadow.camera.bottom = -11;
+    dirLight.shadow.radius = 2.2;
     scene.add(dirLight);
 
     // Fill rim light
-    const fillLight = new THREE.DirectionalLight(0x93c5fd, 0.7);
-    fillLight.position.set(-14, 15, -12);
+    const fillLight = new THREE.DirectionalLight(0xa5c9ff, 0.8);
+    fillLight.position.set(-12, 14, -10);
     scene.add(fillLight);
 
     // Dynamic player point light
-    const activePointLight = new THREE.PointLight(0xef4444, 2.5, 18, 1.2);
-    activePointLight.position.set(0, 4, 0);
+    const activePointLight = new THREE.PointLight(0xef4444, 2.8, 20, 1.2);
+    activePointLight.position.set(0, 4.5, 0);
     scene.add(activePointLight);
 
     // 5. Build 3D Board
     const boardGroup = new THREE.Group();
     scene.add(boardGroup);
 
-    // --- Table Plinth / Slab ---
+    // --- Table Plinth / Slab (Walnut / Carbon finish) ---
     const plinthMat = new THREE.MeshStandardMaterial({
-      color: 0x1a1d29,
-      roughness: 0.25,
-      metalness: 0.15,
+      color: 0x161922,
+      roughness: 0.22,
+      metalness: 0.2,
     });
-    const plinthGeo = new THREE.BoxGeometry(16.6, 0.6, 16.6);
+    const plinthGeo = new THREE.BoxGeometry(16.6, 0.7, 16.6);
     const plinthMesh = new THREE.Mesh(plinthGeo, plinthMat);
-    plinthMesh.position.y = -0.3;
+    plinthMesh.position.y = -0.35;
     plinthMesh.receiveShadow = true;
     boardGroup.add(plinthMesh);
 
     // Golden / Brass Board Rim Inlay
     const rimMat = new THREE.MeshStandardMaterial({
       color: 0xd4af37,
-      roughness: 0.3,
-      metalness: 0.8,
+      roughness: 0.25,
+      metalness: 0.85,
     });
-    const rimGeo = new THREE.BoxGeometry(16.9, 0.15, 16.9);
+    const rimGeo = new THREE.BoxGeometry(16.9, 0.16, 16.9);
     const rimMesh = new THREE.Mesh(rimGeo, rimMat);
     rimMesh.position.y = -0.05;
     boardGroup.add(rimMesh);
@@ -379,7 +378,7 @@ export const LudoBoard3D: React.FC<LudoBoard3DProps> = ({
     // Board Surface
     const surfaceMat = new THREE.MeshStandardMaterial({
       color: 0xffffff,
-      roughness: 0.2,
+      roughness: 0.18,
       metalness: 0.05,
     });
     const surfaceGeo = new THREE.BoxGeometry(15.2, 0.1, 15.2);
@@ -402,23 +401,23 @@ export const LudoBoard3D: React.FC<LudoBoard3DProps> = ({
       // Base Platform
       const baseMat = new THREE.MeshStandardMaterial({
         color: cfg.main,
-        roughness: 0.2,
-        metalness: 0.1,
+        roughness: 0.18,
+        metalness: 0.15,
       });
-      const baseGeo = new THREE.BoxGeometry(5.8, 0.14, 5.8);
+      const baseGeo = new THREE.BoxGeometry(5.8, 0.15, 5.8);
       const baseMesh = new THREE.Mesh(baseGeo, baseMat);
-      baseMesh.position.set(cx, 0.12, cz);
+      baseMesh.position.set(cx, 0.13, cz);
       baseMesh.receiveShadow = true;
       boardGroup.add(baseMesh);
 
       // Inner White Courtyard
       const courtMat = new THREE.MeshStandardMaterial({
         color: 0xffffff,
-        roughness: 0.3,
+        roughness: 0.25,
       });
-      const courtGeo = new THREE.BoxGeometry(4.2, 0.15, 4.2);
+      const courtGeo = new THREE.BoxGeometry(4.2, 0.16, 4.2);
       const courtMesh = new THREE.Mesh(courtGeo, courtMat);
-      courtMesh.position.set(cx, 0.13, cz);
+      courtMesh.position.set(cx, 0.14, cz);
       courtMesh.receiveShadow = true;
       boardGroup.add(courtMesh);
 
@@ -428,34 +427,34 @@ export const LudoBoard3D: React.FC<LudoBoard3DProps> = ({
         const w = gridToWorld(nest.col, nest.row);
 
         // Nest rim
-        const nestRimGeo = new THREE.CylinderGeometry(0.48, 0.48, 0.08, 24);
+        const nestRimGeo = new THREE.CylinderGeometry(0.5, 0.5, 0.09, 24);
         const nestRimMat = new THREE.MeshStandardMaterial({
           color: cfg.main,
-          roughness: 0.3,
-          metalness: 0.2,
+          roughness: 0.25,
+          metalness: 0.3,
         });
         const nestRimMesh = new THREE.Mesh(nestRimGeo, nestRimMat);
-        nestRimMesh.position.set(w.x, 0.2, w.z);
+        nestRimMesh.position.set(w.x, 0.21, w.z);
         nestRimMesh.receiveShadow = true;
         boardGroup.add(nestRimMesh);
 
         // Nest center indentation
-        const nestCupGeo = new THREE.CylinderGeometry(0.36, 0.36, 0.09, 24);
+        const nestCupGeo = new THREE.CylinderGeometry(0.38, 0.38, 0.1, 24);
         const nestCupMat = new THREE.MeshStandardMaterial({
           color: 0xffffff,
           roughness: 0.2,
         });
         const nestCupMesh = new THREE.Mesh(nestCupGeo, nestCupMat);
-        nestCupMesh.position.set(w.x, 0.21, w.z);
+        nestCupMesh.position.set(w.x, 0.22, w.z);
         boardGroup.add(nestCupMesh);
       });
     });
 
-    // --- 52 Track Tiles ---
-    const tileGeo = new THREE.BoxGeometry(0.92, 0.14, 0.92);
+    // --- 52 Track Tiles (Glossy Acrylic with Chamfer) ---
+    const tileGeo = new THREE.BoxGeometry(0.94, 0.15, 0.94);
     const regularTileMat = new THREE.MeshStandardMaterial({
       color: 0xffffff,
-      roughness: 0.35,
+      roughness: 0.3,
       metalness: 0.05,
     });
 
@@ -465,23 +464,23 @@ export const LudoBoard3D: React.FC<LudoBoard3DProps> = ({
 
       // Color Start Tiles
       if (idx === 0) {
-        mat = new THREE.MeshStandardMaterial({ color: COLOR_HEX.red.main, roughness: 0.2 });
+        mat = new THREE.MeshStandardMaterial({ color: COLOR_HEX.red.main, roughness: 0.18 });
       } else if (idx === 13) {
-        mat = new THREE.MeshStandardMaterial({ color: COLOR_HEX.green.main, roughness: 0.2 });
+        mat = new THREE.MeshStandardMaterial({ color: COLOR_HEX.green.main, roughness: 0.18 });
       } else if (idx === 26) {
-        mat = new THREE.MeshStandardMaterial({ color: COLOR_HEX.yellow.main, roughness: 0.2 });
+        mat = new THREE.MeshStandardMaterial({ color: COLOR_HEX.yellow.main, roughness: 0.18 });
       } else if (idx === 39) {
-        mat = new THREE.MeshStandardMaterial({ color: COLOR_HEX.blue.main, roughness: 0.2 });
+        mat = new THREE.MeshStandardMaterial({ color: COLOR_HEX.blue.main, roughness: 0.18 });
       }
 
       const tileMesh = new THREE.Mesh(tileGeo, mat);
-      tileMesh.position.set(w.x, 0.12, w.z);
+      tileMesh.position.set(w.x, 0.13, w.z);
       tileMesh.receiveShadow = true;
       boardGroup.add(tileMesh);
 
       // Safe Star Tile Overlay
       if (SAFE_INDICES.includes(idx)) {
-        const starGeo = new THREE.PlaneGeometry(0.68, 0.68);
+        const starGeo = new THREE.PlaneGeometry(0.72, 0.72);
         const starMat = new THREE.MeshBasicMaterial({
           map: starTexture,
           transparent: true,
@@ -489,25 +488,24 @@ export const LudoBoard3D: React.FC<LudoBoard3DProps> = ({
         });
         const starMesh = new THREE.Mesh(starGeo, starMat);
         starMesh.rotation.x = -Math.PI / 2;
-        starMesh.position.set(w.x, 0.2, w.z);
+        starMesh.position.set(w.x, 0.21, w.z);
         boardGroup.add(starMesh);
       }
     });
 
-    // --- Home Stretch Tiles ---
+    // --- Home Stretch Tiles (Elevated Steps) ---
     Object.entries(HOME_STRETCH_GRID).forEach(([color, coords]) => {
       const cfg = COLOR_HEX[color];
       const stretchMat = new THREE.MeshStandardMaterial({
         color: cfg.main,
-        roughness: 0.25,
-        metalness: 0.2,
+        roughness: 0.2,
+        metalness: 0.25,
       });
 
       coords.forEach((pt, idx) => {
         const w = gridToWorld(pt.col, pt.row);
         const stepTileMesh = new THREE.Mesh(tileGeo, stretchMat);
-        // Slight elevated stairs towards center
-        stepTileMesh.position.set(w.x, 0.14 + idx * 0.015, w.z);
+        stepTileMesh.position.set(w.x, 0.15 + idx * 0.02, w.z);
         stepTileMesh.receiveShadow = true;
         boardGroup.add(stepTileMesh);
       });
@@ -517,28 +515,28 @@ export const LudoBoard3D: React.FC<LudoBoard3DProps> = ({
     const goalCenterMat = new THREE.MeshStandardMaterial({
       color: 0x1e293b,
       roughness: 0.2,
-      metalness: 0.3,
+      metalness: 0.35,
     });
-    const centerPodiumGeo = new THREE.CylinderGeometry(1.4, 1.6, 0.25, 32);
+    const centerPodiumGeo = new THREE.CylinderGeometry(1.5, 1.7, 0.28, 32);
     const centerPodium = new THREE.Mesh(centerPodiumGeo, goalCenterMat);
-    centerPodium.position.set(0, 0.22, 0);
+    centerPodium.position.set(0, 0.24, 0);
     centerPodium.receiveShadow = true;
     boardGroup.add(centerPodium);
 
     // Center Gold Crown / Trophy
     const crownMat = new THREE.MeshStandardMaterial({
       color: 0xffd700,
-      roughness: 0.15,
-      metalness: 0.9,
+      roughness: 0.12,
+      metalness: 0.95,
     });
-    const crownGeo = new THREE.CylinderGeometry(0.35, 0.2, 0.45, 6);
+    const crownGeo = new THREE.CylinderGeometry(0.38, 0.22, 0.48, 6);
     const crownMesh = new THREE.Mesh(crownGeo, crownMat);
-    crownMesh.position.set(0, 0.5, 0);
+    crownMesh.position.set(0, 0.54, 0);
     crownMesh.castShadow = true;
     boardGroup.add(crownMesh);
 
     // 6. Dice in 3D Space
-    const diceGeo = new THREE.BoxGeometry(1.2, 1.2, 1.2);
+    const diceGeo = new THREE.BoxGeometry(1.25, 1.25, 1.25);
     const diceMaterials = diceTextures.map((tex) =>
       new THREE.MeshStandardMaterial({
         map: tex,
@@ -547,7 +545,7 @@ export const LudoBoard3D: React.FC<LudoBoard3DProps> = ({
       })
     );
     const diceMesh = new THREE.Mesh(diceGeo, diceMaterials);
-    diceMesh.position.set(0, 0.85, 0);
+    diceMesh.position.set(0, 0.9, 0);
     diceMesh.castShadow = true;
     scene.add(diceMesh);
 
@@ -555,11 +553,11 @@ export const LudoBoard3D: React.FC<LudoBoard3DProps> = ({
     const pawnMeshes = new Map<string, THREE.Group>();
     const haloMeshes = new Map<string, THREE.Mesh>();
 
-    // 8. Raycasting & Mouse Controls: Closer default radius for larger board display!
+    // 8. Raycasting & Mouse Controls: Closer default radius (13.5) for MAX board size!
     const raycaster = new THREE.Raycaster();
     const mouse = new THREE.Vector2();
 
-    const orbitAngle = { theta: 0, phi: 0.95, radius: 16.5 };
+    const orbitAngle = { theta: 0, phi: 0.95, radius: 13.5 };
 
     threeRef.current = {
       scene,
@@ -617,8 +615,8 @@ export const LudoBoard3D: React.FC<LudoBoard3DProps> = ({
       e.preventDefault();
       if (!threeRef.current) return;
       threeRef.current.orbitAngle.radius = Math.max(
-        9,
-        Math.min(22, threeRef.current.orbitAngle.radius + e.deltaY * 0.015)
+        7.5,
+        Math.min(19, threeRef.current.orbitAngle.radius + e.deltaY * 0.012)
       );
     };
 
@@ -635,7 +633,6 @@ export const LudoBoard3D: React.FC<LudoBoard3DProps> = ({
       const intersects = threeRef.current.raycaster.intersectObjects(allPawnGroups, true);
 
       if (intersects.length > 0) {
-        // Find top group
         let cur: THREE.Object3D | null = intersects[0].object;
         while (cur && !cur.userData?.pawnId && cur.parent) {
           cur = cur.parent;
@@ -660,8 +657,8 @@ export const LudoBoard3D: React.FC<LudoBoard3DProps> = ({
     // Resize Handler
     const handleResize = () => {
       if (!containerRef.current || !threeRef.current) return;
-      const w = containerRef.current.clientWidth || 800;
-      const h = containerRef.current.clientHeight || 800;
+      const w = containerRef.current.clientWidth || window.innerWidth;
+      const h = containerRef.current.clientHeight || window.innerHeight;
       threeRef.current.camera.aspect = w / h;
       threeRef.current.camera.updateProjectionMatrix();
       threeRef.current.renderer.setSize(w, h);
@@ -694,19 +691,19 @@ export const LudoBoard3D: React.FC<LudoBoard3DProps> = ({
       // Rotate crown in center
       crownMesh.rotation.y = elapsed * 0.8;
 
-      // Rotate movable pawn halos and hover animation
+      // Rotate movable pawn halos and prominent bounce animation
       haloMeshes.forEach((halo, key) => {
-        halo.rotation.z = elapsed * 2.5;
+        halo.rotation.z = elapsed * 3.0;
         const parentPawn = pawnMeshes.get(key);
         if (parentPawn && parentPawn.userData?.isMovable) {
-          // Levitation pulse
-          parentPawn.position.y = (parentPawn.userData.baseY || 0.35) + Math.sin(elapsed * 4) * 0.12;
+          // Energetic hop pulse
+          parentPawn.position.y = (parentPawn.userData.baseY || 0.35) + Math.abs(Math.sin(elapsed * 5)) * 0.22;
         }
       });
 
       // Smooth camera interpolation based on preset
       if (cameraPreset === 'top') {
-        targetCamPos.set(0, 17.5, 0.01);
+        targetCamPos.set(0, 14.5, 0.01);
         targetCamLookAt.set(0, 0, 0);
       } else if (cameraPreset === 'isometric') {
         const sinPhi = Math.sin(orbitAngle.phi);
@@ -719,30 +716,30 @@ export const LudoBoard3D: React.FC<LudoBoard3DProps> = ({
         targetCamLookAt.set(0, 0, 0);
       }
 
-      camPos.lerp(targetCamPos, 0.06);
-      camLookAt.lerp(targetCamLookAt, 0.06);
+      camPos.lerp(targetCamPos, 0.07);
+      camLookAt.lerp(targetCamLookAt, 0.07);
       camera.position.copy(camPos);
       camera.lookAt(camLookAt);
 
       // Smooth dice rotation and roll physics
       if (isRollingAnimation) {
-        diceMesh.rotation.x += delta * 18;
-        diceMesh.rotation.y += delta * 22;
-        diceMesh.rotation.z += delta * 14;
+        diceMesh.rotation.x += delta * 20;
+        diceMesh.rotation.y += delta * 24;
+        diceMesh.rotation.z += delta * 16;
         diceMesh.position.y = 1.2 + Math.abs(Math.sin(elapsed * 12)) * 1.5;
       } else {
         diceMesh.rotation.x = THREE.MathUtils.lerp(diceMesh.rotation.x, targetDiceRot.x, 0.12);
         diceMesh.rotation.y = THREE.MathUtils.lerp(diceMesh.rotation.y, targetDiceRot.y, 0.12);
         diceMesh.rotation.z = THREE.MathUtils.lerp(diceMesh.rotation.z, targetDiceRot.z, 0.12);
-        diceMesh.position.y = THREE.MathUtils.lerp(diceMesh.position.y, 0.85, 0.12);
+        diceMesh.position.y = THREE.MathUtils.lerp(diceMesh.position.y, 0.88, 0.12);
       }
 
       // Smooth pawn position transitions (hops)
       pawnMeshes.forEach((mesh) => {
         const target = mesh.userData.targetPos;
         if (target) {
-          mesh.position.x = THREE.MathUtils.lerp(mesh.position.x, target.x, 0.15);
-          mesh.position.z = THREE.MathUtils.lerp(mesh.position.z, target.z, 0.15);
+          mesh.position.x = THREE.MathUtils.lerp(mesh.position.x, target.x, 0.16);
+          mesh.position.z = THREE.MathUtils.lerp(mesh.position.z, target.z, 0.16);
         }
       });
 
@@ -773,12 +770,12 @@ export const LudoBoard3D: React.FC<LudoBoard3DProps> = ({
     if (!threeRef.current) return;
     const { scene, activePointLight } = threeRef.current;
     const themeBgColors: Record<GameThemeId, number> = {
-      volcano: 0x12080a,
-      ice: 0x06111e,
-      galaxy: 0x040511,
-      jungle_congo: 0x04130a,
-      desert: 0x140e06,
-      classic_royal: 0x0a0c14,
+      volcano: 0x0f0709,
+      ice: 0x050c18,
+      galaxy: 0x03040e,
+      jungle_congo: 0x031008,
+      desert: 0x110c05,
+      classic_royal: 0x080a12,
     };
     scene.background = new THREE.Color(themeBgColors[currentTheme] || 0x07090e);
     if (scene.fog) {
@@ -795,27 +792,24 @@ export const LudoBoard3D: React.FC<LudoBoard3DProps> = ({
     const { targetDiceRot } = threeRef.current;
     const diceVal = animatedDiceVal !== null ? animatedDiceVal : gameState.diceValue;
 
-    // Face rotation map: opposite sides sum to 7
-    // [1 (+X), 6 (-X), 2 (+Y), 5 (-Y), 3 (+Z), 4 (-Z)]
-    // To face +Y up towards camera:
     switch (diceVal) {
       case 2:
-        targetDiceRot.set(0, 0, 0); // 2 is naturally on +Y
+        targetDiceRot.set(0, 0, 0); // 2 on +Y
         break;
       case 5:
-        targetDiceRot.set(Math.PI, 0, 0); // 5 is on -Y
+        targetDiceRot.set(Math.PI, 0, 0); // 5 on -Y
         break;
       case 1:
-        targetDiceRot.set(0, 0, Math.PI / 2); // 1 is on +X
+        targetDiceRot.set(0, 0, Math.PI / 2); // 1 on +X
         break;
       case 6:
-        targetDiceRot.set(0, 0, -Math.PI / 2); // 6 is on -X
+        targetDiceRot.set(0, 0, -Math.PI / 2); // 6 on -X
         break;
       case 3:
-        targetDiceRot.set(-Math.PI / 2, 0, 0); // 3 is on +Z
+        targetDiceRot.set(-Math.PI / 2, 0, 0); // 3 on +Z
         break;
       case 4:
-        targetDiceRot.set(Math.PI / 2, 0, 0); // 4 is on -Z
+        targetDiceRot.set(Math.PI / 2, 0, 0); // 4 on -Z
         break;
       default:
         targetDiceRot.set(0, 0, 0);
@@ -836,48 +830,47 @@ export const LudoBoard3D: React.FC<LudoBoard3DProps> = ({
 
       let pawnGroup = pawnMeshes.get(key);
 
-      // Create 3D Pawn Mesh if not yet created
       if (!pawnGroup) {
         pawnGroup = new THREE.Group();
         const cfg = COLOR_HEX[pawn.color] || COLOR_HEX.red;
 
-        // Realistic Turned Ludo Pawn Geometry
+        // Turned Chess/Ludo Pawn Geometry
         const pawnMat = new THREE.MeshStandardMaterial({
           color: cfg.main,
-          roughness: 0.18,
-          metalness: 0.15,
+          roughness: 0.15,
+          metalness: 0.18,
         });
 
         // Base Flange
-        const baseGeo = new THREE.CylinderGeometry(0.34, 0.42, 0.14, 24);
+        const baseGeo = new THREE.CylinderGeometry(0.35, 0.44, 0.15, 24);
         const baseMesh = new THREE.Mesh(baseGeo, pawnMat);
-        baseMesh.position.y = 0.07;
+        baseMesh.position.y = 0.075;
         baseMesh.castShadow = true;
         pawnGroup.add(baseMesh);
 
         // Body Waist
-        const waistGeo = new THREE.CylinderGeometry(0.18, 0.34, 0.38, 24);
+        const waistGeo = new THREE.CylinderGeometry(0.19, 0.35, 0.4, 24);
         const waistMesh = new THREE.Mesh(waistGeo, pawnMat);
-        waistMesh.position.y = 0.32;
+        waistMesh.position.y = 0.34;
         waistMesh.castShadow = true;
         pawnGroup.add(waistMesh);
 
         // Gold Ring Collar
         const collarMat = new THREE.MeshStandardMaterial({
           color: 0xffffff,
-          roughness: 0.2,
-          metalness: 0.8,
+          roughness: 0.18,
+          metalness: 0.85,
         });
-        const collarGeo = new THREE.TorusGeometry(0.2, 0.04, 12, 24);
+        const collarGeo = new THREE.TorusGeometry(0.21, 0.045, 12, 24);
         const collarMesh = new THREE.Mesh(collarGeo, collarMat);
         collarMesh.rotation.x = Math.PI / 2;
-        collarMesh.position.y = 0.52;
+        collarMesh.position.y = 0.54;
         pawnGroup.add(collarMesh);
 
         // Spherical Head Knob
-        const headGeo = new THREE.SphereGeometry(0.26, 24, 24);
+        const headGeo = new THREE.SphereGeometry(0.28, 24, 24);
         const headMesh = new THREE.Mesh(headGeo, pawnMat);
-        headMesh.position.y = 0.72;
+        headMesh.position.y = 0.76;
         headMesh.castShadow = true;
         pawnGroup.add(headMesh);
 
@@ -886,10 +879,10 @@ export const LudoBoard3D: React.FC<LudoBoard3DProps> = ({
           color: 0xffd700,
           wireframe: true,
         });
-        const haloGeo = new THREE.TorusGeometry(0.48, 0.04, 8, 24);
+        const haloGeo = new THREE.TorusGeometry(0.5, 0.045, 8, 24);
         const haloMesh = new THREE.Mesh(haloGeo, haloMat);
         haloMesh.rotation.x = Math.PI / 2;
-        haloMesh.position.y = 1.15;
+        haloMesh.position.y = 1.2;
         pawnGroup.add(haloMesh);
         haloMeshes.set(key, haloMesh);
 
@@ -898,7 +891,6 @@ export const LudoBoard3D: React.FC<LudoBoard3DProps> = ({
         pawnMeshes.set(key, pawnGroup);
       }
 
-      // Update userData and target
       pawnGroup.userData = {
         pawnId: pawn.id,
         color: pawn.color,
@@ -907,7 +899,6 @@ export const LudoBoard3D: React.FC<LudoBoard3DProps> = ({
         targetPos,
       };
 
-      // Visibility of halo
       const halo = haloMeshes.get(key);
       if (halo) {
         halo.visible = !!isMovable;
@@ -920,27 +911,27 @@ export const LudoBoard3D: React.FC<LudoBoard3DProps> = ({
     if (cameraPreset !== 'follow' || !threeRef.current) return;
     const activeColor = gameState.currentTurnColor || 'red';
     const angleMap: Record<string, { theta: number; phi: number }> = {
-      red: { theta: -Math.PI / 4, phi: 0.9 },
-      green: { theta: Math.PI / 4, phi: 0.9 },
-      yellow: { theta: (3 * Math.PI) / 4, phi: 0.9 },
-      blue: { theta: (-3 * Math.PI) / 4, phi: 0.9 },
+      red: { theta: -Math.PI / 4, phi: 0.95 },
+      green: { theta: Math.PI / 4, phi: 0.95 },
+      yellow: { theta: (3 * Math.PI) / 4, phi: 0.95 },
+      blue: { theta: (-3 * Math.PI) / 4, phi: 0.95 },
     };
     const targetAngle = angleMap[activeColor] || angleMap.red;
     threeRef.current.orbitAngle.theta = targetAngle.theta;
     threeRef.current.orbitAngle.phi = targetAngle.phi;
-    threeRef.current.orbitAngle.radius = 15.0; // close and prominent view
+    threeRef.current.orbitAngle.radius = 12.2; // Dramatic close-up on the active corner!
   }, [gameState.currentTurnColor, cameraPreset]);
 
   return (
-    <div className="relative w-full h-full flex items-center justify-center select-none overflow-hidden">
+    <div className="relative w-full h-full select-none overflow-hidden">
       {/* 3D Canvas Container */}
       <div
         ref={containerRef}
-        className="w-full h-full cursor-grab active:cursor-grabbing relative z-10"
+        className="w-full h-full cursor-grab active:cursor-grabbing absolute inset-0"
       />
 
-      {/* Floating 3D Camera Controls Toolbar */}
-      <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20 flex items-center space-x-2 bg-neutral-900/90 backdrop-blur-md px-4 py-1.5 rounded-full border border-white/20 shadow-2xl">
+      {/* Floating 3D Camera Controls Toolbar (discreet bottom toolbar) */}
+      <div className="absolute bottom-16 sm:bottom-20 left-1/2 -translate-x-1/2 z-20 flex items-center space-x-2 bg-black/75 backdrop-blur-xl px-4 py-1.5 rounded-full border border-white/20 shadow-2xl">
         <span className="text-[10px] font-black uppercase tracking-wider text-amber-400 flex items-center space-x-1 mr-1">
           <Sparkles className="w-3 h-3" />
           <span>VUE 3D</span>
@@ -951,7 +942,7 @@ export const LudoBoard3D: React.FC<LudoBoard3DProps> = ({
           onClick={() => {
             playSoundFX.playHop();
             if (threeRef.current) {
-              threeRef.current.orbitAngle.radius = 16.5;
+              threeRef.current.orbitAngle.radius = 13.5;
             }
             setCameraPreset('isometric');
           }}
@@ -960,7 +951,7 @@ export const LudoBoard3D: React.FC<LudoBoard3DProps> = ({
               ? 'bg-amber-400 text-neutral-950 shadow-md font-black'
               : 'text-slate-300 hover:text-white hover:bg-white/10'
           }`}
-          title="Vue 3D Isométrique Grand Format"
+          title="Vue 3D Isométrique Plein Écran"
         >
           Isométrique
         </button>
@@ -976,7 +967,7 @@ export const LudoBoard3D: React.FC<LudoBoard3DProps> = ({
               ? 'bg-amber-400 text-neutral-950 shadow-md font-black'
               : 'text-slate-300 hover:text-white hover:bg-white/10'
           }`}
-          title="Vue du Dessus Grand Format"
+          title="Vue du Dessus Plein Écran"
         >
           Dessus
         </button>
@@ -1004,7 +995,7 @@ export const LudoBoard3D: React.FC<LudoBoard3DProps> = ({
           onClick={() => {
             playSoundFX.playHop();
             if (threeRef.current) {
-              threeRef.current.orbitAngle.radius = Math.max(9, threeRef.current.orbitAngle.radius - 2);
+              threeRef.current.orbitAngle.radius = Math.max(7.5, threeRef.current.orbitAngle.radius - 1.8);
             }
           }}
           className="w-7 h-7 rounded-full hover:bg-white/20 text-slate-200 hover:text-white flex items-center justify-center transition-all cursor-pointer"
@@ -1018,7 +1009,7 @@ export const LudoBoard3D: React.FC<LudoBoard3DProps> = ({
           onClick={() => {
             playSoundFX.playHop();
             if (threeRef.current) {
-              threeRef.current.orbitAngle.radius = Math.min(22, threeRef.current.orbitAngle.radius + 2);
+              threeRef.current.orbitAngle.radius = Math.min(19, threeRef.current.orbitAngle.radius + 1.8);
             }
           }}
           className="w-7 h-7 rounded-full hover:bg-white/20 text-slate-200 hover:text-white flex items-center justify-center transition-all cursor-pointer"
@@ -1034,7 +1025,7 @@ export const LudoBoard3D: React.FC<LudoBoard3DProps> = ({
             if (threeRef.current) {
               threeRef.current.orbitAngle.theta = 0;
               threeRef.current.orbitAngle.phi = 0.95;
-              threeRef.current.orbitAngle.radius = 16.5;
+              threeRef.current.orbitAngle.radius = 13.5;
               setCameraPreset('isometric');
             }
           }}
@@ -1043,13 +1034,6 @@ export const LudoBoard3D: React.FC<LudoBoard3DProps> = ({
         >
           <RotateCw className="w-3.5 h-3.5" />
         </button>
-      </div>
-
-      {/* Subtle Hint on first view */}
-      <div className="absolute top-3 left-1/2 -translate-x-1/2 pointer-events-none z-20">
-        <span className="text-[10px] text-slate-300/85 bg-black/50 backdrop-blur-sm px-3.5 py-1 rounded-full border border-white/15 shadow-lg">
-          🔍 Molette ou boutons +/− pour agrandir • Glissez pour tourner • Cliquez un pion pour jouer
-        </span>
       </div>
     </div>
   );
