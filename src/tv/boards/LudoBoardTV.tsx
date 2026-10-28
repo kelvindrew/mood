@@ -221,10 +221,10 @@ export const LudoBoardTV: React.FC = () => {
   });
 
   return (
-    <div className={`relative w-full h-full flex items-center justify-between px-8 py-2 select-none overflow-hidden bg-gradient-to-br ${theme.bgGradient} transition-colors duration-1000`}>
+    <div className={`relative w-full h-full flex items-center justify-between px-4 lg:px-8 py-2 select-none overflow-hidden bg-gradient-to-br ${theme.bgGradient} transition-colors duration-1000`}>
       {/* Left HUD: Active Turn Card, 3D Toggle & Roll Box */}
-      <div className="w-[280px] flex flex-col justify-between h-[88vh] py-2 z-20">
-        <div className="space-y-3">
+      <div className={`${is3DMode ? 'w-[245px] lg:w-[260px]' : 'w-[280px]'} flex flex-col justify-between h-[90vh] py-2 z-20 transition-all duration-300`}>
+        <div className="space-y-2.5">
           {/* Header & Controls: 3D Toggle + Theme Switcher */}
           <div className="flex items-center justify-between">
             {/* 3D Mode Toggle Button */}
@@ -249,37 +249,37 @@ export const LudoBoardTV: React.FC = () => {
                 setCurrentTheme(themeKeys[nextIdx]);
                 playSoundFX.playHop();
               }}
-              className="flex items-center space-x-1.5 px-3 py-1 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-xs font-bold text-brand-gold transition-all cursor-pointer"
+              className="flex items-center space-x-1.5 px-2.5 py-1 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-xs font-bold text-brand-gold transition-all cursor-pointer"
             >
               <span>{theme.emoji}</span>
               <span className="text-[10px]">{theme.name}</span>
             </button>
           </div>
 
-          <h1 className="text-2xl font-black font-display text-white tracking-tight leading-none">
+          <h1 className="text-xl lg:text-2xl font-black font-display text-white tracking-tight leading-none">
             TOUR DE :
           </h1>
 
           {/* Active Player Card with 2.5D Glow */}
-          <div className={`p-4 rounded-3xl border-2 transition-all bg-surface-card/90 backdrop-blur-xl ${activeSkin.glow} border-white/30 flex items-center space-x-3.5`}>
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-white/20 to-white/5 border-2 border-white flex items-center justify-center font-black text-white text-lg shadow-lg">
+          <div className={`p-3.5 rounded-3xl border-2 transition-all bg-surface-card/90 backdrop-blur-xl ${activeSkin.glow} border-white/30 flex items-center space-x-3`}>
+            <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-white/20 to-white/5 border-2 border-white flex items-center justify-center font-black text-white text-base shadow-lg">
               {activePlayer?.name?.charAt(0) || activeColor.charAt(0).toUpperCase()}
             </div>
             <div className="flex-1 overflow-hidden">
               <span className="text-[10px] font-black uppercase tracking-wider text-brand-gold">
                 ÉLÉMENT {activeSkin.name.toUpperCase()}
               </span>
-              <h2 className="text-base font-black text-white truncate">
+              <h2 className="text-sm lg:text-base font-black text-white truncate">
                 {activePlayer?.name || `Joueur ${activeColor.toUpperCase()}`}
               </h2>
             </div>
           </div>
 
           {/* Rolling Dice Showcase */}
-          <div className="p-4 rounded-3xl bg-surface-card/85 border border-white/15 backdrop-blur-xl flex flex-col items-center justify-center space-y-2">
+          <div className="p-3.5 rounded-3xl bg-surface-card/85 border border-white/15 backdrop-blur-xl flex flex-col items-center justify-center space-y-1.5">
             <span className="text-[10px] font-black uppercase tracking-wider text-gray-400">DÉ DU JOUEUR</span>
             
-            <div className={`relative w-20 h-20 rounded-3xl bg-gradient-to-br from-white via-gray-100 to-gray-300 text-gray-950 font-display font-black text-5xl flex items-center justify-center shadow-[0_15px_30px_rgba(0,0,0,0.6),inset_0_-4px_8px_rgba(0,0,0,0.2)] border-4 border-white transition-all transform ${
+            <div className={`relative w-18 h-18 lg:w-20 lg:h-20 rounded-3xl bg-gradient-to-br from-white via-gray-100 to-gray-300 text-gray-950 font-display font-black text-4xl lg:text-5xl flex items-center justify-center shadow-[0_15px_30px_rgba(0,0,0,0.6),inset_0_-4px_8px_rgba(0,0,0,0.2)] border-4 border-white transition-all transform ${
               isRollingAnimation ? 'animate-spin-slow scale-110' : ''
             }`}>
               {animatedDiceVal !== null ? animatedDiceVal : (gameState.diceValue !== null ? gameState.diceValue : '?')}
@@ -300,13 +300,13 @@ export const LudoBoardTV: React.FC = () => {
         </div>
 
         {/* Player Progress Summary */}
-        <div className="p-3.5 rounded-3xl bg-surface-card/85 border border-white/15 space-y-2">
+        <div className="p-3 rounded-3xl bg-surface-card/85 border border-white/15 space-y-1.5">
           <div className="flex items-center justify-between text-xs font-black uppercase tracking-wider text-gray-400">
             <span>PIONS EN MAISON</span>
             <Trophy className="w-4 h-4 text-brand-gold" />
           </div>
 
-          <div className="space-y-1.5">
+          <div className="space-y-1">
             {gameState.players.map((col) => {
               const skin = theme.pawnSkins[col] || theme.pawnSkins.red;
               const pawns = gameState.pawns[col] || [];
@@ -316,9 +316,9 @@ export const LudoBoardTV: React.FC = () => {
               return (
                 <div
                   key={col}
-                  className={`flex items-center justify-between p-2 rounded-2xl border transition-all ${
+                  className={`flex items-center justify-between p-1.5 px-2 rounded-2xl border transition-all ${
                     isCurrent
-                      ? `bg-surface-light border-2 border-white shadow-md scale-105`
+                      ? `bg-surface-light border-2 border-white shadow-md scale-102`
                       : 'bg-surface-dark/60 border-white/5 opacity-80'
                   }`}
                 >
@@ -327,7 +327,7 @@ export const LudoBoardTV: React.FC = () => {
                     {Array.from({ length: 4 }).map((_, i) => (
                       <div
                         key={i}
-                        className={`w-3 h-3 rounded-full border ${
+                        className={`w-2.5 h-2.5 rounded-full border ${
                           i < finishedCount
                             ? 'bg-brand-gold border-white shadow-glow-gold'
                             : 'bg-surface-light border-white/20'
@@ -342,10 +342,10 @@ export const LudoBoardTV: React.FC = () => {
         </div>
 
         {/* Live Action Ticker */}
-        <div className="p-3 rounded-2xl bg-surface-card/75 border border-white/10 text-xs">
-          <div className="flex items-center space-x-1.5 text-brand-gold font-bold mb-1">
+        <div className="p-2.5 rounded-2xl bg-surface-card/75 border border-white/10 text-xs">
+          <div className="flex items-center space-x-1.5 text-brand-gold font-bold mb-0.5">
             <Sparkles className="w-3.5 h-3.5" />
-            <span className="text-[10px] font-black uppercase">ÉVÉNEMENTS DU JEU</span>
+            <span className="text-[10px] font-black uppercase">ÉVÉNEMENTS</span>
           </div>
           <p className="text-gray-300 text-xs font-medium italic truncate">
             "{gameState.lastActionLog || 'À vos marques !'}"
@@ -353,8 +353,12 @@ export const LudoBoardTV: React.FC = () => {
         </div>
       </div>
 
-      {/* Center High-Definition Board Stage (3D vs 2D) */}
-      <div className="relative w-[700px] h-[700px] max-w-[55vw] max-h-[88vh] aspect-square flex items-center justify-center">
+      {/* Center Grand Format Board Stage (3D vs 2D) */}
+      <div className={`relative aspect-square flex items-center justify-center transition-all duration-300 ${
+        is3DMode
+          ? 'w-[920px] h-[920px] max-w-[68vw] max-h-[95vh]'
+          : 'w-[680px] h-[680px] max-w-[54vw] max-h-[88vh]'
+      }`}>
         {/* Floating Quick View Switcher at Top of Board */}
         <div className="absolute top-2 right-4 z-40 flex items-center space-x-1 bg-neutral-900/85 backdrop-blur-md px-2.5 py-1 rounded-full border border-white/15 shadow-xl">
           <button
@@ -364,7 +368,7 @@ export const LudoBoardTV: React.FC = () => {
                 ? 'bg-amber-400 text-neutral-950 shadow-md font-black'
                 : 'text-slate-400 hover:text-white'
             }`}
-            title="Activer la vue 3D"
+            title="Activer la vue 3D agrandie"
           >
             <Box className="w-3.5 h-3.5" />
             <span>Mode 3D</span>
@@ -376,7 +380,7 @@ export const LudoBoardTV: React.FC = () => {
                 ? 'bg-white text-neutral-950 shadow-md font-black'
                 : 'text-slate-400 hover:text-white'
             }`}
-            title="Activer la vue 2D"
+            title="Activer la vue 2D classique"
           >
             <Layers className="w-3.5 h-3.5" />
             <span>Mode 2D</span>
@@ -384,7 +388,7 @@ export const LudoBoardTV: React.FC = () => {
         </div>
 
         {is3DMode ? (
-          /* 3D Realistic Three.js Interactive Board */
+          /* 3D Realistic Three.js Interactive Grand-Format Board */
           <LudoBoard3D
             gameState={gameState}
             currentTheme={currentTheme}
@@ -584,14 +588,14 @@ export const LudoBoardTV: React.FC = () => {
       </div>
 
       {/* Right HUD: Rules & Victory Overlay */}
-      <div className="w-[280px] flex flex-col justify-between h-[88vh] py-2 z-20">
-        <div className="p-5 rounded-3xl bg-surface-card/85 border border-white/15 backdrop-blur-xl space-y-3">
+      <div className={`${is3DMode ? 'w-[245px] lg:w-[260px]' : 'w-[280px]'} flex flex-col justify-between h-[90vh] py-2 z-20 transition-all duration-300`}>
+        <div className="p-4 lg:p-5 rounded-3xl bg-surface-card/85 border border-white/15 backdrop-blur-xl space-y-2.5">
           <div className="flex items-center space-x-2 text-xs font-black uppercase tracking-wider text-brand-cyan">
             <Shield className="w-4 h-4" />
             <span>RÈGLES OFFICIELLES</span>
           </div>
-          <ul className="text-xs text-gray-300 space-y-2 leading-relaxed">
-            <li className="flex items-start space-x-2">
+          <ul className="text-[11px] lg:text-xs text-gray-300 space-y-2 leading-relaxed">
+            <li className="flex items-start space-x-1.5">
               <span className="text-brand-gold font-bold">•</span>
               <span>Faites un <strong>6</strong> pour sortir un pion et rejouer.</span>
             </li>
@@ -612,9 +616,9 @@ export const LudoBoardTV: React.FC = () => {
 
         {/* Victory Celebration Modal */}
         {gameState.winner && (
-          <div className="p-6 rounded-3xl bg-gradient-to-br from-amber-500 to-yellow-600 text-gray-900 shadow-2xl flex flex-col items-center text-center space-y-3 animate-scale-in">
-            <Crown className="w-10 h-10 text-white animate-bounce" />
-            <h3 className="text-2xl font-black font-display">VICTOIRE !</h3>
+          <div className="p-5 lg:p-6 rounded-3xl bg-gradient-to-br from-amber-500 to-yellow-600 text-gray-900 shadow-2xl flex flex-col items-center text-center space-y-3 animate-scale-in">
+            <Crown className="w-9 h-9 lg:w-10 lg:h-10 text-white animate-bounce" />
+            <h3 className="text-xl lg:text-2xl font-black font-display">VICTOIRE !</h3>
             <p className="text-xs font-bold uppercase tracking-wider">
               {gameState.winner.toUpperCase()} REMPORTE LA PARTIE !
             </p>

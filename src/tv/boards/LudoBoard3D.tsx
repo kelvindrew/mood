@@ -1,9 +1,9 @@
 import React, { useEffect, useRef, useState, useMemo } from 'react';
 import * as THREE from 'three';
 import { LudoGameState, LudoPawn } from '../../types/game';
-import { GameThemeId, GAME_THEMES } from '../../engine/PlayThemes';
+import { GameThemeId } from '../../engine/PlayThemes';
 import { playSoundFX } from '../../engine/PlaySoundFX';
-import { Eye, RotateCw, Compass, ZoomIn, ZoomOut, Sparkles } from 'lucide-react';
+import { RotateCw, Sparkles, ZoomIn, ZoomOut, Maximize2 } from 'lucide-react';
 
 interface LudoBoard3DProps {
   gameState: LudoGameState;
@@ -281,8 +281,8 @@ export const LudoBoard3D: React.FC<LudoBoard3DProps> = ({
   useEffect(() => {
     if (!containerRef.current) return;
     const container = containerRef.current;
-    const width = container.clientWidth || 700;
-    const height = container.clientHeight || 700;
+    const width = container.clientWidth || 800;
+    const height = container.clientHeight || 800;
 
     // 1. Scene
     const scene = new THREE.Scene();
@@ -299,9 +299,9 @@ export const LudoBoard3D: React.FC<LudoBoard3DProps> = ({
     scene.background = new THREE.Color(themeBgColors[currentTheme] || 0x07090e);
     scene.fog = new THREE.FogExp2(scene.background.getHex(), 0.015);
 
-    // 2. Camera
+    // 2. Camera: Optimized closer distance (radius: 16.5) so board fills the viewport!
     const camera = new THREE.PerspectiveCamera(40, width / height, 0.1, 100);
-    const initialCamPos = new THREE.Vector3(0, 19, 17);
+    const initialCamPos = new THREE.Vector3(0, 13.2, 11.5);
     const initialLookAt = new THREE.Vector3(0, 0, 0);
     camera.position.copy(initialCamPos);
     camera.lookAt(initialLookAt);
@@ -555,11 +555,11 @@ export const LudoBoard3D: React.FC<LudoBoard3DProps> = ({
     const pawnMeshes = new Map<string, THREE.Group>();
     const haloMeshes = new Map<string, THREE.Mesh>();
 
-    // 8. Raycasting & Mouse Controls
+    // 8. Raycasting & Mouse Controls: Closer default radius for larger board display!
     const raycaster = new THREE.Raycaster();
     const mouse = new THREE.Vector2();
 
-    const orbitAngle = { theta: 0, phi: 0.95, radius: 24 };
+    const orbitAngle = { theta: 0, phi: 0.95, radius: 16.5 };
 
     threeRef.current = {
       scene,
@@ -617,8 +617,8 @@ export const LudoBoard3D: React.FC<LudoBoard3DProps> = ({
       e.preventDefault();
       if (!threeRef.current) return;
       threeRef.current.orbitAngle.radius = Math.max(
-        12,
-        Math.min(36, threeRef.current.orbitAngle.radius + e.deltaY * 0.02)
+        9,
+        Math.min(22, threeRef.current.orbitAngle.radius + e.deltaY * 0.015)
       );
     };
 
@@ -660,8 +660,8 @@ export const LudoBoard3D: React.FC<LudoBoard3DProps> = ({
     // Resize Handler
     const handleResize = () => {
       if (!containerRef.current || !threeRef.current) return;
-      const w = containerRef.current.clientWidth || 700;
-      const h = containerRef.current.clientHeight || 700;
+      const w = containerRef.current.clientWidth || 800;
+      const h = containerRef.current.clientHeight || 800;
       threeRef.current.camera.aspect = w / h;
       threeRef.current.camera.updateProjectionMatrix();
       threeRef.current.renderer.setSize(w, h);
@@ -704,9 +704,9 @@ export const LudoBoard3D: React.FC<LudoBoard3DProps> = ({
         }
       });
 
-      // Smooth camera interpolation
+      // Smooth camera interpolation based on preset
       if (cameraPreset === 'top') {
-        targetCamPos.set(0, 26, 0.01);
+        targetCamPos.set(0, 17.5, 0.01);
         targetCamLookAt.set(0, 0, 0);
       } else if (cameraPreset === 'isometric') {
         const sinPhi = Math.sin(orbitAngle.phi);
@@ -928,6 +928,7 @@ export const LudoBoard3D: React.FC<LudoBoard3DProps> = ({
     const targetAngle = angleMap[activeColor] || angleMap.red;
     threeRef.current.orbitAngle.theta = targetAngle.theta;
     threeRef.current.orbitAngle.phi = targetAngle.phi;
+    threeRef.current.orbitAngle.radius = 15.0; // close and prominent view
   }, [gameState.currentTurnColor, cameraPreset]);
 
   return (
@@ -939,7 +940,7 @@ export const LudoBoard3D: React.FC<LudoBoard3DProps> = ({
       />
 
       {/* Floating 3D Camera Controls Toolbar */}
-      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 flex items-center space-x-2 bg-neutral-900/85 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-white/20 shadow-2xl">
+      <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20 flex items-center space-x-2 bg-neutral-900/90 backdrop-blur-md px-4 py-1.5 rounded-full border border-white/20 shadow-2xl">
         <span className="text-[10px] font-black uppercase tracking-wider text-amber-400 flex items-center space-x-1 mr-1">
           <Sparkles className="w-3 h-3" />
           <span>VUE 3D</span>
@@ -949,14 +950,17 @@ export const LudoBoard3D: React.FC<LudoBoard3DProps> = ({
         <button
           onClick={() => {
             playSoundFX.playHop();
+            if (threeRef.current) {
+              threeRef.current.orbitAngle.radius = 16.5;
+            }
             setCameraPreset('isometric');
           }}
-          className={`px-3 py-1 rounded-full text-xs font-bold transition-all ${
+          className={`px-3 py-1 rounded-full text-xs font-bold transition-all cursor-pointer ${
             cameraPreset === 'isometric'
               ? 'bg-amber-400 text-neutral-950 shadow-md font-black'
               : 'text-slate-300 hover:text-white hover:bg-white/10'
           }`}
-          title="Vue 3D Isométrique"
+          title="Vue 3D Isométrique Grand Format"
         >
           Isométrique
         </button>
@@ -967,12 +971,12 @@ export const LudoBoard3D: React.FC<LudoBoard3DProps> = ({
             playSoundFX.playHop();
             setCameraPreset('top');
           }}
-          className={`px-3 py-1 rounded-full text-xs font-bold transition-all ${
+          className={`px-3 py-1 rounded-full text-xs font-bold transition-all cursor-pointer ${
             cameraPreset === 'top'
               ? 'bg-amber-400 text-neutral-950 shadow-md font-black'
               : 'text-slate-300 hover:text-white hover:bg-white/10'
           }`}
-          title="Vue du Dessus"
+          title="Vue du Dessus Grand Format"
         >
           Dessus
         </button>
@@ -983,14 +987,44 @@ export const LudoBoard3D: React.FC<LudoBoard3DProps> = ({
             playSoundFX.playHop();
             setCameraPreset('follow');
           }}
-          className={`px-3 py-1 rounded-full text-xs font-bold transition-all ${
+          className={`px-3 py-1 rounded-full text-xs font-bold transition-all cursor-pointer ${
             cameraPreset === 'follow'
               ? 'bg-amber-400 text-neutral-950 shadow-md font-black'
               : 'text-slate-300 hover:text-white hover:bg-white/10'
           }`}
-          title="Suivre le Joueur Actif"
+          title="Suivre le Joueur Actif au plus près"
         >
           Dynamique
+        </button>
+
+        <div className="h-4 w-px bg-white/20 mx-1" />
+
+        {/* Zoom In Button */}
+        <button
+          onClick={() => {
+            playSoundFX.playHop();
+            if (threeRef.current) {
+              threeRef.current.orbitAngle.radius = Math.max(9, threeRef.current.orbitAngle.radius - 2);
+            }
+          }}
+          className="w-7 h-7 rounded-full hover:bg-white/20 text-slate-200 hover:text-white flex items-center justify-center transition-all cursor-pointer"
+          title="Agrandir (Zoom avant)"
+        >
+          <ZoomIn className="w-3.5 h-3.5" />
+        </button>
+
+        {/* Zoom Out Button */}
+        <button
+          onClick={() => {
+            playSoundFX.playHop();
+            if (threeRef.current) {
+              threeRef.current.orbitAngle.radius = Math.min(22, threeRef.current.orbitAngle.radius + 2);
+            }
+          }}
+          className="w-7 h-7 rounded-full hover:bg-white/20 text-slate-200 hover:text-white flex items-center justify-center transition-all cursor-pointer"
+          title="Dézoomer (Zoom arrière)"
+        >
+          <ZoomOut className="w-3.5 h-3.5" />
         </button>
 
         {/* Reset Camera button */}
@@ -1000,12 +1034,12 @@ export const LudoBoard3D: React.FC<LudoBoard3DProps> = ({
             if (threeRef.current) {
               threeRef.current.orbitAngle.theta = 0;
               threeRef.current.orbitAngle.phi = 0.95;
-              threeRef.current.orbitAngle.radius = 24;
+              threeRef.current.orbitAngle.radius = 16.5;
               setCameraPreset('isometric');
             }
           }}
-          className="w-6 h-6 rounded-full hover:bg-white/15 text-slate-300 hover:text-white flex items-center justify-center transition-all ml-1"
-          title="Réinitialiser l'angle"
+          className="w-7 h-7 rounded-full hover:bg-white/20 text-slate-200 hover:text-white flex items-center justify-center transition-all cursor-pointer"
+          title="Réinitialiser la vue et le zoom"
         >
           <RotateCw className="w-3.5 h-3.5" />
         </button>
@@ -1013,8 +1047,8 @@ export const LudoBoard3D: React.FC<LudoBoard3DProps> = ({
 
       {/* Subtle Hint on first view */}
       <div className="absolute top-3 left-1/2 -translate-x-1/2 pointer-events-none z-20">
-        <span className="text-[10px] text-slate-300/80 bg-black/40 backdrop-blur-sm px-3 py-1 rounded-full border border-white/10">
-          Glissez pour faire pivoter la caméra 3D • Molette pour zoomer • Cliquez pour jouer
+        <span className="text-[10px] text-slate-300/85 bg-black/50 backdrop-blur-sm px-3.5 py-1 rounded-full border border-white/15 shadow-lg">
+          🔍 Molette ou boutons +/− pour agrandir • Glissez pour tourner • Cliquez un pion pour jouer
         </span>
       </div>
     </div>
