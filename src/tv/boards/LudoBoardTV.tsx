@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useGame } from '../../context/GameContext';
 import { LudoGameState, LudoPawn } from '../../types/game';
-import { Clock, Trophy, Sparkles, Shield, Crown, Box, Layers, Palette, X, Gamepad2 } from 'lucide-react';
+import { Clock, Trophy, Sparkles, Shield, Crown, Box, Layers, Palette, X, Gamepad2, Zap } from 'lucide-react';
 import { playCamera, CameraState } from '../../engine/PlayCamera';
 import { playParticles } from '../../engine/PlayParticleEngine';
 import { playSoundFX } from '../../engine/PlaySoundFX';
@@ -72,6 +72,24 @@ export const LudoBoardTV: React.FC = () => {
     return saved !== null ? saved === 'true' : true; // Default 3D mode enabled!
   });
 
+  const [isTurboMode, setIsTurboMode] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('mood_tv_turbo_3d');
+      if (saved !== null) return saved === 'true';
+      const isTV = document.documentElement.classList.contains('tv-ui') ||
+        /Hisense|VIDAA|SmartTV|HbbTV|Tizen|webOS|GoogleTV|Android.*TV/i.test(navigator.userAgent || '');
+      return isTV;
+    }
+    return true;
+  });
+
+  const handleToggleTurbo = () => {
+    playSoundFX.playHop();
+    const nextVal = !isTurboMode;
+    setIsTurboMode(nextVal);
+    localStorage.setItem('mood_tv_turbo_3d', String(nextVal));
+  };
+
   const particleCanvasRef = useRef<HTMLCanvasElement>(null);
   const prevActionLogRef = useRef<string>('');
 
@@ -96,6 +114,38 @@ export const LudoBoardTV: React.FC = () => {
   // Support de la télécommande TV Hisense (D-Pad, OK)
   useEffect(() => {
     const unregister = tvNav.registerKeyHandler((action) => {
+      // Touche VERTE (télécommande Hisense) : lancer le dé directement
+      if (action === 'green') {
+        if (gameState?.canRollDice) {
+          playSoundFX.playDiceRoll();
+          sendGameAction('ludo_roll_dice');
+          return true;
+        }
+      }
+
+      // Touche JAUNE (télécommande Hisense) : basculer 3D / 2D
+      if (action === 'yellow') {
+        handleToggle3D();
+        return true;
+      }
+
+      // Touche BLEUE (télécommande Hisense) : basculer Mode Turbo 60 FPS
+      if (action === 'blue') {
+        handleToggleTurbo();
+        return true;
+      }
+
+      // Touche ROUGE (télécommande Hisense) : changer de pion
+      if (action === 'red') {
+        if (movablePawns.length > 0) {
+          const curIdx = selectedPawnId !== null ? movablePawns.indexOf(selectedPawnId) : 0;
+          const nextIdx = (curIdx + 1) % movablePawns.length;
+          setSelectedPawnId(movablePawns[nextIdx]);
+          playSoundFX.playHop();
+          return true;
+        }
+      }
+
       // Touche OK / Entrée : lancer le dé ou déplacer le pion sélectionné
       if (action === 'select') {
         if (gameState?.canRollDice) {
@@ -138,28 +188,36 @@ export const LudoBoardTV: React.FC = () => {
     return () => unregister();
   }, [gameState?.canRollDice, selectedPawnId, movablePawns]);
 
-  // Raccourcis directs télécommande TV (touches 1, 2, 3, 4 et touche V)
+  // Raccourcis directs télécommande TV (touches 1, 2, 3, 4 et touches V, T)
   useEffect(() => {
     const handleDirectKeys = (e: KeyboardEvent) => {
-      if (['1', '2', '3', '4'].includes(e.key)) {
-        const pId = parseInt(e.key, 10) - 1;
-        if (movablePawns.includes(pId)) {
+      const numCode = (e.key >= '1' && e.key <= '4') ? parseInt(e.key, 10) - 1 :
+                      (e.keyCode >= 49 && e.keyCode <= 52) ? e.keyCode - 49 :
+                      (e.keyCode >= 97 && e.keyCode <= 100) ? e.keyCode - 97 : null;
+
+      if (numCode !== null) {
+        if (movablePawns.includes(numCode)) {
           e.preventDefault();
           playSoundFX.playHop();
-          setSelectedPawnId(pId);
-          sendGameAction('ludo_move_pawn', { pawnId: pId });
+          setSelectedPawnId(numCode);
+          sendGameAction('ludo_move_pawn', { pawnId: numCode });
           return;
         }
       }
+
       if (e.key === 'v' || e.key === 'V') {
         e.preventDefault();
         handleToggle3D();
+      }
+      if (e.key === 't' || e.key === 'T') {
+        e.preventDefault();
+        handleToggleTurbo();
       }
     };
 
     window.addEventListener('keydown', handleDirectKeys);
     return () => window.removeEventListener('keydown', handleDirectKeys);
-  }, [movablePawns, is3DMode]);
+  }, [movablePawns, is3DMode, isTurboMode]);
 
   // Sync with gameState viewMode3D if updated by a player
   useEffect(() => {
@@ -340,6 +398,8 @@ export const LudoBoardTV: React.FC = () => {
             onRollDice={() => {
               sendGameAction('ludo_roll_dice');
             }}
+            isTurboMode={isTurboMode}
+            onToggleTurbo={handleToggleTurbo}
           />
         </div>
       ) : (
@@ -624,11 +684,27 @@ export const LudoBoardTV: React.FC = () => {
                 ? 'bg-gradient-to-r from-amber-400 to-amber-500 text-neutral-950 border-amber-300 shadow-[0_0_15px_rgba(245,158,11,0.5)] font-black scale-102'
                 : 'bg-white/10 hover:bg-white/20 text-white border-white/20'
             }`}
-            title="Basculer entre l'interface 3D et 2D"
+            title="Basculer entre l'interface 3D et 2D (Touche JAUNE)"
           >
             {is3DMode ? <Box className="w-4 h-4" /> : <Layers className="w-4 h-4" />}
             <span>{is3DMode ? '3D' : '2D'}</span>
           </button>
+
+          {/* Mode Turbo 60 FPS Toggle Button */}
+          {is3DMode && (
+            <button
+              onClick={handleToggleTurbo}
+              className={`flex items-center space-x-1 px-2.5 py-1.5 rounded-xl border text-xs font-black transition-all shadow-md active:scale-95 cursor-pointer ${
+                isTurboMode
+                  ? 'bg-emerald-500/20 text-emerald-300 border-emerald-400/40'
+                  : 'bg-white/10 text-slate-300 border-white/20'
+              }`}
+              title="Activer le mode Turbo 60 FPS (Touche BLEUE - Recommandé TV Hisense)"
+            >
+              <Zap className="w-3.5 h-3.5 text-emerald-400" />
+              <span>{isTurboMode ? 'Turbo 60 FPS' : 'Détails'}</span>
+            </button>
+          )}
 
           {/* Theme Cycler */}
           <button
@@ -657,18 +733,26 @@ export const LudoBoardTV: React.FC = () => {
       </header>
 
       {/* ── 3. BANDEAU D'AIDE TÉLÉCOMMANDE TV HISENSE ── */}
-      <div className="fixed bottom-14 left-1/2 -translate-x-1/2 z-30 pointer-events-auto flex items-center space-x-3 bg-black/85 backdrop-blur-xl border-2 border-amber-400/50 px-4 py-2 rounded-2xl shadow-[0_0_25px_rgba(245,158,11,0.4)] animate-fade-in max-w-[92vw]">
+      <div className="fixed bottom-14 left-1/2 -translate-x-1/2 z-30 pointer-events-auto flex items-center space-x-3 bg-black/85 backdrop-blur-xl border-2 border-amber-400/50 px-4 py-2 rounded-2xl shadow-[0_0_25px_rgba(245,158,11,0.4)] animate-fade-in max-w-[94vw] text-xs">
         <div className="w-7 h-7 rounded-xl bg-amber-400/20 border border-amber-400/40 flex items-center justify-center shrink-0">
           <Gamepad2 className="w-4 h-4 text-amber-400 animate-pulse" />
         </div>
 
         {gameState.canRollDice ? (
-          <div className="flex items-center space-x-2 text-xs">
+          <div className="flex items-center space-x-2 text-xs flex-wrap">
             <span className="px-2 py-0.5 rounded-lg bg-amber-400 text-neutral-950 font-black uppercase text-[11px] shadow">
               [OK]
             </span>
             <span className="font-bold text-white">
-              Appuyez sur <strong className="text-amber-400 font-black">OK</strong> de votre télécommande pour lancer le dé (ou jouez sur mobile)
+              Lancer dé (ou touche <strong className="text-emerald-400">[VERTE]</strong>)
+            </span>
+            <span className="text-white/30">•</span>
+            <span className="text-[11px] text-amber-300">
+              [JAUNE] Mode 3D / 2D
+            </span>
+            <span className="text-white/30">•</span>
+            <span className="text-[11px] text-emerald-300">
+              [BLEU] Turbo TV
             </span>
           </div>
         ) : movablePawns.length > 0 ? (
@@ -678,7 +762,7 @@ export const LudoBoardTV: React.FC = () => {
                 ⬅️ ➡️
               </span>
               <span className="text-slate-200">
-                Changer de pion ({selectedPawnId !== null ? `Pion #${selectedPawnId + 1}` : ''})
+                Pion ({selectedPawnId !== null ? `#${selectedPawnId + 1}` : ''})
               </span>
             </div>
 
@@ -693,24 +777,22 @@ export const LudoBoardTV: React.FC = () => {
               </span>
             </div>
 
-            {selectedOption && (
-              <span className="text-amber-300 font-bold bg-white/10 px-2.5 py-0.5 rounded-md text-[11px]">
-                {selectedOption.isExitingHome
-                  ? '🚀 Sortie de base'
-                  : selectedOption.willCapture
-                  ? '⚔️ Capture adverse !'
-                  : `➔ Case ${selectedOption.targetPosition}`}
-              </span>
-            )}
+            <span className="text-white/30">•</span>
+
+            <span className="text-[11px] text-gray-300">
+              Touches [1] [2] [3] [4] (Direct)
+            </span>
 
             <span className="text-white/30">•</span>
-            <span className="text-[11px] text-gray-400">
-              Touches [1] [2] [3] [4]
+            <span className="text-[11px] text-amber-300">
+              [JAUNE] 3D/2D
             </span>
           </div>
         ) : (
-          <div className="text-xs text-slate-300">
-            <span>Tour en cours... Utilisez votre smartphone ou la télécommande TV</span>
+          <div className="flex items-center space-x-2 text-xs">
+            <span className="text-slate-300">Tour en cours...</span>
+            <span className="text-white/30">•</span>
+            <span className="text-[11px] text-amber-300">[JAUNE] 3D / 2D</span>
           </div>
         )}
       </div>

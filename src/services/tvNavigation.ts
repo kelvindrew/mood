@@ -16,7 +16,8 @@ import { audio } from './audio';
 
 export type TVDirection = 'up' | 'down' | 'left' | 'right';
 export type TVAction = TVDirection | 'select';
-export type TVNavAction = TVDirection | 'select';
+export type TVColorKey = 'red' | 'green' | 'yellow' | 'blue';
+export type TVNavAction = TVDirection | 'select' | 'back' | TVColorKey;
 
 const TV_KEYS: Record<string, TVDirection | 'select' | 'back' | 'red' | 'green' | 'yellow' | 'blue'> = {
   // Standard Web Keyboard
@@ -51,10 +52,14 @@ const TV_KEYS: Record<string, TVDirection | 'select' | 'back' | 'red' | 'green' 
   '404': 'green',
   '405': 'yellow',
   '406': 'blue',
+  ColorF0Red: 'red',
+  ColorF1Green: 'green',
+  ColorF2Yellow: 'yellow',
+  ColorF3Blue: 'blue',
 };
 
-type NavAction = TVDirection | 'select' | 'back';
-const NAV_ACTION_KEYS = new Set<string>(['up', 'down', 'left', 'right', 'select', 'back']);
+type NavAction = TVDirection | 'select' | 'back' | TVColorKey;
+const NAV_ACTION_KEYS = new Set<string>(['up', 'down', 'left', 'right', 'select', 'back', 'red', 'green', 'yellow', 'blue']);
 
 const FOCUSABLE_SELECTOR =
   '[data-tv-focus], button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
@@ -282,6 +287,7 @@ class TVNavigationService {
       }
 
       if (!this.isEnabled) return;
+      if (action === 'red' || action === 'green' || action === 'yellow' || action === 'blue') return;
 
       if (action === 'select') {
         const activeEl = (document.activeElement as HTMLElement) || this.currentFocusElement;
