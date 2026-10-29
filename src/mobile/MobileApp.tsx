@@ -4,7 +4,7 @@ import { MobileJoinView } from './views/MobileJoinView';
 import { MobileLobbyView } from './views/MobileLobbyView';
 import { MobileSpectatorView } from './views/MobileSpectatorView';
 import { useWakeLock } from '../hooks/useWakeLock';
-import { Loader2 } from 'lucide-react';
+import { WindowsSpinner } from '../components/WindowsSpinner';
 
 // Code-splitting dynamique des contrôleurs mobiles pour un chargement ultra-léger sur smartphone
 const LudoController = React.lazy(() => import('./views/controllers/LudoController').then(m => ({ default: m.LudoController })));
@@ -35,7 +35,7 @@ const ControllerLoader: React.FC = () => (
   <div className="flex flex-col items-center justify-center min-h-screen bg-[#070D0B] text-white p-6 select-none space-y-4 animate-fade-in">
     <div className="relative flex items-center justify-center">
       <div className="w-16 h-16 rounded-2xl bg-cyan-500/15 border border-cyan-400/40 flex items-center justify-center shadow-[0_0_25px_rgba(6,182,212,0.3)]">
-        <Loader2 className="w-8 h-8 text-cyan-400 animate-spin" />
+        <WindowsSpinner size="lg" className="text-cyan-400" />
       </div>
       <div className="absolute inset-0 rounded-2xl bg-cyan-400/20 blur-xl animate-pulse pointer-events-none" />
     </div>
@@ -55,7 +55,7 @@ interface MobileAppProps {
   defaultRoomCode?: string;
 }
 
-export const MobileApp: React.FC<MobileAppProps> = ({ isSimulatorMode = false, defaultRoomCode = '' }) => {
+export const MobileApp: React.FC<MobileAppProps> = ({ defaultRoomCode = '' }) => {
   const { room, mobileView, localPlayer, isAutoReconnecting } = useGame();
 
   // Empêche l'extinction de l'écran du smartphone pendant la partie
@@ -65,7 +65,7 @@ export const MobileApp: React.FC<MobileAppProps> = ({ isSimulatorMode = false, d
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-[#070D0B] text-white p-6 select-none space-y-4">
         <div className="w-16 h-16 rounded-2xl bg-cyan-500/20 border border-cyan-400/40 flex items-center justify-center shadow-2xl animate-pulse">
-          <Loader2 className="w-8 h-8 text-cyan-400 animate-spin" />
+          <WindowsSpinner size="lg" className="text-cyan-400" />
         </div>
         <div className="text-center space-y-1">
           <h2 className="text-lg font-black font-display tracking-wider text-white">RECONNEXION À LA PARTIE</h2>

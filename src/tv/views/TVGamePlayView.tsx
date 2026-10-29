@@ -1,7 +1,8 @@
 import React, { useEffect, Suspense } from 'react';
 import { useGame } from '../../context/GameContext';
 import { tvNav } from '../../services/tvNavigation';
-import { ArrowLeft, Loader2 } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
+import { WindowsSpinner } from '../../components/WindowsSpinner';
 
 // Code-splitting dynamique des 15 plateaux TV pour un démarrage instantané de l'accueil
 const LudoBoardTV = React.lazy(() => import('../boards/LudoBoardTV').then(m => ({ default: m.LudoBoardTV })));
@@ -31,7 +32,7 @@ const JeuDePaysBoardTV = React.lazy(() => import('../boards/JeuDePaysBoardTV').t
 const TVBoardLoader: React.FC<{ gameId: string }> = ({ gameId }) => (
   <div className="flex flex-col items-center justify-center space-y-4 text-center select-none animate-scale-in">
     <div className="w-16 h-16 rounded-3xl bg-cyan-950/40 border border-cyan-400/40 flex items-center justify-center shadow-[0_0_30px_rgba(6,182,212,0.3)]">
-      <Loader2 className="w-8 h-8 text-cyan-400 animate-spin" />
+      <WindowsSpinner size="lg" className="text-cyan-400" />
     </div>
     <div className="flex flex-col space-y-1">
       <span className="font-display font-black text-xl text-white tracking-wide uppercase">

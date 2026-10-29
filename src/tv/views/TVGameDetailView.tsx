@@ -1,8 +1,9 @@
+import { WindowsSpinner } from '../../components/WindowsSpinner';
 import React, { useState, useEffect } from 'react';
 import { useGame } from '../../context/GameContext';
 import { GAMES_CATALOG } from '../../data/gamesCatalog';
 import { GameCatalogItem } from '../../types/game';
-import { Play, Heart, BookOpen, ArrowLeft, Users, Clock, Flame, CheckCircle, Sliders, Shield, Loader2, AlertCircle } from 'lucide-react';
+import { Play, Heart, BookOpen, ArrowLeft, Users, Clock, Flame, CheckCircle, Sliders, Shield, AlertCircle } from 'lucide-react';
 import { audio } from '../../services/audio';
 import { tvNav } from '../../services/tvNavigation';
 import { useTvBack, useTvModalScope } from '../hooks/useTvNav';
@@ -198,7 +199,7 @@ const CreateRoomModal: React.FC<CreateModalProps> = ({
           >
             {isCreating ? (
               <>
-                <Loader2 className="w-4 h-4 animate-spin" />
+                <WindowsSpinner size="sm" className="text-slate-950" />
                 <span>CRÉATION DU SALON...</span>
               </>
             ) : (

@@ -1,7 +1,8 @@
 import React from 'react';
 import { useGame, ConnectionState } from '../../context/GameContext';
-import { Volume2, VolumeX, User } from 'lucide-react';
+import { Volume2, VolumeX } from 'lucide-react';
 import { audio } from '../../services/audio';
+import { WindowsSpinner } from '../../components/WindowsSpinner';
 
 // E9 — badge reflétant l'état RÉEL de la liaison Socket.IO
 const BADGE: Record<ConnectionState, { label: string; wrap: string; dot: string; ping: boolean }> = {
@@ -12,7 +13,7 @@ const BADGE: Record<ConnectionState, { label: string; wrap: string; dot: string;
 };
 
 export const MobileHeader: React.FC = () => {
-  const { room, localPlayer, selectedGame, connectionState } = useGame();
+  const { room, localPlayer, connectionState } = useGame();
   const [muted, setMuted] = React.useState(false);
   const badge = BADGE[connectionState];
 
@@ -48,12 +49,16 @@ export const MobileHeader: React.FC = () => {
           data-conn={connectionState}
           className={`flex items-center space-x-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold ${badge.wrap}`}
         >
-          <span className="relative flex h-2 w-2 flex-shrink-0">
-            {badge.ping && (
-              <span className={`animate-ping absolute inline-flex h-full w-full rounded-full ${badge.dot} opacity-75`} />
-            )}
-            <span className={`relative inline-flex rounded-full h-2 w-2 ${badge.dot}`} />
-          </span>
+          {connectionState === 'connecting' || connectionState === 'reconnecting' ? (
+            <WindowsSpinner size="xs" className="w-3 h-3 flex-shrink-0 mr-0.5" />
+          ) : (
+            <span className="relative flex h-2 w-2 flex-shrink-0">
+              {badge.ping && (
+                <span className={`animate-ping absolute inline-flex h-full w-full rounded-full ${badge.dot} opacity-75`} />
+              )}
+              <span className={`relative inline-flex rounded-full h-2 w-2 ${badge.dot}`} />
+            </span>
+          )}
           <span>{badge.label}</span>
         </div>
 

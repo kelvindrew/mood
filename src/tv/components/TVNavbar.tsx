@@ -2,9 +2,10 @@ import React from 'react';
 import { useGame } from '../../context/GameContext';
 import { Settings, Radio } from 'lucide-react';
 import { audio } from '../../services/audio';
+import { WindowsSpinner } from '../../components/WindowsSpinner';
 
 export const TVNavbar: React.FC = () => {
-  const { room, setTvView, setSelectedCategory } = useGame();
+  const { room, setTvView, setSelectedCategory, connectionState } = useGame();
 
   return (
     <header className="fixed top-0 left-0 right-0 z-40 px-8 md:px-14 py-5 flex items-center justify-between select-none">
@@ -30,6 +31,16 @@ export const TVNavbar: React.FC = () => {
 
       {/* Droite : indicateur de salon actif + réglages uniquement */}
       <div className="relative flex items-center space-x-3 pointer-events-auto">
+        {/* Indicateur de connexion style Windows si connexion en cours */}
+        {(connectionState === 'connecting' || connectionState === 'reconnecting') && (
+          <div className="flex items-center space-x-2 liquid-glass-pill px-3 py-1.5 shadow-lg text-xs font-bold text-cyan-300 animate-fade-in">
+            <WindowsSpinner size="xs" className="text-cyan-400" />
+            <span className="text-[11px] uppercase tracking-wider font-semibold">
+              {connectionState === 'connecting' ? 'Connexion…' : 'Reconnexion…'}
+            </span>
+          </div>
+        )}
+
         {/* Indicateur de salon connecté (discret, si actif) */}
         {room && (
           <div className="flex items-center space-x-2 liquid-glass-pill px-3 py-1.5 shadow-lg">

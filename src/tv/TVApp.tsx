@@ -5,7 +5,7 @@ import { TVHomeView } from './views/TVHomeView';
 import { TVLobbyView } from './views/TVLobbyView';
 import { TVGamePlayView } from './views/TVGamePlayView';
 import { TVToast } from './components/TVToast';
-import { Loader2 } from 'lucide-react';
+import { WindowsSpinner } from '../components/WindowsSpinner';
 
 const TVResultsView = React.lazy(() => import('./views/TVResultsView').then(m => ({ default: m.TVResultsView })));
 const TVAdminView = React.lazy(() => import('./views/TVAdminView').then(m => ({ default: m.TVAdminView })));
@@ -18,7 +18,7 @@ const ViewLoader: React.FC = () => (
   <div className="flex flex-col items-center justify-center min-h-screen bg-[#0A0F1D] text-white select-none space-y-4 animate-fade-in">
     <div className="relative flex items-center justify-center">
       <div className="w-16 h-16 rounded-2xl bg-cyan-500/10 border border-cyan-400/30 flex items-center justify-center shadow-[0_0_25px_rgba(6,182,212,0.25)]">
-        <Loader2 className="w-8 h-8 text-cyan-400 animate-spin" />
+        <WindowsSpinner size="lg" className="text-cyan-400" />
       </div>
       <div className="absolute inset-0 rounded-2xl bg-cyan-400/20 blur-xl animate-pulse pointer-events-none" />
     </div>

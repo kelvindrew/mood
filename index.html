@@ -72,22 +72,25 @@
         position: relative;
         width: 48px;
         height: 48px;
-        margin-bottom: 18px;
+        margin-bottom: 22px;
       }
-      .mood-spinner-track {
+      .win-dot-wrap {
         position: absolute;
         inset: 0;
-        border-radius: 50%;
-        border: 3px solid rgba(255,255,255,0.08);
+        opacity: 0;
+        transform-origin: center center;
+        animation: winRingSpin 4.2s cubic-bezier(0.1, 0.85, 0.25, 1) infinite;
       }
-      .mood-spinner-ring {
+      .win-dot {
         position: absolute;
-        inset: 0;
+        top: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 17%;
+        height: 17%;
         border-radius: 50%;
-        border: 3px solid transparent;
-        border-top-color: #ffffff;
-        border-right-color: #cbd5e1;
-        animation: moodSpin 0.9s cubic-bezier(0.5, 0.1, 0.5, 0.9) infinite;
+        background-color: #38bdf8;
+        box-shadow: 0 0 8px #38bdf8;
       }
       .mood-preloader-text {
         font-size: 13px;
@@ -97,9 +100,15 @@
         text-transform: uppercase;
         animation: moodTextPulse 1.8s ease-in-out infinite;
       }
-      @keyframes moodSpin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
+      @keyframes winRingSpin {
+        0% { transform: rotate(225deg); opacity: 1; animation-timing-function: ease-out; }
+        7% { transform: rotate(345deg); animation-timing-function: linear; }
+        30% { transform: rotate(455deg); animation-timing-function: ease-in-out; }
+        39% { transform: rotate(690deg); animation-timing-function: linear; }
+        70% { transform: rotate(815deg); opacity: 1; animation-timing-function: ease-out; }
+        75% { transform: rotate(945deg); animation-timing-function: ease-out; }
+        76% { transform: rotate(945deg); opacity: 0; }
+        100% { transform: rotate(945deg); opacity: 0; }
       }
       @keyframes moodPulse {
         0%, 100% { transform: scale(0.9); opacity: 0.5; }
@@ -119,9 +128,13 @@
         <span class="mood-preloader-title">MOOD</span>
         <span class="mood-preloader-badge">TV</span>
       </div>
-      <div class="mood-spinner-box">
-        <div class="mood-spinner-track"></div>
-        <div class="mood-spinner-ring"></div>
+      <div class="mood-spinner-box win-progress-ring">
+        <div class="win-dot-wrap" style="animation-delay: 0s"><div class="win-dot"></div></div>
+        <div class="win-dot-wrap" style="animation-delay: 0.16s"><div class="win-dot"></div></div>
+        <div class="win-dot-wrap" style="animation-delay: 0.32s"><div class="win-dot"></div></div>
+        <div class="win-dot-wrap" style="animation-delay: 0.48s"><div class="win-dot"></div></div>
+        <div class="win-dot-wrap" style="animation-delay: 0.64s"><div class="win-dot"></div></div>
+        <div class="win-dot-wrap" style="animation-delay: 0.80s"><div class="win-dot"></div></div>
       </div>
       <div class="mood-preloader-text">Chargement du salon…</div>
     </div>
