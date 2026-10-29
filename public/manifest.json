@@ -1,0 +1,18 @@
+{
+  "name": "MOOD — Plateforme Jeux Salon & Smart TV",
+  "short_name": "MOOD",
+  "description": "Plateforme multijoueur salon pour Smart TV Hisense et manettes mobiles",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#07090E",
+  "theme_color": "#07090E",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

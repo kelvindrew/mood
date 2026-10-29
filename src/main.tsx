@@ -4,6 +4,7 @@ import { GameProvider, useGame } from './context/GameContext';
 import { TVApp } from './tv/TVApp';
 import { MobileApp } from './mobile/MobileApp';
 import { ConnectionBanner } from './components/ConnectionBanner';
+import { startIdleAssetPreloading } from './services/assetPreloader';
 import './index.css';
 
 const RootRouter: React.FC = () => {
@@ -21,6 +22,11 @@ const RootRouter: React.FC = () => {
       return () => clearTimeout(timer);
     }
   }, []);
+
+  // Téléchargement et mise en cache local de tous les modules et assets en arrière-plan
+  React.useEffect(() => {
+    startIdleAssetPreloading(appMode);
+  }, [appMode]);
 
   if (appMode === 'mobile') {
     return <MobileApp />;
