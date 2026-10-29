@@ -39,6 +39,13 @@ const TV_KEYS: Record<string, TVDirection | 'select' | 'back' | 'red' | 'green' 
   '461': 'back',   // webOS Back
   '27': 'back',
 
+  // Hisense VIDAA & Android TV remote keycodes
+  Back: 'back',
+  BrowserBack: 'back',
+  '8': 'back',
+  '10182': 'back',
+  '65385': 'back', // Hisense hardware back keycode
+
   // Color keys on TV remotes (réservées, non gérées par le moteur)
   '403': 'red',
   '404': 'green',
@@ -264,18 +271,19 @@ class TVNavigationService {
         return;
       }
 
+      // Les handlers personnalisés (jeux, modales, coverflow) sont prioritaires
+      for (let i = this.keyHandlers.length - 1; i >= 0; i--) {
+        try {
+          if (this.keyHandlers[i](action as TVNavAction, e) === true) {
+            e.preventDefault();
+            return;
+          }
+        } catch { /* handler isolé */ }
+      }
+
       if (!this.isEnabled) return;
 
       if (action === 'select') {
-        // M4 — handlers personnalisés d'abord (ex: valider le poster central)
-        for (let i = this.keyHandlers.length - 1; i >= 0; i--) {
-          try {
-            if (this.keyHandlers[i](action, e) === true) {
-              e.preventDefault();
-              return;
-            }
-          } catch { /* handler isolé */ }
-        }
         const activeEl = (document.activeElement as HTMLElement) || this.currentFocusElement;
         if (activeEl && (activeEl.tagName === 'BUTTON' || activeEl.hasAttribute('data-tv-focus'))) {
           audio.playSelect();
@@ -285,15 +293,6 @@ class TVNavigationService {
 
       // Directional keys
       const dir = action as TVDirection;
-      for (let i = this.keyHandlers.length - 1; i >= 0; i--) {
-        try {
-          if (this.keyHandlers[i](dir, e) === true) {
-            e.preventDefault();
-            return;
-          }
-        } catch { /* handler isolé */ }
-      }
-
       e.preventDefault();
       this.moveFocus(dir);
       this.listeners.forEach(fn => {
@@ -387,6 +386,38 @@ class TVNavigationService {
           if (score < minDistance) {
             minDistance = score;
             bestCandidate = el;
+          }
+        }
+      }
+
+      // Fallback pour grands écrans 16:9 (Hisense TV, Android TV) : si aucun élément n'est strictement
+      // dominant (ex: monter d'une carte décalée vers le bouton Héros), sélectionner le plus proche dans le demi-plan.
+      if (!bestCandidate) {
+        let fallbackMin = Infinity;
+        for (const el of allFocusables) {
+          if (el === currentEl) continue;
+          const rect = el.getBoundingClientRect();
+          const center = {
+            x: rect.left + rect.width / 2,
+            y: rect.top + rect.height / 2,
+          };
+          const dx = center.x - currentCenter.x;
+          const dy = center.y - currentCenter.y;
+          let inHalfPlane = false;
+          let pDist = 0;
+          let sDist = 0;
+          switch (direction) {
+            case 'up': inHalfPlane = dy < -8; pDist = Math.abs(dy); sDist = Math.abs(dx); break;
+            case 'down': inHalfPlane = dy > 8; pDist = Math.abs(dy); sDist = Math.abs(dx); break;
+            case 'left': inHalfPlane = dx < -8; pDist = Math.abs(dx); sDist = Math.abs(dy); break;
+            case 'right': inHalfPlane = dx > 8; pDist = Math.abs(dx); sDist = Math.abs(dy); break;
+          }
+          if (inHalfPlane) {
+            const fallbackScore = pDist * 1.5 + sDist;
+            if (fallbackScore < fallbackMin) {
+              fallbackMin = fallbackScore;
+              bestCandidate = el;
+            }
           }
         }
       }

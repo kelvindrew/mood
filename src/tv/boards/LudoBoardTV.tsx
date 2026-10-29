@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useGame } from '../../context/GameContext';
 import { LudoGameState, LudoPawn } from '../../types/game';
-import { Clock, Trophy, Sparkles, Shield, Crown, Box, Layers, Palette, X } from 'lucide-react';
+import { Clock, Trophy, Sparkles, Shield, Crown, Box, Layers, Palette, X, Gamepad2 } from 'lucide-react';
 import { playCamera, CameraState } from '../../engine/PlayCamera';
 import { playParticles } from '../../engine/PlayParticleEngine';
 import { playSoundFX } from '../../engine/PlaySoundFX';
 import { GAME_THEMES, GameThemeId } from '../../engine/PlayThemes';
 import { LudoBoard3D } from './LudoBoard3D';
+import { tvNav } from '../../services/tvNavigation';
 
 const CELL_SIZE = 40;
 
@@ -63,6 +64,7 @@ export const LudoBoardTV: React.FC = () => {
   const [isRollingAnimation, setIsRollingAnimation] = useState(false);
   const [animatedDiceVal, setAnimatedDiceVal] = useState<number | null>(null);
   const [showRulesModal, setShowRulesModal] = useState<boolean>(false);
+  const [selectedPawnId, setSelectedPawnId] = useState<number | null>(null);
 
   // 3D View Mode State
   const [is3DMode, setIs3DMode] = useState<boolean>(() => {
@@ -74,6 +76,90 @@ export const LudoBoardTV: React.FC = () => {
   const prevActionLogRef = useRef<string>('');
 
   const theme = GAME_THEMES[currentTheme] || GAME_THEMES.classic_royal;
+
+  const activeColor = gameState?.currentTurnColor || 'red';
+  const movablePawns = gameState?.movablePawns || [];
+  const movableOptions = gameState?.movableOptions || [];
+
+  // Maintient la sélection télécommande TV sur un pion valide
+  useEffect(() => {
+    if (movablePawns.length > 0) {
+      setSelectedPawnId((prev) => {
+        if (prev !== null && movablePawns.includes(prev)) return prev;
+        return movablePawns[0];
+      });
+    } else {
+      setSelectedPawnId(null);
+    }
+  }, [movablePawns]);
+
+  // Support de la télécommande TV Hisense (D-Pad, OK)
+  useEffect(() => {
+    const unregister = tvNav.registerKeyHandler((action) => {
+      // Touche OK / Entrée : lancer le dé ou déplacer le pion sélectionné
+      if (action === 'select') {
+        if (gameState?.canRollDice) {
+          playSoundFX.playDiceRoll();
+          sendGameAction('ludo_roll_dice');
+          return true;
+        }
+        if (selectedPawnId !== null && movablePawns.includes(selectedPawnId)) {
+          playSoundFX.playHop();
+          sendGameAction('ludo_move_pawn', { pawnId: selectedPawnId });
+          return true;
+        }
+      }
+
+      // Flèche Gauche ou Haut : sélectionner le pion jouable précédent
+      if (action === 'left' || action === 'up') {
+        if (movablePawns.length > 1) {
+          const curIdx = selectedPawnId !== null ? movablePawns.indexOf(selectedPawnId) : 0;
+          const prevIdx = (curIdx - 1 + movablePawns.length) % movablePawns.length;
+          setSelectedPawnId(movablePawns[prevIdx]);
+          playSoundFX.playHop();
+          return true;
+        }
+      }
+
+      // Flèche Droite ou Bas : sélectionner le pion jouable suivant
+      if (action === 'right' || action === 'down') {
+        if (movablePawns.length > 1) {
+          const curIdx = selectedPawnId !== null ? movablePawns.indexOf(selectedPawnId) : 0;
+          const nextIdx = (curIdx + 1) % movablePawns.length;
+          setSelectedPawnId(movablePawns[nextIdx]);
+          playSoundFX.playHop();
+          return true;
+        }
+      }
+
+      return false;
+    });
+
+    return () => unregister();
+  }, [gameState?.canRollDice, selectedPawnId, movablePawns]);
+
+  // Raccourcis directs télécommande TV (touches 1, 2, 3, 4 et touche V)
+  useEffect(() => {
+    const handleDirectKeys = (e: KeyboardEvent) => {
+      if (['1', '2', '3', '4'].includes(e.key)) {
+        const pId = parseInt(e.key, 10) - 1;
+        if (movablePawns.includes(pId)) {
+          e.preventDefault();
+          playSoundFX.playHop();
+          setSelectedPawnId(pId);
+          sendGameAction('ludo_move_pawn', { pawnId: pId });
+          return;
+        }
+      }
+      if (e.key === 'v' || e.key === 'V') {
+        e.preventDefault();
+        handleToggle3D();
+      }
+    };
+
+    window.addEventListener('keydown', handleDirectKeys);
+    return () => window.removeEventListener('keydown', handleDirectKeys);
+  }, [movablePawns, is3DMode]);
 
   // Sync with gameState viewMode3D if updated by a player
   useEffect(() => {
@@ -183,7 +269,6 @@ export const LudoBoardTV: React.FC = () => {
     return <div className="p-10 text-white">Chargement du Ludo 3D Deluxe...</div>;
   }
 
-  const activeColor = gameState.currentTurnColor || 'red';
   const activeSkin = theme.pawnSkins[activeColor] || theme.pawnSkins.red;
   const activePlayer = room?.players.find((p) => p.color === activeColor);
 
@@ -214,6 +299,28 @@ export const LudoBoardTV: React.FC = () => {
     };
   });
 
+  const selectedOption = selectedPawnId !== null
+    ? movableOptions.find((o) => o.pawnId === selectedPawnId)
+    : null;
+
+  const getTargetPixelPos = (option: typeof selectedOption): { x: number; y: number } | null => {
+    if (!option) return null;
+    if (option.isWinning) return { x: 300, y: 300 };
+    if (option.isExitingHome) {
+      const startIndices: Record<string, number> = { red: 0, green: 13, yellow: 26, blue: 39 };
+      const startIdx = startIndices[activeColor] ?? 0;
+      return TRACK_COORDS[startIdx];
+    }
+    if (option.targetPosition >= 100) {
+      const stretchIdx = Math.min(4, Math.max(0, option.targetPosition - 100));
+      const stretch = HOME_STRETCH_COORDS[activeColor];
+      return stretch?.[stretchIdx] || null;
+    }
+    return TRACK_COORDS[option.targetPosition % 52] || null;
+  };
+
+  const targetPx = getTargetPixelPos(selectedOption);
+
   return (
     <div className={`relative w-full h-screen select-none overflow-hidden bg-gradient-to-br ${theme.bgGradient} transition-colors duration-1000`}>
       {/* ── 1. GRANDE ZONE DE JEU PLEIN ÉCRAN (3D ou 2D) ── */}
@@ -225,7 +332,9 @@ export const LudoBoardTV: React.FC = () => {
             currentTheme={currentTheme}
             isRollingAnimation={isRollingAnimation}
             animatedDiceVal={animatedDiceVal}
+            selectedPawnId={selectedPawnId}
             onSelectPawn={(pawnId) => {
+              setSelectedPawnId(pawnId);
               sendGameAction('ludo_move_pawn', { pawnId });
             }}
             onRollDice={() => {
@@ -347,9 +456,37 @@ export const LudoBoardTV: React.FC = () => {
               <polygon points="360,240 360,360 300,300" fill={theme.pawnSkins.yellow.accent} stroke="#000000" strokeWidth="1.5" />
               <polygon points="240,360 360,360 300,300" fill={theme.pawnSkins.blue.accent} stroke="#000000" strokeWidth="1.5" />
 
+              {/* Destination Landing Tile Highlight */}
+              {targetPx && (
+                <g className="animate-pulse">
+                  <rect
+                    x={targetPx.x - CELL_SIZE / 2}
+                    y={targetPx.y - CELL_SIZE / 2}
+                    width={CELL_SIZE}
+                    height={CELL_SIZE}
+                    fill="#10B981"
+                    opacity="0.4"
+                  />
+                  <rect
+                    x={targetPx.x - CELL_SIZE / 2}
+                    y={targetPx.y - CELL_SIZE / 2}
+                    width={CELL_SIZE}
+                    height={CELL_SIZE}
+                    fill="none"
+                    stroke="#FBBF24"
+                    strokeWidth="3.5"
+                    strokeDasharray="6 3"
+                    className="animate-spin"
+                    style={{ animationDuration: '4s', transformOrigin: `${targetPx.x}px ${targetPx.y}px` }}
+                  />
+                </g>
+              )}
+
               {/* 2D Pawns */}
               {renderedPawns.map(({ pawn, x, y, isMovable }) => {
                 const skin = theme.pawnSkins[pawn.color as keyof typeof theme.pawnSkins] || theme.pawnSkins.red;
+                const isSelected = selectedPawnId === pawn.id && pawn.color === activeColor;
+
                 return (
                   <g
                     key={`pawn_${pawn.color}_${pawn.id}`}
@@ -360,13 +497,34 @@ export const LudoBoardTV: React.FC = () => {
                     className="cursor-pointer"
                     onClick={() => {
                       if (isMovable) {
+                        setSelectedPawnId(pawn.id);
                         playSoundFX.playHop();
                         sendGameAction('ludo_move_pawn', { pawnId: pawn.id });
                       }
                     }}
                   >
                     <ellipse cx="0" cy="12" rx="15" ry="5.5" fill="#000000" opacity="0.6" />
-                    {isMovable && (
+                    {isSelected && (
+                      <g>
+                        <circle
+                          cx="0"
+                          cy="0"
+                          r="28"
+                          fill="none"
+                          stroke="#FBBF24"
+                          strokeWidth="4"
+                          strokeDasharray="6 3"
+                          className="animate-spin"
+                          style={{ animationDuration: '2.5s' }}
+                        />
+                        <polygon
+                          points="0,-22 -7,-34 7,-34"
+                          fill="#FBBF24"
+                          className="animate-bounce"
+                        />
+                      </g>
+                    )}
+                    {isMovable && !isSelected && (
                       <circle
                         cx="0"
                         cy="0"
@@ -498,7 +656,66 @@ export const LudoBoardTV: React.FC = () => {
         </div>
       </header>
 
-      {/* ── 3. PODIUMS JOUEURS FLOTTANTS EN BAS (MINI-CHIPS) ── */}
+      {/* ── 3. BANDEAU D'AIDE TÉLÉCOMMANDE TV HISENSE ── */}
+      <div className="fixed bottom-14 left-1/2 -translate-x-1/2 z-30 pointer-events-auto flex items-center space-x-3 bg-black/85 backdrop-blur-xl border-2 border-amber-400/50 px-4 py-2 rounded-2xl shadow-[0_0_25px_rgba(245,158,11,0.4)] animate-fade-in max-w-[92vw]">
+        <div className="w-7 h-7 rounded-xl bg-amber-400/20 border border-amber-400/40 flex items-center justify-center shrink-0">
+          <Gamepad2 className="w-4 h-4 text-amber-400 animate-pulse" />
+        </div>
+
+        {gameState.canRollDice ? (
+          <div className="flex items-center space-x-2 text-xs">
+            <span className="px-2 py-0.5 rounded-lg bg-amber-400 text-neutral-950 font-black uppercase text-[11px] shadow">
+              [OK]
+            </span>
+            <span className="font-bold text-white">
+              Appuyez sur <strong className="text-amber-400 font-black">OK</strong> de votre télécommande pour lancer le dé (ou jouez sur mobile)
+            </span>
+          </div>
+        ) : movablePawns.length > 0 ? (
+          <div className="flex items-center space-x-2 text-xs flex-wrap">
+            <div className="flex items-center space-x-1">
+              <span className="px-2 py-0.5 rounded-lg bg-white/20 text-white font-mono font-black text-[11px]">
+                ⬅️ ➡️
+              </span>
+              <span className="text-slate-200">
+                Changer de pion ({selectedPawnId !== null ? `Pion #${selectedPawnId + 1}` : ''})
+              </span>
+            </div>
+
+            <span className="text-white/30">•</span>
+
+            <div className="flex items-center space-x-1">
+              <span className="px-2 py-0.5 rounded-lg bg-emerald-400 text-neutral-950 font-black uppercase text-[11px] shadow">
+                [OK]
+              </span>
+              <span className="font-black text-emerald-400">
+                Déplacer
+              </span>
+            </div>
+
+            {selectedOption && (
+              <span className="text-amber-300 font-bold bg-white/10 px-2.5 py-0.5 rounded-md text-[11px]">
+                {selectedOption.isExitingHome
+                  ? '🚀 Sortie de base'
+                  : selectedOption.willCapture
+                  ? '⚔️ Capture adverse !'
+                  : `➔ Case ${selectedOption.targetPosition}`}
+              </span>
+            )}
+
+            <span className="text-white/30">•</span>
+            <span className="text-[11px] text-gray-400">
+              Touches [1] [2] [3] [4]
+            </span>
+          </div>
+        ) : (
+          <div className="text-xs text-slate-300">
+            <span>Tour en cours... Utilisez votre smartphone ou la télécommande TV</span>
+          </div>
+        )}
+      </div>
+
+      {/* ── 4. PODIUMS JOUEURS FLOTTANTS EN BAS (MINI-CHIPS) ── */}
       <footer className="fixed bottom-3 left-4 right-4 z-20 pointer-events-none flex items-center justify-between gap-2 overflow-x-auto pb-1">
         <div className="pointer-events-auto flex items-center space-x-2 bg-black/75 backdrop-blur-xl border border-white/15 p-2 rounded-2xl shadow-2xl mx-auto">
           {gameState.players.map((col) => {

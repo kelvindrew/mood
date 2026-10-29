@@ -10,6 +10,7 @@ interface LudoBoard3DProps {
   currentTheme: GameThemeId;
   isRollingAnimation: boolean;
   animatedDiceVal: number | null;
+  selectedPawnId?: number | null;
   onSelectPawn: (pawnId: number) => void;
   onRollDice?: () => void;
 }
@@ -208,6 +209,7 @@ export const LudoBoard3D: React.FC<LudoBoard3DProps> = ({
   currentTheme,
   isRollingAnimation,
   animatedDiceVal,
+  selectedPawnId,
   onSelectPawn,
   onRollDice,
 }) => {
@@ -221,6 +223,8 @@ export const LudoBoard3D: React.FC<LudoBoard3DProps> = ({
     pawnMeshes: Map<string, THREE.Group>;
     haloMeshes: Map<string, THREE.Mesh>;
     diceMesh: THREE.Mesh;
+    selectionBeaconMesh: THREE.Group;
+    targetMarkerMesh: THREE.Mesh;
     targetDiceRot: THREE.Euler;
     targetCamPos: THREE.Vector3;
     targetCamLookAt: THREE.Vector3;
@@ -274,6 +278,32 @@ export const LudoBoard3D: React.FC<LudoBoard3DProps> = ({
     }
 
     const trackPt = TRACK_GRID[pawn.position % 52] || { col: 7, row: 7 };
+    const w = gridToWorld(trackPt.col, trackPt.row);
+    return { x: w.x, y: baseY, z: w.z };
+  };
+
+  // Compute destination 3D coordinates for a selected pawn move
+  const getDestinationWorldPos = (targetPos: number | undefined, isExitingHome: boolean | undefined, isWinning: boolean | undefined, playerColor: string): { x: number; y: number; z: number } | null => {
+    if (isWinning) {
+      return { x: 0, y: 0.85, z: 0 };
+    }
+    const baseY = 0.38;
+    if (isExitingHome) {
+      const startIndices: Record<string, number> = { red: 0, green: 13, yellow: 26, blue: 39 };
+      const startIdx = startIndices[playerColor] ?? 0;
+      const trackPt = TRACK_GRID[startIdx];
+      const w = gridToWorld(trackPt.col, trackPt.row);
+      return { x: w.x, y: baseY, z: w.z };
+    }
+    if (targetPos === undefined || targetPos < 0) return null;
+    if (targetPos >= 100) {
+      const stretchIdx = Math.min(4, Math.max(0, targetPos - 100));
+      const coords = HOME_STRETCH_GRID[playerColor];
+      const pt = coords?.[stretchIdx] || { col: 7, row: 7 };
+      const w = gridToWorld(pt.col, pt.row);
+      return { x: w.x, y: baseY + 0.15 + stretchIdx * 0.05, z: w.z };
+    }
+    const trackPt = TRACK_GRID[targetPos % 52] || { col: 7, row: 7 };
     const w = gridToWorld(trackPt.col, trackPt.row);
     return { x: w.x, y: baseY, z: w.z };
   };
@@ -551,11 +581,52 @@ export const LudoBoard3D: React.FC<LudoBoard3DProps> = ({
     diceMesh.castShadow = true;
     scene.add(diceMesh);
 
-    // 7. Pawns map & Halos map
+    // 7. TV Selection Beacon (Points to the actively selected pawn with vertical glowing arrow)
+    const selectionBeaconMesh = new THREE.Group();
+    const coneGeo = new THREE.ConeGeometry(0.24, 0.48, 16);
+    coneGeo.rotateX(Math.PI); // Point downwards to pawn
+    const coneMat = new THREE.MeshBasicMaterial({
+      color: 0xfbbf24,
+      transparent: true,
+      opacity: 0.95,
+    });
+    const coneMesh = new THREE.Mesh(coneGeo, coneMat);
+    coneMesh.position.y = 0.4;
+    selectionBeaconMesh.add(coneMesh);
+
+    const beaconRingGeo = new THREE.RingGeometry(0.18, 0.38, 24);
+    beaconRingGeo.rotateX(-Math.PI / 2);
+    const beaconRingMat = new THREE.MeshBasicMaterial({
+      color: 0xfde047,
+      side: THREE.DoubleSide,
+      transparent: true,
+      opacity: 0.85,
+    });
+    const beaconRingMesh = new THREE.Mesh(beaconRingGeo, beaconRingMat);
+    beaconRingMesh.position.y = 0.05;
+    selectionBeaconMesh.add(beaconRingMesh);
+    selectionBeaconMesh.visible = false;
+    scene.add(selectionBeaconMesh);
+
+    // 8. Target Destination Landing Marker (Glows on the destination tile)
+    const targetRingGeo = new THREE.RingGeometry(0.22, 0.48, 32);
+    targetRingGeo.rotateX(-Math.PI / 2);
+    const targetRingMat = new THREE.MeshBasicMaterial({
+      color: 0x10b981,
+      side: THREE.DoubleSide,
+      transparent: true,
+      opacity: 0.9,
+    });
+    const targetMarkerMesh = new THREE.Mesh(targetRingGeo, targetRingMat);
+    targetMarkerMesh.position.set(0, 0.38, 0);
+    targetMarkerMesh.visible = false;
+    scene.add(targetMarkerMesh);
+
+    // 9. Pawns map & Halos map
     const pawnMeshes = new Map<string, THREE.Group>();
     const haloMeshes = new Map<string, THREE.Mesh>();
 
-    // 8. Raycasting & Mouse Controls: Natural framing (radius: 17.5) with full-screen tabletop geometry
+    // 10. Raycasting & Mouse Controls: Natural framing (radius: 17.5) with full-screen tabletop geometry
     const raycaster = new THREE.Raycaster();
     const mouse = new THREE.Vector2();
 
@@ -568,6 +639,8 @@ export const LudoBoard3D: React.FC<LudoBoard3DProps> = ({
       pawnMeshes,
       haloMeshes,
       diceMesh,
+      selectionBeaconMesh,
+      targetMarkerMesh,
       targetDiceRot: new THREE.Euler(),
       targetCamPos: initialCamPos.clone(),
       targetCamLookAt: initialLookAt.clone(),
@@ -724,6 +797,8 @@ export const LudoBoard3D: React.FC<LudoBoard3DProps> = ({
         camLookAt,
         targetCamPos,
         targetCamLookAt,
+        selectionBeaconMesh,
+        targetMarkerMesh,
       } = threeRef.current;
 
       // Rotate crown in center
@@ -772,12 +847,34 @@ export const LudoBoard3D: React.FC<LudoBoard3DProps> = ({
         diceMesh.position.y = THREE.MathUtils.lerp(diceMesh.position.y, 0.88, 0.12);
       }
 
-      // Smooth pawn position transitions (hops)
+      // Rotate selection beacon & target marker
+      if (selectionBeaconMesh.visible) {
+        selectionBeaconMesh.rotation.y += delta * 2.5;
+      }
+      if (targetMarkerMesh.visible) {
+        targetMarkerMesh.rotation.y += delta * 1.8;
+      }
+
+      // Smooth pawn position transitions (hops with arc)
       pawnMeshes.forEach((mesh) => {
         const target = mesh.userData.targetPos;
         if (target) {
-          mesh.position.x = THREE.MathUtils.lerp(mesh.position.x, target.x, 0.16);
-          mesh.position.z = THREE.MathUtils.lerp(mesh.position.z, target.z, 0.16);
+          const dx = target.x - mesh.position.x;
+          const dz = target.z - mesh.position.z;
+          const distHoriz = Math.hypot(dx, dz);
+
+          if (distHoriz > 0.04) {
+            mesh.position.x = THREE.MathUtils.lerp(mesh.position.x, target.x, 0.18);
+            mesh.position.z = THREE.MathUtils.lerp(mesh.position.z, target.z, 0.18);
+            const hopHeight = Math.sin(Math.min(1, distHoriz * 1.8) * Math.PI) * 0.85;
+            mesh.position.y = (mesh.userData.baseY || 0.35) + hopHeight;
+          } else {
+            mesh.position.x = target.x;
+            mesh.position.z = target.z;
+            if (!mesh.userData?.isMovable) {
+              mesh.position.y = THREE.MathUtils.lerp(mesh.position.y, mesh.userData.baseY || 0.35, 0.2);
+            }
+          }
         }
       });
 
@@ -943,6 +1040,36 @@ export const LudoBoard3D: React.FC<LudoBoard3DProps> = ({
       }
     });
   }, [gameState.pawns, gameState.movablePawns, gameState.currentTurnColor]);
+
+  // Update TV Selection Beacon & Destination Landing Marker in 3D
+  useEffect(() => {
+    if (!threeRef.current) return;
+    const { selectionBeaconMesh, targetMarkerMesh, pawnMeshes } = threeRef.current;
+    const activeColor = gameState.currentTurnColor || 'red';
+
+    if (selectedPawnId !== null && selectedPawnId !== undefined) {
+      const pawnKey = `${activeColor}_${selectedPawnId}`;
+      const pawnGroup = pawnMeshes.get(pawnKey);
+      if (pawnGroup) {
+        selectionBeaconMesh.position.set(pawnGroup.position.x, (pawnGroup.userData?.baseY || 0.35) + 0.85, pawnGroup.position.z);
+        selectionBeaconMesh.visible = true;
+      } else {
+        selectionBeaconMesh.visible = false;
+      }
+
+      const option = (gameState.movableOptions || []).find((o) => o.pawnId === selectedPawnId);
+      const destPos = getDestinationWorldPos(option?.targetPosition, option?.isExitingHome, option?.isWinning, activeColor);
+      if (destPos) {
+        targetMarkerMesh.position.set(destPos.x, destPos.y + 0.02, destPos.z);
+        targetMarkerMesh.visible = true;
+      } else {
+        targetMarkerMesh.visible = false;
+      }
+    } else {
+      selectionBeaconMesh.visible = false;
+      targetMarkerMesh.visible = false;
+    }
+  }, [selectedPawnId, gameState.movableOptions, gameState.currentTurnColor]);
 
   // Adjust camera to player corner when 'follow' preset is active
   useEffect(() => {

@@ -45,10 +45,15 @@ export const TVHomeView: React.FC = () => {
     }
   };
 
-  const handleFocus = (game: GameCatalogItem) => {
+  const handleFocus = (game: GameCatalogItem, targetEl?: HTMLElement | null) => {
     audio.playFocus();
     setSpotlightGame(game);
     setSelectedGame(game);
+    if (targetEl) {
+      try {
+        targetEl.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+      } catch {}
+    }
   };
 
   const isLandscapeMode = branding.homeBackgroundMode === 'landscapes';
@@ -148,8 +153,8 @@ export const TVHomeView: React.FC = () => {
                 key={game.id}
                 data-tv-focus
                 tabIndex={0}
-                onFocus={() => handleFocus(game)}
-                onMouseEnter={() => handleFocus(game)}
+                onFocus={(e) => handleFocus(game, e.currentTarget)}
+                onMouseEnter={(e) => handleFocus(game, e.currentTarget)}
                 onClick={() => handlePlay(game)}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handlePlay(game); }
