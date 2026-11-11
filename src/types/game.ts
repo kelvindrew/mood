@@ -496,6 +496,8 @@ export interface FourPicsGameState {
   combos?: Record<string, number>;
   solvedPlayersThisRound: string[];
   revealedLettersPositions?: Record<string, number[]>;
+  revealedLetters?: Array<{ position: number; char: string }>;
+  incorrectGuessAt?: number;
   removedLettersIndices?: Record<string, number[]>;
   zoomedImageIndex?: number | null;
   autoAdvanceSeconds?: number;

@@ -37,6 +37,7 @@ export const FourPicsController: React.FC = () => {
   const [selectedLetterIds, setSelectedLetterIds] = useState<string[]>([]);
   const [feedbackError, setFeedbackError] = useState<string>('');
   const [inspectImageIndex, setInspectImageIndex] = useState<number | null>(null);
+  const [showClue, setShowClue] = useState(false);
 
   const currentPuzzle = gameState?.currentPuzzle;
   const wordLength = currentPuzzle?.wordLength || 4;
@@ -56,6 +57,7 @@ export const FourPicsController: React.FC = () => {
       setLetterTiles(tiles);
       setSelectedLetterIds([]);
       setFeedbackError('');
+      setShowClue(false);
     }
   }, [gameState?.roundNumber, gameState?.currentPuzzle?.id]);
 
@@ -69,20 +71,33 @@ export const FourPicsController: React.FC = () => {
     }
   }, [gameState?.removedLettersIndices, localPlayer?.id]);
 
+  useEffect(() => {
+    if (!gameState?.incorrectGuessAt) return;
+    setFeedbackError('Ce n’est pas le bon mot. Essaie encore !');
+    const timeout = window.setTimeout(() => setFeedbackError(''), 1500);
+    return () => window.clearTimeout(timeout);
+  }, [gameState?.incorrectGuessAt]);
+
   if (!gameState || !currentPuzzle || !localPlayer) return null;
 
   const isSolvedByMe = gameState.solvedPlayersThisRound?.includes(localPlayer.id);
   const isRevealed = gameState.roundStatus === 'revealed';
   const myScore = gameState.scores[localPlayer.id] || 0;
   const myCombo = gameState.combos ? gameState.combos[localPlayer.id] || 0 : 0;
+  const revealedByPosition = new Map((gameState.revealedLetters || []).map((item) => [item.position, item.char]));
+  const openPositions = Array.from({ length: wordLength }, (_, index) => index).filter((index) => !revealedByPosition.has(index));
+  const chosenChars = selectedLetterIds.map((id) => letterTiles.find((tile) => tile.id === id)?.char || '');
 
-  // Construct current composed word string
-  const composedWord = selectedLetterIds
-    .map((id) => letterTiles.find((t) => t.id === id)?.char || '')
-    .join('');
+  const composeGuess = (ids: string[]) => {
+    const chars = ids.map((id) => letterTiles.find((tile) => tile.id === id)?.char || '');
+    let selectedIndex = 0;
+    return Array.from({ length: wordLength }, (_, index) =>
+      revealedByPosition.get(index) || chars[ selectedIndex++ ] || ''
+    ).join('');
+  };
 
   const handleSelectTile = (tileId: string) => {
-    if (selectedLetterIds.length >= wordLength || isSolvedByMe || isRevealed) return;
+    if (selectedLetterIds.length >= openPositions.length || isSolvedByMe || isRevealed) return;
 
     triggerHaptic(hapticPatterns.tap);
     playSoundFX.playHop();
@@ -95,23 +110,21 @@ export const FourPicsController: React.FC = () => {
     );
 
     // Auto-submit when word is complete
-    if (newSelected.length === wordLength) {
-      const fullWord = newSelected
-        .map((id) => letterTiles.find((t) => t.id === id)?.char || '')
-        .join('');
-      submitWord(fullWord);
+    if (newSelected.length === openPositions.length) {
+      submitWord(composeGuess(newSelected));
     }
   };
 
   const handleRemovePlacedSlot = (slotIndex: number) => {
-    if (slotIndex >= selectedLetterIds.length || isSolvedByMe || isRevealed) return;
+    const selectedIndex = openPositions.indexOf(slotIndex);
+    if (selectedIndex < 0 || selectedIndex >= selectedLetterIds.length || isSolvedByMe || isRevealed) return;
 
     triggerHaptic(hapticPatterns.tap);
     playSoundFX.playHop();
     setFeedbackError('');
 
-    const removedTileId = selectedLetterIds[slotIndex];
-    setSelectedLetterIds((prev) => prev.filter((_, i) => i !== slotIndex));
+    const removedTileId = selectedLetterIds[selectedIndex];
+    setSelectedLetterIds((prev) => prev.filter((_, i) => i !== selectedIndex));
     setLetterTiles((prev) =>
       prev.map((t) => (t.id === removedTileId ? { ...t, isUsed: false } : t))
     );
@@ -169,10 +182,10 @@ export const FourPicsController: React.FC = () => {
   const levelMultiplier = (1 + (currentLvl - 1) * 0.25).toFixed(2);
 
   return (
-    <div className="min-h-screen flex flex-col justify-between bg-[#07090E] text-white select-none relative overflow-hidden">
+    <div className="min-h-screen flex flex-col justify-between bg-[#07090E] text-white select-none relative overflow-x-hidden">
       <MobileHeader />
 
-      <main className="p-3.5 flex-1 flex flex-col justify-between space-y-2.5 relative z-10">
+      <main className="p-3.5 flex-1 flex flex-col justify-start gap-3 relative z-10">
         {/* 1. Header: Level & Score */}
         <div className="flex items-center justify-between p-2.5 rounded-xl bg-[#121622] border border-white/10 shadow-sm">
           <div>
@@ -218,29 +231,40 @@ export const FourPicsController: React.FC = () => {
         </div>
 
         {/* 2. 4 Mini Thumbnails Preview with Click-to-Zoom */}
-        <div className="grid grid-cols-4 gap-1.5">
+        <div className="grid grid-cols-2 gap-2">
           {currentPuzzle.images.map((img, i) => (
-            <div
+            <button
+              type="button"
               key={`thumb_${i}`}
               onClick={() => setInspectImageIndex(i)}
-              className="relative aspect-square rounded-xl overflow-hidden bg-[#101420] border border-white/20 shadow-sm cursor-pointer group"
+              aria-label={`Agrandir l’image indice ${i + 1}`}
+              className="relative aspect-[1.2/1] rounded-2xl overflow-hidden bg-[#101420] border border-white/15 shadow-sm cursor-pointer group"
             >
-              <img src={img} alt={`Indice ${i + 1}`} className="w-full h-full object-cover" />
-              <span className="absolute top-1 left-1 px-1 py-0.2 rounded bg-black/70 text-[8px] font-mono font-bold text-amber-400">
+              <img src={img} alt={`Image indice ${i + 1}`} onError={(e) => { e.currentTarget.style.opacity = '0'; }} className="w-full h-full object-cover" />
+              <span className="absolute top-2 left-2 px-2 py-1 rounded-lg bg-black/70 text-[10px] font-mono font-bold text-lime-200">
                 #{i + 1}
               </span>
-              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
-                <ZoomIn className="w-3.5 h-3.5 text-white" />
+              <div className="absolute inset-0 bg-black/25 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                <ZoomIn className="w-5 h-5 text-white" />
               </div>
-            </div>
+            </button>
           ))}
+        </div>
+
+        <div className="rounded-xl border border-white/10 bg-white/[0.035] px-3 py-2">
+          <button type="button" onClick={() => setShowClue((shown) => !shown)} className="flex w-full items-center justify-between text-left text-xs font-bold text-lime-200" aria-expanded={showClue}>
+            <span className="flex items-center gap-2"><Lightbulb className="h-4 w-4" /> {showClue ? 'Masquer l’indice' : 'Afficher l’indice'}</span>
+            <span className="text-white/45">{showClue ? '−' : '+'}</span>
+          </button>
+          {showClue && <p className="mt-2 border-t border-white/10 pt-2 text-sm leading-relaxed text-white/80">{currentPuzzle.hint || 'Observe les quatre images pour trouver leur point commun.'}</p>}
         </div>
 
         {/* 3. Word Mystery Slots (Composed Letters) */}
         <div className="space-y-1.5 text-center">
           <div className="flex items-center justify-center flex-wrap gap-1 max-w-full px-1">
             {Array.from({ length: wordLength }).map((_, idx) => {
-              const char = composedWord[idx] || '';
+              const selectedOrder = openPositions.indexOf(idx);
+              const char = revealedByPosition.get(idx) || (selectedOrder >= 0 ? chosenChars[selectedOrder] : '') || '';
 
               const slotSizeClass =
                 wordLength > 10
@@ -253,10 +277,11 @@ export const FourPicsController: React.FC = () => {
                 <button
                   key={`slot_${idx}`}
                   onClick={() => handleRemovePlacedSlot(idx)}
+                  disabled={revealedByPosition.has(idx) || selectedOrder < 0 || selectedOrder >= selectedLetterIds.length}
                   className={`${slotSizeClass} rounded-xl border-2 font-display font-black flex items-center justify-center transition-all shadow-md ${
                     char
                       ? 'bg-gradient-to-tr from-emerald-500 to-teal-400 border-white text-black scale-105 animate-scale-in'
-                      : 'bg-[#101420] border-white/20 text-gray-500'
+                    : 'bg-[#101420] border-white/20 text-gray-500'
                   }`}
                 >
                   {char || '_'}

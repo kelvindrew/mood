@@ -13,7 +13,7 @@ import {
   ZoomIn,
   X,
   Star,
-  Map,
+  Map as MapIcon,
   ChevronRight,
   Zap,
   Play,
@@ -28,12 +28,16 @@ import { LEVEL_DEFINITIONS } from '../../types/fourPicsConstants';
 export const FourPicsBoardTV: React.FC = () => {
   const { room, returnToLobby, sendGameAction } = useGame();
   const gameState = room?.gameState as FourPicsGameState | undefined;
+  const revealedByPosition = new Map((gameState?.revealedLetters || []).map((item) => [item.position, item.char]));
+  const openPositions = Array.from({ length: gameState?.currentPuzzle?.wordLength || 0 }, (_, index) => index)
+    .filter((index) => !revealedByPosition.has(index));
 
   const [showStageSelector, setShowStageSelector] = useState<boolean>(false);
   const [activeZoomIndex, setActiveZoomIndex] = useState<number | null>(null);
   const [lastStarsAwarded, setLastStarsAwarded] = useState<number>(0);
   const [newMilestone, setNewMilestone] = useState<MilestoneReward | null>(null);
   const [localComposed, setLocalComposed] = useState<string>('');
+  const revealedLettersKey = (gameState?.revealedLetters || []).map((item) => `${item.position}:${item.char}`).join('|');
 
   // Handle local TV/PC letter tile clicks
   const handleTvTileClick = (char: string) => {
@@ -41,10 +45,14 @@ export const FourPicsBoardTV: React.FC = () => {
     audio.playSelect();
     setLocalComposed((prev) => {
       const wordLen = gameState?.currentPuzzle?.wordLength || 4;
-      if (prev.length >= wordLen) return prev;
+      if (prev.length >= openPositions.length) return prev;
       const next = prev + char;
-      if (next.length === wordLen) {
-        sendGameAction('four_pics_submit_word', { word: next });
+      if (next.length === openPositions.length) {
+        let letterIndex = 0;
+        const answer = Array.from({ length: wordLen }, (_, index) =>
+          revealedByPosition.get(index) || next[letterIndex++] || ''
+        ).join('');
+        sendGameAction('four_pics_submit_word', { word: answer });
       }
       return next;
     });
@@ -76,10 +84,14 @@ export const FourPicsBoardTV: React.FC = () => {
         const char = e.key.toUpperCase();
         setLocalComposed((prev) => {
           const wordLen = gameState.currentPuzzle?.wordLength || 4;
-          if (prev.length >= wordLen) return prev;
+          if (prev.length >= openPositions.length) return prev;
           const next = prev + char;
-          if (next.length === wordLen) {
-            sendGameAction('four_pics_submit_word', { word: next });
+          if (next.length === openPositions.length) {
+            let letterIndex = 0;
+            const answer = Array.from({ length: wordLen }, (_, index) =>
+              revealedByPosition.get(index) || next[letterIndex++] || ''
+            ).join('');
+            sendGameAction('four_pics_submit_word', { word: answer });
           }
           return next;
         });
@@ -88,7 +100,7 @@ export const FourPicsBoardTV: React.FC = () => {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [gameState?.roundStatus, gameState?.currentPuzzle?.wordLength, showStageSelector, activeZoomIndex]);
+  }, [gameState?.roundStatus, gameState?.currentPuzzle?.wordLength, showStageSelector, activeZoomIndex, revealedLettersKey]);
 
   useEffect(() => {
     tvNav.setInitialFocus('button');
@@ -206,7 +218,7 @@ export const FourPicsBoardTV: React.FC = () => {
             className="flex items-center space-x-1.5 px-3.5 py-2 rounded-xl bg-[#121622] border border-white/15 hover:bg-white hover:text-black focus:bg-white focus:text-black transition-all outline-none"
             title="Ouvrir la carte de tous les niveaux"
           >
-            <Map className="w-4 h-4 text-emerald-400" />
+            <MapIcon className="w-4 h-4 text-emerald-400" />
             <span className="font-black text-xs uppercase">Carte des Niveaux</span>
           </button>
 
@@ -318,9 +330,11 @@ export const FourPicsBoardTV: React.FC = () => {
         {/* Word Length Mystery Letter Slots */}
         <div className="mt-3.5 flex items-center justify-center flex-wrap gap-1.5 sm:gap-2 max-w-2xl px-2">
           {Array.from({ length: wordLength }).map((_, idx) => {
-            const revealedLetter =
-              isRevealed && gameState.roundResult ? gameState.roundResult.word[idx] : null;
-            const displayChar = revealedLetter || localComposed[idx] || '';
+            const revealedLetter = isRevealed && gameState.roundResult
+              ? gameState.roundResult.word[idx]
+              : revealedByPosition.get(idx);
+            const openIndex = openPositions.indexOf(idx);
+            const displayChar = revealedLetter || (openIndex >= 0 ? localComposed[openIndex] : '') || '';
 
             const slotSizeClass =
               wordLength > 10

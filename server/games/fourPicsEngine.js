@@ -55,6 +55,7 @@ export class FourPicsEngine {
     this.solvedPlayersThisRound = [];
     this.revealedLettersPositions = {}; // playerId -> [indices]
     this.removedLettersIndices = {}; // playerId -> [indices in scrambledLetters]
+    this.incorrectGuessAt = {}; // playerId -> timestamp, kept private to that player
     this.zoomedImageIndex = null;
     this.winner = null;
     this.lastActionLog = 'La partie de 4 Images 1 Mot commence ! Observez les 4 indices.';
@@ -104,6 +105,7 @@ export class FourPicsEngine {
     for (const p of this.players) {
       this.revealedLettersPositions[p.id] = [];
       this.removedLettersIndices[p.id] = [];
+      this.incorrectGuessAt[p.id] = 0;
       this.hintsUsed[p.id] = { reveals: 0, removed: 0 };
     }
 
@@ -233,6 +235,7 @@ export class FourPicsEngine {
       return { success: true, correct: true, points: totalEarned, stars };
     } else {
       this.combos[playerId] = 0;
+      this.incorrectGuessAt[playerId] = Date.now();
       this.notify();
       return { success: false, correct: false, error: 'Mot incorrect' };
     }
@@ -400,6 +403,16 @@ export class FourPicsEngine {
       winner: this.winner,
       autoAdvanceSeconds: this.autoAdvanceSeconds || 0,
       lastActionLog: this.lastActionLog,
+    };
+  }
+
+  // The revealed character belongs only to the player who bought the hint.
+  getPrivateState(playerId) {
+    const word = this.currentPuzzle?.word?.toUpperCase() || '';
+    const positions = this.revealedLettersPositions[playerId] || [];
+    return {
+      revealedLetters: positions.map((position) => ({ position, char: word[position] || '' })),
+      incorrectGuessAt: this.incorrectGuessAt[playerId] || 0,
     };
   }
 

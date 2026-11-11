@@ -24,6 +24,7 @@ import {
   LogOut,
   Sparkles,
   Compass,
+  Search,
 } from 'lucide-react';
 import { ImageUploader } from '../components/ImageUploader';
 import { AIContentStudioPanel } from '../components/AIContentStudioPanel';
@@ -51,6 +52,10 @@ export const TVAdminView: React.FC = () => {
   const [editingLandscape, setEditingLandscape] = useState<WorldLandscapeItem | null>(null);
   const [newPassword, setNewPassword] = useState<string>('');
   const [saveSuccessMsg, setSaveSuccessMsg] = useState<string>('');
+  const [gameSearch, setGameSearch] = useState('');
+  const [puzzleSearch, setPuzzleSearch] = useState('');
+  const [puzzlePage, setPuzzlePage] = useState(0);
+  const puzzlesPerPage = 24;
 
   useEffect(() => {
     const unsub = adminCms.subscribe(() => {
@@ -67,6 +72,19 @@ export const TVAdminView: React.FC = () => {
     setSaveSuccessMsg(msg);
     setTimeout(() => setSaveSuccessMsg(''), 3500);
   };
+
+  const filteredGames = games.filter((game) =>
+    `${game.title} ${game.category} ${game.tagline}`.toLocaleLowerCase().includes(gameSearch.trim().toLocaleLowerCase())
+  );
+  const filteredPuzzles = puzzles.filter((puzzle) =>
+    `${puzzle.word} ${puzzle.category} ${puzzle.hint || ''}`.toLocaleLowerCase().includes(puzzleSearch.trim().toLocaleLowerCase())
+  );
+  const puzzlePageCount = Math.max(1, Math.ceil(filteredPuzzles.length / puzzlesPerPage));
+  const visiblePuzzles = filteredPuzzles.slice(puzzlePage * puzzlesPerPage, (puzzlePage + 1) * puzzlesPerPage);
+
+  useEffect(() => {
+    setPuzzlePage((page) => Math.min(page, Math.max(0, Math.ceil(filteredPuzzles.length / puzzlesPerPage) - 1)));
+  }, [filteredPuzzles.length]);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -270,8 +288,8 @@ export const TVAdminView: React.FC = () => {
   // ============================================================
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen flex items-center justify-center px-4 bg-[#0A0F1D] select-none">
-        <div className="max-w-md w-full p-8 rounded-3xl bg-slate-900/90 border border-cyan-500/30 shadow-[0_0_30px_rgba(6,182,212,0.15)] space-y-6 animate-scale-in">
+      <div className="mood-admin__login min-h-screen flex items-center justify-center px-4 bg-[#0A0F1D] select-none">
+        <div className="mood-admin__login-card max-w-md w-full p-8 rounded-3xl bg-slate-900/90 border border-cyan-500/30 shadow-[0_0_30px_rgba(6,182,212,0.15)] space-y-6 animate-scale-in">
           <div className="flex flex-col items-center text-center space-y-2">
             <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-cyan-500 to-indigo-600 flex items-center justify-center shadow-lg border border-white/20">
               <Lock className="w-8 h-8 text-white" />
@@ -408,10 +426,10 @@ export const TVAdminView: React.FC = () => {
   // MAIN ADMIN DASHBOARD
   // ============================================================
   return (
-    <div className="min-h-screen pt-20 px-8 pb-16 bg-[#0A0F1D] select-none text-white flex flex-col justify-between">
+    <div className="mood-admin min-h-screen pt-20 px-8 pb-16 bg-[#0A0F1D] select-none text-white flex flex-col justify-between">
       {/* Top Header & Navigation Tabs */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between border-b border-white/10 pb-4">
+      <div className="mood-admin__top space-y-4">
+        <div className="mood-admin__header flex items-center justify-between border-b border-white/10 pb-4">
           <div className="flex items-center space-x-3">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-500 to-indigo-600 flex items-center justify-center shadow-[0_0_15px_rgba(6,182,212,0.3)]">
               <Shield className="w-5 h-5 text-white" />
@@ -454,7 +472,7 @@ export const TVAdminView: React.FC = () => {
         )}
 
         {/* Dashboard Tabs */}
-        <div className="flex items-center space-x-2 border-b border-white/10 pb-3 overflow-x-auto scrollbar-none">
+        <div className="mood-admin__tabs grid grid-cols-2 lg:grid-cols-3 2xl:grid-cols-6 gap-2 border-b border-white/10 pb-3">
           {[
             { id: 'catalog', label: '🎮 Catalogue des Jeux', icon: Gamepad2 },
             { id: 'four_pics', label: '🖼️ Énigmes 4 Images 1 Mot', icon: Image },
@@ -472,9 +490,9 @@ export const TVAdminView: React.FC = () => {
                   audio.playSelect();
                   setActiveTab(tab.id as any);
                 }}
-                className={`flex items-center space-x-2 px-5 py-2.5 rounded-2xl text-xs font-black uppercase tracking-wider transition-all whitespace-nowrap ${
+                className={`mood-admin__tab flex items-center space-x-2 px-4 py-3 rounded-2xl text-xs font-black uppercase tracking-wider transition-all ${
                   isActive
-                    ? 'bg-gradient-to-r from-cyan-500 to-indigo-600 text-white shadow-lg scale-105'
+                    ? 'mood-admin__tab--active bg-gradient-to-r from-cyan-500 to-indigo-600 text-white shadow-lg'
                     : 'bg-slate-900/80 border border-slate-700/60 text-slate-400 hover:text-white'
                 }`}
               >
@@ -487,7 +505,7 @@ export const TVAdminView: React.FC = () => {
       </div>
 
       {/* Main Tab Content */}
-      <main className="my-6 flex-1">
+      <main className="mood-admin__content my-6 flex-1">
         {/* ========================================================= */}
         {/* TAB 0: AI CONTENT STUDIO (GEMINI) */}
         {/* ========================================================= */}
@@ -503,7 +521,7 @@ export const TVAdminView: React.FC = () => {
                 <p className="text-xs text-gray-400">Ajoutez, modifiez les descriptions, durées, images et règles de chaque jeu.</p>
               </div>
 
-              <div className="flex items-center space-x-3">
+              <div className="mood-admin__actions flex items-center space-x-3">
                 <button
                   onClick={() => {
                     setEditingGame({
@@ -769,9 +787,24 @@ export const TVAdminView: React.FC = () => {
               </div>
             )}
 
+            <div className="mood-admin__searchbar flex items-center justify-between gap-4 rounded-2xl border border-white/10 bg-white/[0.03] p-3">
+              <label className="relative block w-full max-w-md">
+                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/40" />
+                <input
+                  type="search"
+                  value={gameSearch}
+                  onChange={(e) => setGameSearch(e.target.value)}
+                  placeholder="Rechercher un jeu…"
+                  aria-label="Rechercher un jeu"
+                  className="w-full rounded-xl border border-white/10 bg-black/20 py-3 pl-10 pr-4 text-sm text-white placeholder:text-white/40 outline-none focus:border-lime-300/60"
+                />
+              </label>
+              <span className="shrink-0 text-xs font-bold text-white/55">{filteredGames.length} / {games.length} jeux</span>
+            </div>
+
             {/* Games Grid Listing */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {games.map((g) => (
+              {filteredGames.map((g) => (
                 <div key={g.id} className="p-4 rounded-2xl bg-surface-card border border-white/10 space-y-3 flex flex-col justify-between hover:border-white/20 transition-all shadow-md">
                   <div className="flex space-x-3">
                     <div
@@ -840,6 +873,7 @@ export const TVAdminView: React.FC = () => {
                 </div>
               ))}
             </div>
+            {filteredGames.length === 0 && <p className="rounded-2xl border border-white/10 bg-white/[0.03] p-8 text-center text-sm text-white/55">Aucun jeu ne correspond à cette recherche.</p>}
           </div>
         )}
 
@@ -890,6 +924,21 @@ export const TVAdminView: React.FC = () => {
                   <span>Réinitialiser</span>
                 </button>
               </div>
+            </div>
+
+            <div className="mood-admin__searchbar flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-white/10 bg-white/[0.03] p-3">
+              <label className="relative block w-full max-w-md">
+                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/40" />
+                <input
+                  type="search"
+                  value={puzzleSearch}
+                  onChange={(e) => { setPuzzleSearch(e.target.value); setPuzzlePage(0); }}
+                  placeholder="Rechercher par mot, thème ou indice…"
+                  aria-label="Rechercher une énigme"
+                  className="w-full rounded-xl border border-white/10 bg-black/20 py-3 pl-10 pr-4 text-sm text-white placeholder:text-white/40 outline-none focus:border-lime-300/60"
+                />
+              </label>
+              <span className="text-xs font-bold text-white/55">{filteredPuzzles.length.toLocaleString('fr-FR')} énigmes</span>
             </div>
 
             {/* Edit / Add Puzzle Form Modal */}
@@ -985,8 +1034,8 @@ export const TVAdminView: React.FC = () => {
             )}
 
             {/* Puzzles Listing Cards */}
-            <div className="grid grid-cols-2 gap-4">
-              {puzzles.map((p) => (
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+              {visiblePuzzles.map((p) => (
                 <div key={p.id} className="p-4 rounded-2xl bg-surface-card border border-white/10 space-y-3 shadow-md hover:border-white/20 transition-all">
                   <div className="flex items-center justify-between">
                     <div>
@@ -1034,6 +1083,17 @@ export const TVAdminView: React.FC = () => {
                   </div>
                 </div>
               ))}
+            </div>
+            {filteredPuzzles.length === 0 && <p className="rounded-2xl border border-white/10 bg-white/[0.03] p-8 text-center text-sm text-white/55">Aucune énigme ne correspond à cette recherche.</p>}
+
+            <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3">
+              <span className="text-xs font-semibold text-white/50">
+                {filteredPuzzles.length === 0 ? 'Aucune énigme trouvée' : `Page ${puzzlePage + 1} sur ${puzzlePageCount}`}
+              </span>
+              <div className="flex items-center gap-2">
+                <button type="button" onClick={() => setPuzzlePage((page) => Math.max(0, page - 1))} disabled={puzzlePage === 0} className="mood-admin__pager rounded-xl border border-white/10 px-4 py-2 text-xs font-bold text-white disabled:cursor-not-allowed disabled:opacity-35">Précédent</button>
+                <button type="button" onClick={() => setPuzzlePage((page) => Math.min(puzzlePageCount - 1, page + 1))} disabled={puzzlePage + 1 >= puzzlePageCount} className="mood-admin__pager rounded-xl border border-white/10 px-4 py-2 text-xs font-bold text-white disabled:cursor-not-allowed disabled:opacity-35">Suivant</button>
+              </div>
             </div>
           </div>
         )}

@@ -848,3 +848,188 @@ html.tv-ui .mood-tv-shell [class*="blur-"]:not([class*="backdrop-blur"]) {
   color: #15180f !important;
   box-shadow: none !important;
 }
+
+/* Admin workspace: calmer navigation and readable TV sized controls. */
+.mood-admin {
+  min-height: 100vh;
+  padding: clamp(82px, 10vh, 112px) clamp(22px, 5vw, 88px) 56px;
+  gap: 22px;
+  justify-content: flex-start;
+  background:
+    radial-gradient(ellipse at 92% 0%, rgba(198, 240, 103, 0.09), transparent 36rem),
+    #10120e !important;
+}
+
+.mood-admin__top,
+.mood-admin__content {
+  width: 100%;
+  max-width: 1680px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.mood-admin__header {
+  align-items: center;
+  padding-bottom: 20px;
+}
+
+.mood-admin__header h1 {
+  font-size: clamp(20px, 2vw, 30px);
+  letter-spacing: -0.04em;
+}
+
+.mood-admin__header > div:first-child > div:first-child {
+  background: var(--mood-tv-accent) !important;
+  color: #15180f;
+  box-shadow: none !important;
+}
+
+.mood-admin__header > div:first-child > div:first-child svg {
+  color: #15180f !important;
+}
+
+.mood-admin__header button,
+.mood-admin__actions button,
+.mood-admin__content button {
+  min-height: 42px;
+}
+
+.mood-admin__tabs {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  padding: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 20px;
+  background: rgba(24, 27, 21, 0.97);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.22);
+}
+
+.mood-admin__tab {
+  justify-content: flex-start;
+  min-width: 0;
+  min-height: 52px;
+  text-align: left;
+  color: rgba(255, 255, 255, 0.68);
+  background: rgba(255, 255, 255, 0.035) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.mood-admin__tab svg {
+  flex: 0 0 auto;
+  color: var(--mood-tv-accent) !important;
+}
+
+.mood-admin__tab span {
+  line-height: 1.3;
+}
+
+.mood-admin__tab:hover,
+.mood-admin__tab:focus-visible {
+  border-color: rgba(200, 243, 106, 0.55);
+  color: #fff;
+}
+
+.mood-admin__tab--active {
+  background: var(--mood-tv-accent) !important;
+  border-color: var(--mood-tv-accent) !important;
+  color: #15180f !important;
+  box-shadow: none !important;
+}
+
+.mood-admin__tab--active svg {
+  color: #15180f !important;
+}
+
+.mood-admin__content > div > div[class*="grid"] > div[class*="bg-surface-card"],
+.mood-admin__content > form,
+.mood-admin__content [class*="bg-surface-card"] {
+  border-color: rgba(255, 255, 255, 0.11) !important;
+  background: #1a1d18 !important;
+  box-shadow: none;
+}
+
+.mood-admin__content input:not([type="checkbox"]),
+.mood-admin__content select,
+.mood-admin__content textarea {
+  min-height: 44px;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+  background: #12140f !important;
+  color: #fff !important;
+  font-size: 14px;
+}
+
+.mood-admin__content input:focus,
+.mood-admin__content select:focus,
+.mood-admin__content textarea:focus {
+  border-color: rgba(200, 243, 106, 0.75) !important;
+  outline: 2px solid rgba(200, 243, 106, 0.22);
+}
+
+.mood-admin__content button:focus-visible,
+.mood-admin__header button:focus-visible {
+  outline: 3px solid var(--mood-tv-accent);
+  outline-offset: 3px;
+}
+
+.mood-admin__searchbar {
+  background: #171a15 !important;
+}
+
+.mood-admin__searchbar input {
+  min-height: 48px !important;
+}
+
+.mood-admin__pager:not(:disabled):hover,
+.mood-admin__pager:not(:disabled):focus-visible {
+  background: var(--mood-tv-accent);
+  color: #15180f;
+  border-color: var(--mood-tv-accent);
+}
+
+.mood-admin__login {
+  background:
+    radial-gradient(ellipse at 50% 20%, rgba(198, 240, 103, 0.11), transparent 28rem),
+    #10120e !important;
+}
+
+.mood-admin__login-card {
+  border-color: rgba(200, 243, 106, 0.2) !important;
+  background: #1a1d18 !important;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.36) !important;
+}
+
+.mood-admin__login-card > div:first-child > div:first-child {
+  background: var(--mood-tv-accent) !important;
+}
+
+.mood-admin__login-card > div:first-child > div:first-child svg {
+  color: #15180f !important;
+}
+
+@media (max-width: 760px) {
+  .mood-admin {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .mood-admin__header {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .mood-admin__tabs {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .mood-admin__tab {
+    padding: 10px;
+    font-size: 10px;
+  }
+
+  .mood-admin__actions {
+    flex-wrap: wrap;
+    justify-content: flex-start;
+  }
+}
