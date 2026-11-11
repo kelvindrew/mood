@@ -15,35 +15,16 @@ const SIZE_CLASSES: Record<NonNullable<WindowsSpinnerProps['size']>, string> = {
   xl: 'w-12 h-12',
 };
 
-/**
- * WindowsSpinner — Authentique anneau de progression style Windows (Windows Progress Ring).
- * Composé de 6 points en rotation orbitale non-linéaire (accélération, regroupement et décélération).
- * La couleur hérite de `currentColor` par défaut (ex: `text-cyan-400`, `text-amber-400`, `text-white`).
- */
+/** Compact three-dot progress mark: low-cost CSS animation for older TV browsers. */
 export const WindowsSpinner: React.FC<WindowsSpinnerProps> = ({
   size = 'md',
   className = '',
   dotClassName = '',
   label = 'Chargement en cours…',
-}) => {
-  const sizeClass = SIZE_CLASSES[size] || SIZE_CLASSES.md;
-
-  return (
-    <div
-      role="progressbar"
-      aria-label={label}
-      className={`win-progress-ring relative inline-block ${sizeClass} ${className}`}
-    >
-      {[0, 1, 2, 3, 4, 5].map((index) => (
-        <div
-          key={index}
-          className="win-dot-wrap"
-          style={{ animationDelay: `${index * 0.16}s` }}
-          aria-hidden="true"
-        >
-          <div className={`win-dot ${dotClassName}`} />
-        </div>
-      ))}
-    </div>
-  );
-};
+}) => (
+  <div role="progressbar" aria-label={label} className={'mood-loading-dots ' + (SIZE_CLASSES[size] || SIZE_CLASSES.md) + ' ' + className}>
+    {[0, 1, 2].map((index) => (
+      <span key={index} className={'mood-loading-dots__dot ' + dotClassName} style={{ animationDelay: (index * 0.16) + 's' }} aria-hidden="true" />
+    ))}
+  </div>
+);

@@ -1,3 +1,4 @@
+import { MoodLoadingScreen } from '../../components/MoodLoadingScreen';
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useGame } from '../../context/GameContext';
 import { ScrabbleGameState, ScrabbleWordHistoryItem } from '../../types/game';
@@ -218,7 +219,7 @@ export const WordBoardTV: React.FC = () => {
   }, [isGameOver, endStage]);
 
   if (!gameState) {
-    return <div className="p-10 text-white font-bold text-center">Chargement du plateau Scrabble...</div>;
+    return <MoodLoadingScreen label="Chargement du plateau Scrabble..." fullScreen={false} />;
   }
 
   const currentPlayer = room?.players.find((p) => p.id === gameState.currentPlayerId);

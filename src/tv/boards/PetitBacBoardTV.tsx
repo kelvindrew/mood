@@ -1,3 +1,4 @@
+import { MoodLoadingScreen } from '../../components/MoodLoadingScreen';
 import React, { useMemo } from 'react';
 import { useGame } from '../../context/GameContext';
 import { PetitBacGameState } from '../../types/game';
@@ -19,11 +20,7 @@ export const PetitBacBoardTV: React.FC = () => {
   const gameState = room?.gameState as PetitBacGameState | undefined;
 
   if (!gameState) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-[#0A0D14] text-white">
-        <span className="font-mono text-sm text-gray-400">Chargement du Petit Bac...</span>
-      </div>
-    );
+    return <MoodLoadingScreen label="Chargement du Petit Bac..." fullScreen={false} />;
   }
 
   const {

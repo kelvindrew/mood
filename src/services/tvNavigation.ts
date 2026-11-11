@@ -67,7 +67,7 @@ const FOCUSABLE_SELECTOR =
 const RING_CLASS = 'tv-focus-ring';
 const RING_STYLE_ID = 'tv-nav-ring-style';
 const RING_CSS = `
-.${RING_CLASS}{outline:4px solid #FBBF24 !important;outline-offset:3px !important;box-shadow:0 0 26px rgba(251,191,36,0.6) !important;}
+.${RING_CLASS}{outline:3px solid #C8F36A !important;outline-offset:4px !important;box-shadow:0 0 0 5px rgba(16,17,15,0.95) !important;}
 `;
 
 function isEditableTarget(el: EventTarget | null): boolean {
@@ -212,7 +212,7 @@ class TVNavigationService {
       this.currentFocusElement = el;
       el.focus();
       this.applyRing(el); // exigence 5 : focus toujours visible
-      el.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+      el.scrollIntoView({ behavior: 'auto', block: 'nearest', inline: 'nearest' });
     } catch {
       // Ignore focus errors on Smart TV
     }
@@ -228,7 +228,8 @@ class TVNavigationService {
   public setInitialFocus(selector: string = '[data-tv-focus]', rootEl?: HTMLElement | null) {
     setTimeout(() => {
       try {
-        let candidates = Array.from((rootEl || this.currentScopeRoot() || document).querySelectorAll<HTMLElement>(selector))
+        const searchRoot = rootEl || this.currentScopeRoot() || (selector === 'button' ? document.querySelector('main') : null) || document;
+        let candidates = Array.from(searchRoot.querySelectorAll<HTMLElement>(selector))
           .filter(el => !el.hasAttribute('disabled') && this.isVisible(el) && document.body.contains(el));
         if (candidates.length === 0 && selector !== '[data-tv-focus], button') {
           candidates = this.collectCandidates(rootEl);
@@ -438,3 +439,4 @@ class TVNavigationService {
 }
 
 export const tvNav = new TVNavigationService();
+

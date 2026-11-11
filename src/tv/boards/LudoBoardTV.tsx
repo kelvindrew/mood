@@ -1,3 +1,4 @@
+import { MoodLoadingScreen } from '../../components/MoodLoadingScreen';
 import React, { useState, useEffect, useRef } from 'react';
 import { useGame } from '../../context/GameContext';
 import { LudoGameState, LudoPawn } from '../../types/game';
@@ -324,7 +325,7 @@ export const LudoBoardTV: React.FC = () => {
   }, [gameState?.diceValue, gameState?.canRollDice, gameState?.lastActionLog, gameState?.winner, is3DMode]);
 
   if (!gameState) {
-    return <div className="p-10 text-white">Chargement du Ludo 3D Deluxe...</div>;
+    return <MoodLoadingScreen label="Chargement du Ludo 3D Deluxe..." fullScreen={false} />;
   }
 
   const activeSkin = theme.pawnSkins[activeColor] || theme.pawnSkins.red;

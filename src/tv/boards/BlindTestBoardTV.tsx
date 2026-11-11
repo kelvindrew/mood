@@ -1,3 +1,4 @@
+import { MoodLoadingScreen } from '../../components/MoodLoadingScreen';
 import React, { useEffect, useState } from 'react';
 import { useGame } from '../../context/GameContext';
 import { BlindTestGameState } from '../../types/game';
@@ -25,7 +26,7 @@ export const BlindTestBoardTV: React.FC = () => {
   }, [gameState?.state]);
 
   if (!gameState || !gameState.currentSong) {
-    return <div className="p-10 text-white">Chargement du Blind Test...</div>;
+    return <MoodLoadingScreen label="Chargement du Blind Test..." fullScreen={false} />;
   }
 
   const song = gameState.currentSong;

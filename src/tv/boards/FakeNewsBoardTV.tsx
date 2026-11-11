@@ -1,3 +1,4 @@
+import { MoodLoadingScreen } from '../../components/MoodLoadingScreen';
 import React from 'react';
 import { useGame } from '../../context/GameContext';
 import { FakeNewsGameState } from '../../types/game';
@@ -19,11 +20,7 @@ export const FakeNewsBoardTV: React.FC = () => {
   const gameState = room?.gameState as FakeNewsGameState | undefined;
 
   if (!gameState) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-[#0E0714] text-white">
-        <span className="font-mono text-sm text-gray-400">Chargement de Fake News...</span>
-      </div>
-    );
+    return <MoodLoadingScreen label="Chargement de Fake News..." fullScreen={false} />;
   }
 
   const {

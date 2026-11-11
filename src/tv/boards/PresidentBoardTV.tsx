@@ -1,3 +1,4 @@
+import { MoodLoadingScreen } from '../../components/MoodLoadingScreen';
 import React from 'react';
 import { useGame } from '../../context/GameContext';
 import { PresidentGameState, PlayingCard } from '../../types/game';
@@ -24,7 +25,7 @@ export const PresidentBoardTV: React.FC = () => {
   const gameState = room?.gameState as PresidentGameState | undefined;
 
   if (!gameState) {
-    return <div className="p-10 text-white">Chargement de la table de Président...</div>;
+    return <MoodLoadingScreen label="Chargement de la table de Président..." fullScreen={false} />;
   }
 
   const currentTurnPlayer = room?.players.find(p => p.id === gameState.currentTurnPlayerId);

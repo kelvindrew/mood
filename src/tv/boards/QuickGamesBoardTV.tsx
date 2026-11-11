@@ -1,3 +1,4 @@
+import { MoodLoadingScreen } from '../../components/MoodLoadingScreen';
 import React, { useEffect } from 'react';
 import { useGame } from '../../context/GameContext';
 import { QuickGamesGameState } from '../../types/game';
@@ -18,7 +19,7 @@ export const QuickGamesBoardTV: React.FC = () => {
   }, [gameState?.roundStatus, gameState?.roundNumber]);
 
   if (!gameState) {
-    return <div className="p-10 text-white">Chargement du Quick Games Arcade...</div>;
+    return <MoodLoadingScreen label="Chargement du Quick Games Arcade..." fullScreen={false} />;
   }
 
   const sortedPlayers = [...(room?.players || [])].sort((a, b) => {

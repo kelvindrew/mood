@@ -1,3 +1,4 @@
+import { MoodLoadingScreen } from '../../components/MoodLoadingScreen';
 import React from 'react';
 import { useGame } from '../../context/GameContext';
 import { PokerGameState, PlayingCard } from '../../types/game';
@@ -16,7 +17,7 @@ export const PokerBoardTV: React.FC = () => {
   const gameState = room?.gameState as PokerGameState | undefined;
 
   if (!gameState) {
-    return <div className="p-10 text-white">Chargement de la table de Poker...</div>;
+    return <MoodLoadingScreen label="Chargement de la table de Poker..." fullScreen={false} />;
   }
 
   const currentTurnPlayer = room?.players.find(p => p.id === gameState.currentTurnPlayerId);

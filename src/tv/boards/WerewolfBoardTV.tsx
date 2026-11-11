@@ -1,3 +1,4 @@
+import { MoodLoadingScreen } from '../../components/MoodLoadingScreen';
 import React from 'react';
 import { useGame } from '../../context/GameContext';
 import { WerewolfGameState } from '../../types/game';
@@ -8,7 +9,7 @@ export const WerewolfBoardTV: React.FC = () => {
   const gameState = room?.gameState as WerewolfGameState | undefined;
 
   if (!gameState) {
-    return <div className="p-10 text-white">Chargement du village de Thiercelieux...</div>;
+    return <MoodLoadingScreen label="Chargement du village de Thiercelieux..." fullScreen={false} />;
   }
 
   const isNight = gameState.phase.startsWith('night');

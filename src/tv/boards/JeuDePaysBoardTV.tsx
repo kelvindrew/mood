@@ -1,3 +1,4 @@
+import { MoodLoadingScreen } from '../../components/MoodLoadingScreen';
 import React from 'react';
 import { useGame } from '../../context/GameContext';
 import { JeuDePaysGameState } from '../../types/game';
@@ -22,11 +23,7 @@ export const JeuDePaysBoardTV: React.FC = () => {
   const gameState = room?.gameState as JeuDePaysGameState | undefined;
 
   if (!gameState) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-[#0A0F1D] text-white">
-        <span className="font-mono text-sm text-slate-400">Chargement de Jeu de Pays...</span>
-      </div>
-    );
+    return <MoodLoadingScreen label="Chargement de Jeu de Pays..." fullScreen={false} />;
   }
 
   const {

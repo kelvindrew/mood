@@ -1,3 +1,4 @@
+import { MoodLoadingScreen } from '../../components/MoodLoadingScreen';
 import React, { useEffect } from 'react';
 import { useGame } from '../../context/GameContext';
 import { InterGameState, PlayingCard, StandardSuit } from '../../types/game';
@@ -23,7 +24,7 @@ export const InterBoardTV: React.FC = () => {
   }, [gameState?.lastSpecialEffect?.message]);
 
   if (!gameState) {
-    return <div className="p-10 text-white">Chargement de la table Inter...</div>;
+    return <MoodLoadingScreen label="Chargement de la table Inter..." fullScreen={false} />;
   }
 
   const currentTurnPlayer = room?.players.find((p) => p.id === gameState.currentTurnPlayerId);

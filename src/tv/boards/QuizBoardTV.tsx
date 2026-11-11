@@ -1,3 +1,4 @@
+import { MoodLoadingScreen } from '../../components/MoodLoadingScreen';
 import React from 'react';
 import { useGame } from '../../context/GameContext';
 import { QuizGameState } from '../../types/game';
@@ -15,7 +16,7 @@ export const QuizBoardTV: React.FC = () => {
   const gameState = room?.gameState as QuizGameState | undefined;
 
   if (!gameState || !gameState.currentQuestion) {
-    return <div className="p-10 text-white">Chargement du plateau Quiz...</div>;
+    return <MoodLoadingScreen label="Chargement du plateau Quiz..." fullScreen={false} />;
   }
 
   const question = gameState.currentQuestion;

@@ -1,3 +1,4 @@
+import { MoodLoadingScreen } from '../../components/MoodLoadingScreen';
 import React, { useEffect } from 'react';
 import { useGame } from '../../context/GameContext';
 import { MenteurGameState, PlayingCard, StandardSuit } from '../../types/game';
@@ -27,7 +28,7 @@ export const MenteurBoardTV: React.FC = () => {
   }, [gameState?.accusationResult?.timestamp]);
 
   if (!gameState) {
-    return <div className="p-10 text-white">Chargement de la table de Menteur...</div>;
+    return <MoodLoadingScreen label="Chargement de la table de Menteur..." fullScreen={false} />;
   }
 
   const currentTurnPlayer = room?.players.find((p) => p.id === gameState.currentTurnPlayerId);

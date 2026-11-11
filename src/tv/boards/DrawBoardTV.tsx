@@ -1,3 +1,4 @@
+import { MoodLoadingScreen } from '../../components/MoodLoadingScreen';
 import React, { useRef, useEffect } from 'react';
 import { useGame } from '../../context/GameContext';
 import { DrawGameState } from '../../types/game';
@@ -38,7 +39,7 @@ export const DrawBoardTV: React.FC = () => {
   }, [gameState?.strokes]);
 
   if (!gameState) {
-    return <div className="p-10 text-white">Chargement de la toile de dessin...</div>;
+    return <MoodLoadingScreen label="Chargement de la toile de dessin..." fullScreen={false} />;
   }
 
   const isWordRevealed = gameState.state === 'word_revealed';

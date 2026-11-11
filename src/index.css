@@ -424,3 +424,427 @@ html.tv-ui .animate-bounce {
     opacity: 0;
   }
 }
+
+/* ============================================================
+   MOOD TV — Hisense / VIDAA friendly visual layer
+   Solid surfaces, high contrast and short transform/opacity animations.
+   ============================================================ */
+:root {
+  --mood-tv-bg: #10120f;
+  --mood-tv-surface: #1a1d18;
+  --mood-tv-surface-raised: #22251e;
+  --mood-tv-line: rgba(255, 255, 255, 0.13);
+  --mood-tv-muted: #c3c7bc;
+  --mood-tv-accent: #c8f36a;
+  --mood-tv-accent-dark: #a8d34f;
+}
+
+html.tv-ui {
+  font-size: clamp(14px, 0.38vw + 10px, 23px);
+  scroll-behavior: auto !important;
+}
+
+html.tv-ui body {
+  background: var(--mood-tv-bg);
+  color: #f7f8f3;
+  overscroll-behavior: none;
+}
+
+.mood-tv-shell {
+  min-height: 100vh;
+  background-color: var(--mood-tv-bg);
+  background-image:
+    radial-gradient(ellipse at 78% 16%, rgba(153, 191, 79, 0.11), transparent 34%),
+    radial-gradient(ellipse at 8% 92%, rgba(136, 87, 63, 0.09), transparent 38%),
+    linear-gradient(135deg, #11130f 0%, #151713 52%, #10120f 100%);
+}
+
+.mood-tv-shell main > div[class*="min-h-screen"] {
+  background-color: transparent !important;
+}
+
+/* Keep VIDAA's browser compositor cool: opaque glass replacements and no blur filters. */
+.mood-tv-shell [class*="backdrop-blur"] {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+.mood-tv-shell .liquid-glass,
+.mood-tv-shell .liquid-glass-elevated,
+.mood-tv-shell .liquid-glass-pill,
+.mood-tv-shell .glass-pill-bar,
+.mood-tv-shell .tv-panel {
+  background-color: rgba(28, 31, 25, 0.96);
+  border-color: var(--mood-tv-line);
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
+}
+
+.mood-tv-shell [class*="shadow-glow"],
+.mood-tv-shell [class*="shadow-2xl"] {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28) !important;
+}
+
+.mood-tv-shell button {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.mood-tv-shell [data-tv-focus]:focus,
+.mood-tv-shell [data-tv-focus]:focus-visible,
+.mood-tv-shell .tv-focus-ring,
+.mood-tv-shell .mood-focus-ring:focus {
+  outline: 3px solid var(--mood-tv-accent) !important;
+  outline-offset: 4px !important;
+  border-color: var(--mood-tv-accent) !important;
+  box-shadow: 0 0 0 6px rgba(16, 18, 15, 0.96) !important;
+  transform: none !important;
+  z-index: 35;
+}
+
+.mood-tv-navbar {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(17, 19, 15, 0.97);
+}
+
+.mood-tv-nav__item {
+  color: rgba(247, 248, 243, 0.68);
+  transition: color 140ms ease, background-color 140ms ease;
+}
+
+.mood-tv-nav__item:hover,
+.mood-tv-nav__item--active {
+  color: #f7f8f3;
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+.mood-tv-nav__item--active::after {
+  content: "";
+  position: absolute;
+  height: 3px;
+  background: var(--mood-tv-accent);
+  border-radius: 4px;
+}
+
+.mood-tv-status,
+.mood-tv-room,
+.mood-tv-icon-button {
+  background: var(--mood-tv-surface);
+  border: 1px solid var(--mood-tv-line);
+}
+
+.mood-tv-icon-button {
+  color: #f1f4eb;
+  transition: background-color 140ms ease, color 140ms ease;
+}
+
+.mood-tv-icon-button:hover {
+  background: var(--mood-tv-surface-raised);
+  color: var(--mood-tv-accent);
+}
+
+.tv-home {
+  background:
+    radial-gradient(ellipse at 8% 28%, rgba(169, 211, 79, 0.075), transparent 32%),
+    linear-gradient(140deg, #10120f 0%, #171914 58%, #11130f 100%);
+}
+
+.tv-home__glow {
+  position: absolute;
+  z-index: 0;
+  width: 28rem;
+  height: 28rem;
+  border-radius: 50%;
+  pointer-events: none;
+  opacity: 0.35;
+}
+
+.tv-home__glow--one {
+  top: 18%;
+  right: -10rem;
+  background: radial-gradient(circle, rgba(196, 235, 99, 0.13), transparent 70%);
+}
+
+.tv-home__glow--two {
+  bottom: -20rem;
+  left: 28%;
+  background: radial-gradient(circle, rgba(210, 137, 83, 0.09), transparent 70%);
+}
+
+.tv-home__content {
+  min-height: 100vh;
+}
+
+.tv-home__hero {
+  min-height: 51vh;
+}
+
+.tv-feature-card {
+  border-radius: 28px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.28);
+}
+
+.tv-feature-card__shade {
+  background:
+    linear-gradient(90deg, rgba(13, 15, 12, 0.92) 0%, rgba(13, 15, 12, 0.52) 54%, rgba(13, 15, 12, 0.16) 100%),
+    linear-gradient(0deg, rgba(13, 15, 12, 0.88) 0%, transparent 80%);
+}
+
+.tv-game-card {
+  border-color: rgba(255, 255, 255, 0.12);
+  background: rgba(28, 31, 25, 0.92);
+  transition: border-color 140ms ease, background-color 140ms ease;
+}
+
+.tv-game-card:hover,
+.tv-game-card--active {
+  border-color: rgba(200, 243, 106, 0.75);
+  background: #22251e;
+}
+
+.tv-game-card__shade {
+  background: linear-gradient(0deg, rgba(10, 12, 10, 0.64), transparent 65%);
+}
+
+.tv-primary-button {
+  color: #14170e;
+  background-color: var(--mood-tv-accent);
+  border: 2px solid var(--mood-tv-accent);
+}
+
+.tv-primary-button:hover {
+  background-color: #d8f99a;
+  border-color: #d8f99a;
+}
+
+.tv-secondary-button {
+  color: #f5f6f1;
+  background-color: rgba(255, 255, 255, 0.055);
+  border: 2px solid rgba(255, 255, 255, 0.16);
+}
+
+.tv-secondary-button:hover {
+  background-color: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.32);
+}
+
+.mood-remote-hint {
+  position: fixed;
+  z-index: 45;
+  left: 5vw;
+  bottom: max(14px, 2.2vh);
+  display: flex;
+  align-items: center;
+  gap: clamp(8px, 1.1vw, 18px);
+  padding: 9px 15px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 14px;
+  background: rgba(25, 28, 22, 0.97);
+  color: rgba(247, 248, 243, 0.7);
+  font-size: 11px;
+  font-weight: 700;
+  pointer-events: none;
+}
+
+.mood-remote-hint__keys {
+  padding: 4px 7px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.06);
+  color: #f5f6f1;
+  font-family: ui-monospace, monospace;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+}
+
+.mood-remote-hint__keys--ok {
+  border-color: rgba(200, 243, 106, 0.3);
+  background: rgba(200, 243, 106, 0.12);
+  color: var(--mood-tv-accent);
+}
+
+.mood-loading-screen {
+  display: flex;
+  min-height: 65vh;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+  color: #f5f6f1;
+  text-align: center;
+}
+
+.mood-loading-screen--full {
+  min-height: 100vh;
+  background: var(--mood-tv-bg);
+  background-image: radial-gradient(ellipse at 50% 35%, rgba(200, 243, 106, 0.08), transparent 34%);
+}
+
+.mood-loading-screen__mark {
+  display: flex;
+  width: 68px;
+  height: 68px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(200, 243, 106, 0.3);
+  border-radius: 20px;
+  background: rgba(200, 243, 106, 0.1);
+  color: var(--mood-tv-accent);
+}
+
+.mood-loading-screen__brand {
+  font-size: 17px;
+  font-weight: 950;
+  letter-spacing: 0.12em;
+}
+
+.mood-loading-screen__brand span {
+  margin-left: 5px;
+  color: var(--mood-tv-accent);
+  font-size: 10px;
+}
+
+.mood-loading-screen__label {
+  margin: 0 0 4px;
+  color: var(--mood-tv-muted);
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.mood-loading-dots {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 13%;
+  vertical-align: middle;
+}
+
+.mood-loading-dots__dot {
+  display: block;
+  width: 22%;
+  height: 22%;
+  flex: 0 0 22%;
+  border-radius: 50%;
+  background-color: currentColor;
+  animation: moodLoadingDot 1.05s ease-in-out infinite;
+}
+
+@keyframes moodLoadingDot {
+  0%, 65%, 100% { opacity: 0.4; transform: translateY(0); }
+  32% { opacity: 1; transform: translateY(-22%); }
+}
+
+/* No long camera moves or large-area shimmer on TV panels. */
+html.tv-ui .animate-ken-burns,
+html.tv-ui .animate-spin,
+html.tv-ui .animate-spin-slow,
+html.tv-ui .animate-bounce {
+  animation: none !important;
+}
+
+html.tv-ui .animate-ping {
+  animation: moodStatusPulse 1.8s ease-in-out infinite !important;
+}
+
+@keyframes moodStatusPulse {
+  0%, 100% { opacity: 0.55; }
+  50% { opacity: 1; }
+}
+
+html.tv-ui *,
+html.tv-ui *::before,
+html.tv-ui *::after {
+  scroll-behavior: auto !important;
+}
+
+@media (max-height: 800px) {
+  .tv-home__hero { min-height: 45vh; }
+  .tv-home__content { padding-bottom: 7vh; }
+  .mood-remote-hint { bottom: 10px; padding-top: 7px; padding-bottom: 7px; }
+}
+
+@media (max-width: 760px) {
+  .mood-tv-nav__item { padding-right: 9px; padding-left: 9px; }
+  .mood-tv-nav__item svg { display: none; }
+  .mood-remote-hint { left: 3vw; gap: 7px; padding: 7px 9px; font-size: 9px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mood-loading-dots__dot,
+  .mood-tv-shell .animate-ping {
+    animation: none !important;
+    opacity: 0.85;
+  }
+  .mood-tv-shell *,
+  .mood-tv-shell *::before,
+  .mood-tv-shell *::after {
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Keep the highlight bar anchored to each navigation item. */
+.mood-tv-nav__item { position: relative; }
+.mood-tv-nav__item--active::after { left: 22%; right: 22%; bottom: -2px; }
+
+/* Remove costly image filters in VIDAA while preserving the image itself. */
+html.tv-ui .mood-tv-shell [class*="filter"],
+html.tv-ui .mood-tv-shell [class*="blur-"]:not([class*="backdrop-blur"]) {
+  filter: none !important;
+  -webkit-filter: none !important;
+}
+
+/* Carry the MOOD accent and neutral surfaces through the older TV views. */
+.mood-tv-shell [class~="text-cyan-200"],
+.mood-tv-shell [class~="text-cyan-300"],
+.mood-tv-shell [class~="text-cyan-400"] {
+  color: var(--mood-tv-accent) !important;
+}
+
+.mood-tv-shell [class~="border-cyan-300"],
+.mood-tv-shell [class~="border-cyan-400"],
+.mood-tv-shell [class~="border-cyan-400/40"] {
+  border-color: rgba(200, 243, 106, 0.62) !important;
+}
+
+.mood-tv-shell [class~="bg-cyan-400"],
+.mood-tv-shell [class~="bg-cyan-300"] {
+  background-color: var(--mood-tv-accent) !important;
+  color: #15180f !important;
+}
+
+.mood-tv-shell [class~="bg-slate-950"],
+.mood-tv-shell [class~="bg-slate-950/60"] {
+  background-color: #131510 !important;
+}
+
+.mood-tv-shell [class~="bg-slate-900"],
+.mood-tv-shell [class~="bg-slate-900/95"] {
+  background-color: #1a1d18 !important;
+}
+
+.mood-tv-shell [class~="bg-slate-800"],
+.mood-tv-shell [class~="bg-slate-800/80"] {
+  background-color: #23261f !important;
+}
+
+.mood-tv-shell [class~="border-slate-700"],
+.mood-tv-shell [class~="border-slate-700/80"] {
+  border-color: rgba(255, 255, 255, 0.13) !important;
+}
+
+.mood-tv-shell .mood-btn-primary {
+  background: var(--mood-tv-accent) !important;
+  color: #15180f !important;
+  border-color: var(--mood-tv-accent) !important;
+  box-shadow: none !important;
+}
+
+.mood-tv-shell .mood-btn-primary:hover,
+.mood-tv-shell .mood-btn-primary:focus {
+  background: #d8f99a !important;
+  color: #15180f !important;
+  box-shadow: none !important;
+}
