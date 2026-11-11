@@ -30,7 +30,7 @@ const WildRushBoardTV = React.lazy(() => import('../boards/WildRushBoardTV').the
 const JeuDePaysBoardTV = React.lazy(() => import('../boards/JeuDePaysBoardTV').then(m => ({ default: m.JeuDePaysBoardTV })));
 
 const TVBoardLoader: React.FC<{ gameId: string }> = ({ gameId }) => (
-  <MoodLoadingScreen label={'Ouverture du jeu : ' + gameId.replaceAll('_', ' ')} fullScreen={false} />
+  <MoodLoadingScreen label={'Ouverture du jeu : ' + gameId.replace(/_/g, ' ')} fullScreen={false} />
 );
 
 export const TVGamePlayView: React.FC = () => {
