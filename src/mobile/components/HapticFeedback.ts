@@ -17,4 +17,6 @@ export const hapticPatterns = {
   diceRoll: [20, 30, 20, 30, 50],
   buzzer: 60,
   cardPlay: 35,
+  win: [50, 100, 50, 100, 80],
+  heartbeat: [60, 130, 60],
 };

@@ -260,6 +260,8 @@ export class MemoryPokerEngine {
     this.memoDuration = cfg.memoSeconds;
     this.decisionDuration = cfg.decisionSeconds;
 
+    this.currentRound = 1;
+    this.totalRounds = settings.totalRounds || 3;
     this.grid = [];             // 16 cards (indices 0..15)
     this.communityCards = [];    // 3 cards (revealed after memo)
     this.phase = 'memorize';    // 'memorize' | 'selection' | 'showdown' | 'ended'
@@ -493,7 +495,16 @@ export class MemoryPokerEngine {
     }
 
     if (action === 'restart' || action === 'reset_round') {
+      this.currentRound = 1;
       this.initRound();
+      return;
+    }
+
+    if (action === 'next_round') {
+      if (this.currentRound < this.totalRounds) {
+        this.currentRound++;
+        this.initRound();
+      }
       return;
     }
 
@@ -543,6 +554,8 @@ export class MemoryPokerEngine {
     return {
       arenaGameId: 'memory_poker',
       difficulty: this.difficulty,
+      currentRound: this.currentRound,
+      totalRounds: this.totalRounds,
       phase: this.phase,
       timeLeft: this.timeLeft,
       memoDuration: this.memoDuration,

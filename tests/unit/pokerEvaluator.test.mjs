@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { evaluatePokerHand, comparePokerHands, PokerHandTier } from '../../src/games/memoryPoker/pokerEvaluator';
+import { findBestPossibleHand, calculateRoundGarnets } from '../../src/games/memoryPoker/scoring';
 
 const c = (suit, rank) => ({
   id: `${suit}_${rank}`,
@@ -114,5 +115,30 @@ describe('Memory Poker — Évaluateur des 10 combinaisons officielles', () => {
     // Égalité parfaite (Split pot)
     const cloneHand = [c('club', 12), c('diamond', 12), c('spade', 6), c('heart', 6), c('spade', 14)];
     expect(comparePokerHands(handWithAce, cloneHand)).toBe(0);
+  });
+
+  it('14. Trouve la meilleure main théorique possible sur une grille de 16 cartes', () => {
+    // 3 communes : 10♠, J♠, Q♠
+    const community = [c('spade', 10), c('spade', 11), c('spade', 12)];
+
+    // Grille contenant A♠ et K♠ parmi d'autres cartes
+    const grid = [
+      c('heart', 2), c('diamond', 3), c('club', 4), c('heart', 5),
+      c('diamond', 6), c('club', 7), c('heart', 8), c('diamond', 9),
+      c('spade', 13), // Roi de pique (index 8)
+      c('spade', 14), // As de pique (index 9)
+      c('heart', 10), c('diamond', 11),
+      c('club', 12), c('heart', 13), c('diamond', 14), c('club', 2),
+    ];
+
+    const best = findBestPossibleHand(grid, community);
+    expect(best.evaluation.tier).toBe(PokerHandTier.ROYAL_FLUSH);
+    expect(best.indices).toEqual([8, 9]);
+  });
+
+  it('15. Calcule correctement les Pièces du Démon (Garnets 🪙)', () => {
+    expect(calculateRoundGarnets(PokerHandTier.ROYAL_FLUSH, 150)).toBe(11); // 10 + 1 bonus vitesse
+    expect(calculateRoundGarnets(PokerHandTier.FULL_HOUSE, 50)).toBe(5);
+    expect(calculateRoundGarnets(PokerHandTier.ONE_PAIR, 0)).toBe(1);
   });
 });

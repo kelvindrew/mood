@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useGame } from '../../context/GameContext';
-import { tvNav, TVNavAction } from '../../services/tvNavigation';
+import { tvNav } from '../../services/tvNavigation';
 import { audio } from '../../services/audio';
 import { QRCodeSVG } from 'qrcode.react';
 import { PlayingCard, dealMemoryPokerCards, SUIT_SYMBOLS } from '../../games/memoryPoker/deck';
@@ -10,8 +10,15 @@ import {
   DIFFICULTY_CONFIGS,
   MemoryPokerDifficulty,
   ScoreBreakdown,
+  findBestPossibleHand,
+  BestPossibleHandResult,
 } from '../../games/memoryPoker/scoring';
-import { MemoryPokerStorage, MemoryPokerStats } from '../../games/memoryPoker/storage';
+import {
+  MemoryPokerStorage,
+  MemoryPokerStats,
+  MemoryPokerAchievement,
+  MEMORY_POKER_ACHIEVEMENTS,
+} from '../../games/memoryPoker/storage';
 import {
   Play,
   BookOpen,
@@ -31,18 +38,43 @@ import {
   Users,
   QrCode,
   X,
-  Radio,
+  Award,
+  Crown,
+  ChevronRight,
+  TrendingUp,
+  Zap,
 } from 'lucide-react';
 
-type GamePhase = 'idle' | 'memorize' | 'selection' | 'showdown' | 'results';
+type GamePhase = 'idle' | 'memorize' | 'selection' | 'showdown' | 'results' | 'podium';
 
 export const TVMemoryPokerView: React.FC = () => {
   const { setTvView, sendGameAction, room, createRoom, selectGame, startGame, serverLanIp } = useGame();
 
-  // Difficulté sélectionnée
+  // Configuration de la partie
   const [difficulty, setDifficulty] = useState<MemoryPokerDifficulty>('normal');
+  const [totalRounds, setTotalRounds] = useState<number>(3); // Tournoi officiel The Devil's Plan en 3 manches
+  const [currentRound, setCurrentRound] = useState<number>(1);
   const [phase, setPhase] = useState<GamePhase>('idle');
   const [isQrModalOpen, setIsQrModalOpen] = useState<boolean>(false);
+  const [isRulesModalOpen, setIsRulesModalOpen] = useState<boolean>(false);
+  const [isMuted, setIsMuted] = useState<boolean>(false);
+
+  // Historique et cumul du tournoi en cours
+  const [tournamentRounds, setTournamentRounds] = useState<
+    Array<{
+      round: number;
+      evaluation: PokerEvaluation;
+      breakdown: ScoreBreakdown;
+      garnets: number;
+      theoreticalBest: BestPossibleHandResult;
+      isOptimalChoice: boolean;
+    }>
+  >([]);
+  const [totalTournamentScore, setTotalTournamentScore] = useState<number>(0);
+  const [totalTournamentGarnets, setTotalTournamentGarnets] = useState<number>(0);
+
+  // Toast de Succès / Achievement débloqué
+  const [activeAchievementToast, setActiveAchievementToast] = useState<MemoryPokerAchievement | null>(null);
 
   // Assurer la présence d'un salon multijoueur pour que les téléphones puissent se connecter
   useEffect(() => {
@@ -53,15 +85,14 @@ export const TVMemoryPokerView: React.FC = () => {
     }
   }, [room, createRoom, selectGame, difficulty]);
 
-  const isLocalHost = typeof window !== 'undefined' && (
-    window.location.hostname === 'localhost' ||
-    window.location.hostname === '127.0.0.1'
-  );
+  const isLocalHost =
+    typeof window !== 'undefined' &&
+    (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
 
   let mobileJoinUrl = '';
   if (typeof window !== 'undefined' && room?.code) {
     if (isLocalHost) {
-      const lanIp = (room.serverLanIp && room.serverLanIp !== 'localhost') ? room.serverLanIp : serverLanIp;
+      const lanIp = room.serverLanIp && room.serverLanIp !== 'localhost' ? room.serverLanIp : serverLanIp;
       const port = window.location.port ? `:${window.location.port}` : '';
       mobileJoinUrl = `${window.location.protocol}//${lanIp !== 'localhost' ? lanIp : window.location.hostname}${port}/?room=${room.code}`;
     } else {
@@ -85,18 +116,37 @@ export const TVMemoryPokerView: React.FC = () => {
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const selectionStartRef = useRef<number>(0);
 
-  // Résultat et statistiques
+  // Résultat, analyse stratégique comparée et statistiques
   const [evaluation, setEvaluation] = useState<PokerEvaluation | null>(null);
   const [scoreBreakdown, setScoreBreakdown] = useState<ScoreBreakdown | null>(null);
+  const [theoreticalBest, setTheoreticalBest] = useState<BestPossibleHandResult | null>(null);
   const [stats, setStats] = useState<MemoryPokerStats>(() => MemoryPokerStorage.getStats());
-  const [isRulesModalOpen, setIsRulesModalOpen] = useState<boolean>(false);
-  const [isMuted, setIsMuted] = useState<boolean>(false);
 
-  // Animation Canvas
+  // Animation Canvas (Pièces du Démon 🪙 & Confettis)
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
   const currentConfig = DIFFICULTY_CONFIGS[difficulty];
+
+  // Helper Voix du Maître du Jeu
+  const masterSpeak = useCallback(
+    (text: string) => {
+      if (isMuted) return;
+      try {
+        audio.speak(text);
+      } catch {}
+    },
+    [isMuted]
+  );
+
+  // Déclencher un toast de succès
+  const showAchievementToast = useCallback((ach: MemoryPokerAchievement) => {
+    setActiveAchievementToast(ach);
+    audio.playVictory();
+    setTimeout(() => {
+      setActiveAchievementToast((prev) => (prev?.id === ach.id ? null : prev));
+    }, 4500);
+  }, []);
 
   // Nettoyage du chronomètre
   const clearTimer = useCallback(() => {
@@ -110,150 +160,261 @@ export const TVMemoryPokerView: React.FC = () => {
     return () => clearTimer();
   }, [clearTimer]);
 
-  // Initialisation et focus D-Pad
+  // Focus D-Pad automatique
   useEffect(() => {
     tvNav.setInitialFocus('button', containerRef.current);
-  }, [phase, isRulesModalOpen]);
+  }, [phase, isRulesModalOpen, isQrModalOpen]);
 
   // Démarrer une nouvelle manche
-  const startNewGame = useCallback((diff: MemoryPokerDifficulty = difficulty) => {
-    clearTimer();
-    audio.playArenaGong();
+  const startNewGame = useCallback(
+    (diff: MemoryPokerDifficulty = difficulty, roundNumber: number = 1) => {
+      clearTimer();
+      audio.playArenaGong();
 
-    const deal = dealMemoryPokerCards();
-    const config = DIFFICULTY_CONFIGS[diff];
+      if (roundNumber === 1) {
+        setTournamentRounds([]);
+        setTotalTournamentScore(0);
+        setTotalTournamentGarnets(0);
+      }
+      setCurrentRound(roundNumber);
 
-    setGrid(deal.grid);
-    setCommunityCards(deal.community);
-    setSelectedIndices([]);
-    setCursorIndex(0);
-    setEvaluation(null);
-    setScoreBreakdown(null);
-    setPhase('memorize');
-    setTimeLeft(config.memoSeconds);
+      const deal = dealMemoryPokerCards();
+      const config = DIFFICULTY_CONFIGS[diff];
 
-    // Démarrage du compte à rebours de mémorisation
-    timerRef.current = setInterval(() => {
-      setTimeLeft((prev) => {
-        if (prev <= 5 && prev > 1 && !isMuted) {
-          audio.playHeartbeat();
-        }
-        if (prev <= 1) {
-          clearTimer();
-          transitionToSelection(config.decisionSeconds);
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-  }, [clearTimer, difficulty, isMuted]);
+      setGrid(deal.grid);
+      setCommunityCards(deal.community);
+      setSelectedIndices([]);
+      setCursorIndex(0);
+      setEvaluation(null);
+      setScoreBreakdown(null);
+      setTheoreticalBest(null);
+      setPhase('memorize');
+      setTimeLeft(config.memoSeconds);
+
+      // Annonce vocale d'introduction
+      masterSpeak(
+        roundNumber === 1
+          ? 'Bienvenue dans Memory Poker. Mémorisez les seize cartes de la table avant qu’elles ne disparaissent.'
+          : `Manche ${roundNumber} sur ${totalRounds}. Concentrez-vous et mémorisez les cartes.`
+      );
+
+      // Démarrage du compte à rebours de mémorisation
+      timerRef.current = setInterval(() => {
+        setTimeLeft((prev) => {
+          if (prev <= 5 && prev > 1 && !isMuted) {
+            audio.playHeartbeat();
+          }
+          if (prev === 5) {
+            masterSpeak('Cinq secondes de mémorisation.');
+          }
+          if (prev <= 1) {
+            clearTimer();
+            transitionToSelection(config.decisionSeconds, deal.grid, deal.community);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    },
+    [clearTimer, difficulty, isMuted, masterSpeak, totalRounds]
+  );
 
   // Transition vers la phase de sélection
-  const transitionToSelection = useCallback((decisionSeconds: number) => {
-    clearTimer();
-    audio.playCardSwoosh();
-    setPhase('selection');
-    setTimeLeft(decisionSeconds);
-    selectionStartRef.current = Date.now();
+  const transitionToSelection = useCallback(
+    (decisionSeconds: number, activeGrid?: PlayingCard[], activeCommunity?: PlayingCard[]) => {
+      clearTimer();
+      audio.playCardSwoosh();
+      setPhase('selection');
+      setTimeLeft(decisionSeconds);
+      selectionStartRef.current = Date.now();
 
-    timerRef.current = setInterval(() => {
-      setTimeLeft((prev) => {
-        if (prev <= 5 && prev > 1 && !isMuted) {
-          audio.playHeartbeat();
-        }
-        if (prev <= 1) {
-          clearTimer();
-          // Fin du temps : validation automatique
-          confirmSelection();
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-  }, [clearTimer, isMuted]);
+      masterSpeak('Les cartes communes sont révélées. Sélectionnez vos deux cartes secrètes.');
+
+      const gridCards = activeGrid || grid;
+      const commCards = activeCommunity || communityCards;
+
+      timerRef.current = setInterval(() => {
+        setTimeLeft((prev) => {
+          if (prev <= 5 && prev > 1 && !isMuted) {
+            audio.playHeartbeat();
+          }
+          if (prev === 5) {
+            masterSpeak('Cinq secondes restantes ! Validez vos choix.');
+          }
+          if (prev <= 1) {
+            clearTimer();
+            confirmSelection(gridCards, commCards);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    },
+    [clearTimer, isMuted, masterSpeak, grid, communityCards]
+  );
 
   // Basculer la sélection d'une carte (max 2)
-  const handleToggleCard = useCallback((index: number) => {
-    if (phase !== 'selection') return;
-    audio.playSelect();
+  const handleToggleCard = useCallback(
+    (index: number) => {
+      if (phase !== 'selection') return;
+      audio.playSelect();
 
-    setSelectedIndices((prev) => {
-      if (prev.includes(index)) {
-        return prev.filter((i) => i !== index);
-      }
-      if (prev.length < 2) {
-        return [...prev, index];
-      }
-      // Si 2 cartes sont déjà cochées, remplacer la deuxième
-      return [prev[0], index];
-    });
-  }, [phase]);
+      setSelectedIndices((prev) => {
+        if (prev.includes(index)) {
+          return prev.filter((i) => i !== index);
+        }
+        if (prev.length < 2) {
+          return [...prev, index];
+        }
+        // Si 2 cartes sont déjà cochées, remplacer la deuxième
+        return [prev[0], index];
+      });
+    },
+    [phase]
+  );
 
   // Confirmer les 2 cartes et passer au résultat
-  const confirmSelection = useCallback(() => {
-    clearTimer();
-    const elapsedSeconds = Math.max(1, Math.round((Date.now() - selectionStartRef.current) / 1000));
-    setDecisionTimeUsed(elapsedSeconds);
+  const confirmSelection = useCallback(
+    (customGrid?: PlayingCard[], customCommunity?: PlayingCard[]) => {
+      clearTimer();
+      const currentGrid = customGrid || grid;
+      const currentCommunity = customCommunity || communityCards;
 
-    // Si moins de 2 cartes choisies par expiration de temps, compléter aléatoirement
-    let finalIndices = [...selectedIndices];
-    if (finalIndices.length < 2) {
-      for (let i = 0; i < 16; i++) {
-        if (!finalIndices.includes(i)) {
-          finalIndices.push(i);
-          if (finalIndices.length === 2) break;
+      const elapsedSeconds = Math.max(1, Math.round((Date.now() - selectionStartRef.current) / 1000));
+      setDecisionTimeUsed(elapsedSeconds);
+
+      // Si moins de 2 cartes choisies par expiration de temps, compléter aléatoirement
+      let finalIndices = [...selectedIndices];
+      if (finalIndices.length < 2) {
+        for (let i = 0; i < 16; i++) {
+          if (!finalIndices.includes(i)) {
+            finalIndices.push(i);
+            if (finalIndices.length === 2) break;
+          }
         }
       }
-    }
 
-    const chosenCards = finalIndices.map((idx) => grid[idx]).filter(Boolean);
-    const fiveCards = [...chosenCards, ...communityCards];
-    const evalResult = evaluatePokerHand(fiveCards);
-    const scoreResult = calculateRoundScore(evalResult.tier, elapsedSeconds, difficulty);
+      const chosenCards = finalIndices.map((idx) => currentGrid[idx]).filter(Boolean);
+      const fiveCards = [...chosenCards, ...currentCommunity];
+      const evalResult = evaluatePokerHand(fiveCards);
+      const scoreResult = calculateRoundScore(evalResult.tier, elapsedSeconds, difficulty);
 
-    setEvaluation(evalResult);
-    setScoreBreakdown(scoreResult);
-    setPhase('showdown');
+      // Calcul de la meilleure main théorique possible sur cette table (Comparatif Devil's Plan)
+      const bestPossible = findBestPossibleHand(currentGrid, currentCommunity);
+      const isOptimal = evalResult.scoreValue >= bestPossible.evaluation.scoreValue;
 
-    // Sauvegarde statistique
-    const updatedStats = MemoryPokerStorage.recordGame({
-      difficulty,
-      tier: evalResult.tier,
-      combinationName: evalResult.frenchName,
-      totalScore: scoreResult.totalPoints,
-      timeUsedSeconds: elapsedSeconds,
-      communityCards: communityCards.map((c) => `${c.display}${c.symbol}`),
-      chosenCards: chosenCards.map((c) => `${c.display}${c.symbol}`),
-    });
-    setStats(updatedStats);
+      setEvaluation(evalResult);
+      setScoreBreakdown(scoreResult);
+      setTheoreticalBest(bestPossible);
+      setPhase('showdown');
 
-    // Effet sonore dramatique
-    if (evalResult.tier >= PokerHandTier.FLUSH) {
-      audio.playRoyalFanfare();
-    } else {
-      audio.playVictory();
-    }
+      // Annonce vocale dramatique du Showdown
+      masterSpeak(`Showdown ! Révélation de la main : ${evalResult.frenchName}.`);
 
-    // Déclencher la pluie de pièces dorées si résultat honorable
-    if (evalResult.tier >= PokerHandTier.STRAIGHT) {
-      triggerVictoryParticles();
-    }
+      // Enregistrement de la manche dans le tournoi
+      const roundEntry = {
+        round: currentRound,
+        evaluation: evalResult,
+        breakdown: scoreResult,
+        garnets: scoreResult.garnetsEarned,
+        theoreticalBest: bestPossible,
+        isOptimalChoice: isOptimal,
+      };
 
-    // Passage aux résultats complets
-    setTimeout(() => {
-      setPhase('results');
-    }, 2800);
-  }, [clearTimer, selectedIndices, grid, communityCards, difficulty]);
+      setTournamentRounds((prev) => [...prev, roundEntry]);
+      setTotalTournamentScore((prev) => prev + scoreResult.totalPoints);
+      setTotalTournamentGarnets((prev) => prev + scoreResult.garnetsEarned);
+
+      // Sauvegarde statistique & vérification des succès
+      const { stats: updatedStats, newlyUnlocked } = MemoryPokerStorage.recordGame({
+        difficulty,
+        tier: evalResult.tier,
+        combinationName: evalResult.frenchName,
+        totalScore: scoreResult.totalPoints,
+        timeUsedSeconds: elapsedSeconds,
+        garnetsEarned: scoreResult.garnetsEarned,
+        communityCards: currentCommunity.map((c) => `${c.display}${c.symbol}`),
+        chosenCards: chosenCards.map((c) => `${c.display}${c.symbol}`),
+      });
+
+      // Si le joueur a trouvé la main maximale théorique absolue de la table
+      if (isOptimal) {
+        const perfAch = MemoryPokerStorage.unlockSpecificAchievement('perfect_vision');
+        if (perfAch) {
+          newlyUnlocked.push(perfAch);
+        }
+      }
+
+      setStats(updatedStats);
+
+      // Déclencher les toasts de succès débloqués
+      if (newlyUnlocked.length > 0) {
+        newlyUnlocked.forEach((ach) => showAchievementToast(ach));
+      }
+
+      // Effet sonore dramatique
+      if (evalResult.tier >= PokerHandTier.FLUSH) {
+        audio.playRoyalFanfare();
+      } else {
+        audio.playVictory();
+      }
+
+      // Déclencher la pluie de pièces d'or si résultat remarquable
+      if (evalResult.tier >= PokerHandTier.STRAIGHT) {
+        triggerVictoryParticles();
+      }
+
+      // Passage aux résultats complets après l'animation de showdown
+      setTimeout(() => {
+        setPhase('results');
+      }, 3200);
+    },
+    [clearTimer, selectedIndices, grid, communityCards, difficulty, currentRound, masterSpeak, showAchievementToast]
+  );
 
   // Lancement synchronisé local + serveur
-  const handleStartGame = useCallback((diff: MemoryPokerDifficulty = difficulty) => {
-    if (room?.code) {
-      startGame();
-    }
-    startNewGame(diff);
-  }, [room, startGame, startNewGame, difficulty]);
+  const handleStartGame = useCallback(
+    (diff: MemoryPokerDifficulty = difficulty, roundNumber: number = 1) => {
+      if (room?.code) {
+        startGame();
+      }
+      startNewGame(diff, roundNumber);
+    },
+    [room, startGame, startNewGame, difficulty]
+  );
 
-  // Pluie de particules dorées Canvas
+  // Passer à la manche suivante du tournoi
+  const handleNextRound = useCallback(() => {
+    if (currentRound < totalRounds) {
+      handleStartGame(difficulty, currentRound + 1);
+    } else {
+      // Fin du tournoi -> Passage à la cérémonie du podium !
+      const { stats: updatedStats, newlyUnlocked } = MemoryPokerStorage.recordTournamentComplete(
+        totalTournamentScore
+      );
+      setStats(updatedStats);
+      if (newlyUnlocked.length > 0) {
+        newlyUnlocked.forEach((ach) => showAchievementToast(ach));
+      }
+      audio.playRoyalFanfare();
+      triggerVictoryParticles();
+      masterSpeak(
+        `Cérémonie finale du tournoi ! Félicitations pour avoir accumulé ${totalTournamentScore} points et ${totalTournamentGarnets} Pièces du Démon !`
+      );
+      setPhase('podium');
+    }
+  }, [
+    currentRound,
+    totalRounds,
+    difficulty,
+    handleStartGame,
+    totalTournamentScore,
+    totalTournamentGarnets,
+    masterSpeak,
+    showAchievementToast,
+  ]);
+
+  // Pluie de particules dorées Canvas (Pièces du Démon 🪙 60 FPS)
   const triggerVictoryParticles = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -273,13 +434,13 @@ export const TVMemoryPokerView: React.FC = () => {
       vRot: number;
     }> = [];
 
-    for (let i = 0; i < 75; i++) {
+    for (let i = 0; i < 90; i++) {
       coins.push({
         x: Math.random() * canvas.width,
-        y: -30 - Math.random() * 200,
-        vx: (Math.random() - 0.5) * 4,
-        vy: 3 + Math.random() * 6,
-        radius: 10 + Math.random() * 12,
+        y: -30 - Math.random() * 250,
+        vx: (Math.random() - 0.5) * 4.5,
+        vy: 3 + Math.random() * 6.5,
+        radius: 12 + Math.random() * 12,
         rotation: Math.random() * Math.PI * 2,
         vRot: (Math.random() - 0.5) * 0.15,
       });
@@ -299,12 +460,12 @@ export const TVMemoryPokerView: React.FC = () => {
         ctx.translate(coin.x, coin.y);
         ctx.rotate(coin.rotation);
 
-        // Pièce d'or Devil's Plan
+        // Pièce de Garnet du Démon
         ctx.beginPath();
         ctx.arc(0, 0, coin.radius, 0, Math.PI * 2);
         ctx.fillStyle = '#D4AF37';
         ctx.fill();
-        ctx.lineWidth = 2;
+        ctx.lineWidth = 2.5;
         ctx.strokeStyle = '#FFF8DC';
         ctx.stroke();
 
@@ -319,7 +480,7 @@ export const TVMemoryPokerView: React.FC = () => {
 
       ctx.restore();
       frameCount++;
-      if (frameCount < 160) {
+      if (frameCount < 180) {
         requestAnimationFrame(animate);
       } else {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -332,7 +493,14 @@ export const TVMemoryPokerView: React.FC = () => {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (isQrModalOpen) {
-        if (e.key === 'Escape' || e.key === 'Backspace' || e.key === 'Yellow' || e.key === 'Blue' || e.keyCode === 405 || e.keyCode === 406) {
+        if (
+          e.key === 'Escape' ||
+          e.key === 'Backspace' ||
+          e.key === 'Yellow' ||
+          e.key === 'Blue' ||
+          e.keyCode === 405 ||
+          e.keyCode === 406
+        ) {
           setIsQrModalOpen(false);
           e.preventDefault();
         }
@@ -395,7 +563,7 @@ export const TVMemoryPokerView: React.FC = () => {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [phase, cursorIndex, isRulesModalOpen, handleToggleCard, setTvView]);
+  }, [phase, cursorIndex, isRulesModalOpen, isQrModalOpen, handleToggleCard, setTvView]);
 
   return (
     <div
@@ -403,6 +571,28 @@ export const TVMemoryPokerView: React.FC = () => {
       className="relative min-h-screen bg-[#07090E] text-white selection:bg-[#D4AF37]/30 pb-16 select-none overflow-x-hidden font-sans"
     >
       <canvas ref={canvasRef} className="fixed inset-0 pointer-events-none z-50" />
+
+      {/* Toast Animé de Succès / Achievement Débloqué */}
+      {activeAchievementToast && (
+        <aside
+          role="status"
+          aria-live="polite"
+          className="fixed top-20 right-8 z-50 flex items-center gap-3.5 px-5 py-3.5 rounded-2xl bg-[#0D121B]/95 border-2 border-[#D4AF37] shadow-[0_0_35px_rgba(212,175,55,0.45)] backdrop-blur-xl animate-fade-in"
+        >
+          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#D4AF37] to-[#8C6D23] flex items-center justify-center text-2xl shadow-inner">
+            {activeAchievementToast.icon}
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] font-black uppercase tracking-widest text-[#D4AF37]">
+                🏆 SUCCÈS DÉBLOQUÉ !
+              </span>
+            </div>
+            <h4 className="text-sm font-black font-display text-white">{activeAchievementToast.title}</h4>
+            <p className="text-[11px] text-white/70 max-w-xs">{activeAchievementToast.description}</p>
+          </div>
+        </aside>
+      )}
 
       {/* Halo d'ambiance The Devil's Plan */}
       <div className="fixed inset-0 pointer-events-none">
@@ -438,6 +628,11 @@ export const TVMemoryPokerView: React.FC = () => {
                 <span className="px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-widest bg-[#D4AF37]/20 border border-[#D4AF37]/40 text-[#D4AF37]">
                   THE DEVIL'S ARENA
                 </span>
+                {phase !== 'idle' && (
+                  <span className="px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-widest bg-amber-500/20 border border-amber-500/40 text-amber-300">
+                    MANCHE {currentRound}/{totalRounds}
+                  </span>
+                )}
               </div>
               <p className="text-[11px] font-semibold text-white/40 tracking-wider">
                 MÉMORISEZ • ASSOCIEZ • MAÎTRISEZ LE POKER
@@ -448,6 +643,12 @@ export const TVMemoryPokerView: React.FC = () => {
 
         {/* Contrôles droits */}
         <div className="flex items-center gap-3">
+          {/* Indicateur de Garnets accumulés */}
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#D4AF37]/10 border border-[#D4AF37]/30 text-amber-300 text-xs font-black">
+            <span>🪙</span>
+            <span>{totalTournamentGarnets > 0 ? totalTournamentGarnets : stats.totalGarnets} Garnets</span>
+          </div>
+
           <button
             data-tv-focus
             tabIndex={0}
@@ -459,7 +660,9 @@ export const TVMemoryPokerView: React.FC = () => {
             title="Afficher le QR code pour connecter les téléphones"
           >
             <Smartphone className="w-4 h-4 text-amber-400" />
-            <span>📱 Manette : <strong className="font-mono text-white">{room?.code || '...'}</strong></span>
+            <span>
+              📱 Manette : <strong className="font-mono text-white">{room?.code || '...'}</strong>
+            </span>
             <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-bold">
               {connectedPhones.length} en ligne
             </span>
@@ -475,7 +678,7 @@ export const TVMemoryPokerView: React.FC = () => {
             className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#D4AF37]/15 border border-[#D4AF37]/35 text-[#D4AF37] hover:bg-[#D4AF37]/25 text-xs font-black uppercase tracking-wider outline-none transition-all shadow-[0_0_12px_rgba(212,175,55,0.15)]"
           >
             <BookOpen className="w-4 h-4" />
-            <span>Règles & Mains (Touche Jaune)</span>
+            <span>Règles (Touche Jaune)</span>
           </button>
 
           <button
@@ -503,7 +706,7 @@ export const TVMemoryPokerView: React.FC = () => {
               <div className="xl:col-span-8">
                 <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#D4AF37]/15 border border-[#D4AF37]/35 text-[#D4AF37] text-xs font-black uppercase tracking-widest mb-4">
                   <Flame className="w-4 h-4 fill-current" />
-                  Épreuve d'Élite • The Devil's Plan
+                  Format Tournoi 3 Manches • The Devil's Plan
                 </div>
 
                 <h1 className="text-4xl md:text-7xl font-black font-display tracking-tight text-white mb-4 leading-none">
@@ -515,43 +718,41 @@ export const TVMemoryPokerView: React.FC = () => {
                 </p>
 
                 <p className="text-sm md:text-base text-white/60 mb-8 max-w-2xl leading-relaxed">
-                  Mémorisez 16 cartes réparties sur une grille secrète de 4x4 cases. Dès qu'elles se retournent face
-                  cachée, observez les 3 cartes communes au centre de la table et sélectionnez exactement 2 cartes
-                  cachées pour forger la meilleure combinaison de poker possible !
+                  Mémorisez 16 cartes réparties sur une grille secrète de 4x4 cases. Dès qu'elles se retournent en 3D
+                  face cachée, observez les 3 cartes communes au centre de la table et sélectionnez exactement 2 cartes
+                  pour forger la main de poker suprême.
                 </p>
 
-                {/* Sélecteur de Difficulté */}
+                {/* Sélecteurs de difficulté et de mode */}
                 <div className="mb-8">
-                  <label className="block text-xs font-black uppercase tracking-widest text-[#D4AF37] mb-3">
-                    Niveau de Difficulté & Chronomètre :
-                  </label>
+                  <span className="text-xs font-bold uppercase tracking-wider text-white/50 block mb-3">
+                    Niveau de Difficulté :
+                  </span>
                   <div className="flex flex-wrap gap-3">
-                    {(['easy', 'normal', 'hard', 'practice'] as MemoryPokerDifficulty[]).map((diff) => {
-                      const cfg = DIFFICULTY_CONFIGS[diff];
-                      const isSelected = difficulty === diff;
+                    {(Object.keys(DIFFICULTY_CONFIGS) as MemoryPokerDifficulty[]).map((key) => {
+                      const cfg = DIFFICULTY_CONFIGS[key];
+                      const isSelected = difficulty === key;
                       return (
                         <button
-                          key={diff}
+                          key={key}
                           data-tv-focus
                           tabIndex={0}
                           onClick={() => {
-                            audio.playSelect();
-                            setDifficulty(diff);
+                            audio.playFocus();
+                            setDifficulty(key);
                           }}
-                          className={`px-5 py-3 rounded-2xl text-xs font-black uppercase tracking-wider border transition-all ${
+                          className={`px-4 py-2.5 rounded-2xl border text-xs font-bold uppercase tracking-wider transition-all outline-none focus:ring-2 focus:ring-[#D4AF37] ${
                             isSelected
-                              ? 'bg-gradient-to-r from-[#D4AF37] to-[#B8860B] text-black border-white shadow-[0_0_20px_rgba(212,175,55,0.4)] scale-105'
+                              ? 'bg-[#D4AF37] text-black border-white shadow-[0_0_15px_rgba(212,175,55,0.4)] scale-105'
                               : 'bg-white/5 border-white/10 text-white/70 hover:bg-white/10'
                           }`}
                         >
-                          <div>{cfg.label}</div>
-                          <span className={`text-[10px] font-mono block mt-0.5 ${isSelected ? 'text-black/80' : 'text-white/40'}`}>
-                            {cfg.memoSeconds}s mémo • {cfg.decisionSeconds}s choix (x{cfg.multiplier})
-                          </span>
+                          {cfg.label}
                         </button>
                       );
                     })}
                   </div>
+                  <p className="text-xs text-[#D4AF37] font-semibold mt-2.5">{currentConfig.description}</p>
                 </div>
 
                 {/* Boutons d'Action Principaux */}
@@ -559,11 +760,11 @@ export const TVMemoryPokerView: React.FC = () => {
                   <button
                     data-tv-focus
                     tabIndex={0}
-                    onClick={() => handleStartGame(difficulty)}
-                    className="inline-flex items-center gap-3 px-10 py-4 rounded-2xl bg-gradient-to-r from-[#D4AF37] to-[#B38728] text-black font-black uppercase text-sm tracking-wider shadow-lg shadow-[#D4AF37]/30 hover:brightness-110 active:scale-95 transition-all outline-none focus:ring-4 focus:ring-[#D4AF37]/60"
+                    onClick={() => handleStartGame(difficulty, 1)}
+                    className="inline-flex items-center gap-3 px-8 py-4 rounded-2xl bg-gradient-to-r from-[#D4AF37] via-[#DFBF58] to-[#B38728] text-black font-black uppercase text-base tracking-wider shadow-[0_0_30px_rgba(212,175,55,0.4)] hover:brightness-110 active:scale-95 transition-all outline-none focus:ring-4 focus:ring-[#D4AF37]"
                   >
                     <Play className="w-5 h-5 fill-current" />
-                    Lancer la Partie (OK)
+                    <span>Lancer le Tournoi (3 Manches)</span>
                   </button>
 
                   <button
@@ -573,10 +774,10 @@ export const TVMemoryPokerView: React.FC = () => {
                       audio.playSelect();
                       setIsRulesModalOpen(true);
                     }}
-                    className="inline-flex items-center gap-2.5 px-6 py-4 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/15 text-white font-bold text-sm tracking-wider transition-all outline-none focus:ring-2 focus:ring-white"
+                    className="inline-flex items-center gap-2 px-6 py-4 rounded-2xl bg-white/10 hover:bg-white/15 border border-white/20 text-white font-bold text-sm uppercase tracking-wider transition-all outline-none focus:ring-2 focus:ring-white"
                   >
-                    <BookOpen className="w-4 h-4 text-white/70" />
-                    Comment Jouer
+                    <BookOpen className="w-4 h-4" />
+                    <span>Comment Jouer</span>
                   </button>
 
                   <button
@@ -586,27 +787,27 @@ export const TVMemoryPokerView: React.FC = () => {
                       audio.playSelect();
                       setIsQrModalOpen(true);
                     }}
-                    className="inline-flex items-center gap-2.5 px-6 py-4 rounded-2xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/35 text-amber-300 font-bold text-sm tracking-wider transition-all outline-none focus:ring-2 focus:ring-amber-400"
+                    className="inline-flex items-center gap-2 px-6 py-4 rounded-2xl bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-amber-300 font-bold text-sm uppercase tracking-wider transition-all outline-none focus:ring-2 focus:ring-amber-400"
                   >
-                    <Smartphone className="w-4 h-4 text-amber-400" />
-                    Scanner Manette Smartphone
+                    <QrCode className="w-4 h-4" />
+                    <span>Connecter Smartphones</span>
                   </button>
                 </div>
               </div>
 
-              {/* Colonne Droite : Scène QR Code Authentique MOOD TV */}
-              <div className="xl:col-span-4 flex flex-col items-center justify-center p-6 sm:p-7 rounded-3xl liquid-glass shadow-2xl space-y-4">
+              {/* Colonne Droite : Box de Connexion QR Mood TV Standard */}
+              <div className="xl:col-span-4 flex flex-col items-center justify-center p-6 rounded-3xl liquid-glass border border-white/[0.12] space-y-4">
                 <div className="text-center">
                   <span className="text-slate-300 text-xs font-bold tracking-widest uppercase flex items-center justify-center space-x-1.5">
                     <Smartphone className="w-4 h-4 text-slate-300" />
                     <span>SCANNEZ AVEC VOTRE APPAREIL PHOTO</span>
                   </span>
                   <h2 className="text-lg sm:text-xl font-black font-display text-white mt-1">
-                    Aucune application requise
+                    Jouez avec vos téléphones
                   </h2>
                 </div>
 
-                {/* Scannable White QR Code Container (Liquid glass effects MUST NOT cover the QR SVG) */}
+                {/* Scannable White QR Code */}
                 <div className="p-3.5 rounded-2xl bg-white shadow-[0_15px_40px_rgba(0,0,0,0.8)] border-4 border-white">
                   <QRCodeSVG
                     value={mobileJoinUrl || 'https://mood.tv'}
@@ -618,7 +819,7 @@ export const TVMemoryPokerView: React.FC = () => {
                   />
                 </div>
 
-                {/* Code du Salon Badge (Style Mood TV officiel) */}
+                {/* Code du Salon Badge */}
                 <div className="flex flex-col items-center">
                   <span className="text-[10px] font-black text-slate-400 tracking-widest uppercase mb-1">
                     CODE DU SALON
@@ -628,7 +829,7 @@ export const TVMemoryPokerView: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Quick 3-Step Guide (Identique à tous les jeux) */}
+                {/* Quick 3-Step Guide */}
                 <div className="w-full grid grid-cols-3 gap-2 pt-1 text-center">
                   <div className="p-2 rounded-xl bg-white/[0.03] border border-white/[0.06]">
                     <span className="block text-[9px] font-mono font-bold text-slate-400">1. SCANNEZ</span>
@@ -644,7 +845,7 @@ export const TVMemoryPokerView: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Téléphones connectés & Fallback URL */}
+                {/* Joueurs connectés */}
                 <div className="w-full pt-2 border-t border-white/[0.08] text-center">
                   <div className="flex items-center justify-between text-[11px] font-bold text-slate-400 mb-2">
                     <span className="flex items-center gap-1.5">
@@ -672,38 +873,32 @@ export const TVMemoryPokerView: React.FC = () => {
                       ))}
                     </div>
                   )}
-
-                  <div className="pt-2 text-[10px] text-slate-400">
-                    <span>Ou rendez-vous sur : </span>
-                    <span className="font-mono text-slate-200 font-bold underline">
-                      {typeof window !== 'undefined' ? (window.location.host + (room?.code ? `/?room=${room.code}` : '')) : 'mood.tv'}
-                    </span>
-                  </div>
                 </div>
               </div>
             </div>
           </section>
 
           {/* Grille de Statistiques & Performance Récente */}
-          <section className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <section className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
             <div className="p-6 rounded-3xl bg-[#0E131C] border border-white/10 shadow-xl">
               <span className="text-xs font-bold text-white/50 uppercase tracking-widest block mb-2">
-                Parties Jouées
+                Parties & Tournois
               </span>
               <div className="text-4xl font-black font-display text-white">{stats.gamesPlayed}</div>
               <span className="text-xs text-[#D4AF37] font-semibold mt-2 block">
-                {stats.totalPointsAccumulated.toLocaleString()} pts accumulés
+                {stats.tournamentsCompleted} tournois complétés
               </span>
             </div>
 
             <div className="p-6 rounded-3xl bg-[#0E131C] border border-white/10 shadow-xl">
               <span className="text-xs font-bold text-white/50 uppercase tracking-widest block mb-2">
-                Meilleur Score
+                Trésor de Garnets (🪙)
               </span>
-              <div className="text-4xl font-black font-display text-[#D4AF37]">
-                {stats.bestScore.toLocaleString()}
+              <div className="text-4xl font-black font-display text-[#D4AF37] flex items-center gap-2">
+                <span>🪙</span>
+                <span>{stats.totalGarnets}</span>
               </div>
-              <span className="text-xs text-white/60 font-semibold mt-2 block">Record personnel</span>
+              <span className="text-xs text-white/60 font-semibold mt-2 block">Pièces du Démon accumulées</span>
             </div>
 
             <div className="p-6 rounded-3xl bg-[#0E131C] border border-white/10 shadow-xl">
@@ -714,7 +909,7 @@ export const TVMemoryPokerView: React.FC = () => {
                 {stats.highestHandName || 'Aucune'}
               </div>
               <span className="text-xs text-emerald-400 font-bold uppercase tracking-wider mt-2 block">
-                Niveau {stats.highestTier}/10
+                Rang {stats.highestTier}/10 • Record : {stats.bestScore} pts
               </span>
             </div>
 
@@ -738,6 +933,50 @@ export const TVMemoryPokerView: React.FC = () => {
               )}
             </div>
           </section>
+
+          {/* Section Badges et Succès Débloqués */}
+          <section className="p-8 rounded-3xl bg-[#0C1018] border border-white/10 shadow-2xl">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-3">
+                <Award className="w-6 h-6 text-[#D4AF37]" />
+                <h3 className="text-xl font-black font-display text-white uppercase tracking-tight">
+                  Trophées & Badges de l'Arène ({MemoryPokerStorage.getAchievements().filter((a) => a.unlocked).length}/
+                  {MEMORY_POKER_ACHIEVEMENTS.length})
+                </h3>
+              </div>
+              <span className="text-xs text-white/50 uppercase tracking-wider">
+                Débloquez tous les trophées du Maître du Jeu
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-6 gap-4">
+              {MemoryPokerStorage.getAchievements().map((ach) => (
+                <div
+                  key={ach.id}
+                  className={`p-4 rounded-2xl border transition-all flex flex-col justify-between ${
+                    ach.unlocked
+                      ? 'bg-[#151D2A] border-[#D4AF37]/50 shadow-[0_0_15px_rgba(212,175,55,0.15)]'
+                      : 'bg-white/[0.02] border-white/5 opacity-40'
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-2xl">{ach.icon}</span>
+                    {ach.unlocked ? (
+                      <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300">
+                        Acquis
+                      </span>
+                    ) : (
+                      <span className="text-[9px] font-bold text-white/40">Verrouillé</span>
+                    )}
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-bold text-white mb-1">{ach.title}</h4>
+                    <p className="text-[10px] text-white/60 leading-tight">{ach.description}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
         </main>
       )}
 
@@ -746,17 +985,20 @@ export const TVMemoryPokerView: React.FC = () => {
       {/* ========================================================================= */}
       {(phase === 'memorize' || phase === 'selection' || phase === 'showdown') && (
         <main className="max-w-[1500px] mx-auto px-8 py-4 flex flex-col items-center justify-between min-h-[82vh]">
-          {/* En-tête de manche avec statut et chronomètre */}
+          {/* En-tête de manche avec statut, manche et chronomètre */}
           <div className="w-full flex items-center justify-between py-2 border-b border-white/10 mb-4">
             <div className="flex items-center gap-3">
-              <span className="text-xs font-black uppercase tracking-widest text-[#D4AF37]">
+              <span className="text-xs font-black uppercase tracking-widest px-3 py-1 rounded-xl bg-[#D4AF37]/15 border border-[#D4AF37]/35 text-[#D4AF37]">
+                MANCHE {currentRound} / {totalRounds}
+              </span>
+              <span className="text-xs font-bold uppercase tracking-wider text-white/60">
                 Mode : {currentConfig.label}
               </span>
               <span className="text-white/30">•</span>
-              <span className="text-xs font-semibold text-white/70">
+              <span className="text-xs font-semibold text-white/80">
                 {phase === 'memorize' && 'Phase 1 : Mémorisation des 16 cartes'}
                 {phase === 'selection' && 'Phase 2 : Choisissez 2 cartes pour compléter les communes'}
-                {phase === 'showdown' && 'Phase 3 : Évaluation finale de la main'}
+                {phase === 'showdown' && 'Phase 3 : Showdown et évaluation en direct'}
               </span>
             </div>
 
@@ -765,7 +1007,7 @@ export const TVMemoryPokerView: React.FC = () => {
               <div
                 className={`flex items-center gap-2 px-5 py-2 rounded-2xl border font-mono text-xl font-black ${
                   timeLeft <= 5
-                    ? 'bg-red-600/20 border-red-500 text-red-400 animate-pulse'
+                    ? 'bg-red-600/20 border-red-500 text-red-400 animate-pulse scale-105'
                     : 'bg-[#151B27] border-[#D4AF37]/40 text-[#D4AF37]'
                 }`}
               >
@@ -778,7 +1020,7 @@ export const TVMemoryPokerView: React.FC = () => {
                   data-tv-focus
                   tabIndex={0}
                   onClick={() => transitionToSelection(currentConfig.decisionSeconds)}
-                  className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-xs font-bold uppercase tracking-wider"
+                  className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-xs font-bold uppercase tracking-wider transition-all"
                 >
                   Je suis prêt (Passer)
                 </button>
@@ -812,9 +1054,10 @@ export const TVMemoryPokerView: React.FC = () => {
                     <span className="text-[10px] font-mono">
                       {phase === 'memorize' && (p.isReady ? '✓ Prêt' : 'Mémorise...')}
                       {phase === 'selection' && (isConfirmed ? '✓ Validé (2/2)' : `${pSelected.length}/2 choisies`)}
-                      {phase === 'showdown' && (
-                        serverSubState.playerHands?.[p.id]?.evaluation?.frenchName ? `✓ ${serverSubState.playerHands[p.id].evaluation.frenchName}` : 'Terminé'
-                      )}
+                      {phase === 'showdown' &&
+                        (serverSubState.playerHands?.[p.id]?.evaluation?.frenchName
+                          ? `✓ ${serverSubState.playerHands[p.id].evaluation.frenchName}`
+                          : 'Terminé')}
                     </span>
                   </div>
                 );
@@ -865,84 +1108,97 @@ export const TVMemoryPokerView: React.FC = () => {
             </div>
           </div>
 
-          {/* ZONE 2 : LA GRILLE DE 16 CARTES 4x4 */}
+          {/* ZONE 2 : LA GRILLE DE 16 CARTES 4x4 AVEC CARD FLIP 3D RÉALISTE */}
           <div className="grid grid-cols-4 gap-4 p-6 rounded-3xl bg-[#0E131C] border border-[#D4AF37]/30 shadow-2xl max-w-2xl w-full">
             {grid.map((card, idx) => {
-              const isFaceUp = phase === 'memorize' || phase === 'showdown';
               const isSelected = selectedIndices.includes(idx);
               const isCursorHere = cursorIndex === idx && phase === 'selection';
+              // En showdown, on ne révèle que les 2 cartes choisies par le joueur (effet spectaculaire !)
+              const isFaceUp = phase === 'memorize' || (phase === 'showdown' && isSelected);
 
               return (
-                <button
+                <div
                   key={idx}
-                  data-tv-focus
-                  tabIndex={0}
-                  disabled={phase !== 'selection'}
+                  className="relative aspect-[3/4] [perspective:1000px] cursor-pointer"
                   onClick={() => handleToggleCard(idx)}
-                  className={`relative aspect-[3/4] rounded-2xl p-2.5 flex flex-col items-center justify-between border transition-all duration-300 outline-none ${
-                    isCursorHere ? 'ring-4 ring-[#D4AF37] scale-105 z-20' : ''
-                  } ${
-                    isSelected
-                      ? 'bg-[#D4AF37]/35 border-[#D4AF37] shadow-[0_0_20px_rgba(212,175,55,0.4)] scale-105'
-                      : isFaceUp
-                      ? 'bg-gradient-to-br from-white to-slate-200 text-black border-white shadow-lg'
-                      : 'bg-[#141A26] border-white/15 hover:border-[#D4AF37]/60 shadow-inner'
-                  }`}
                 >
-                  {isFaceUp ? (
-                    <>
+                  <button
+                    data-tv-focus
+                    tabIndex={0}
+                    disabled={phase !== 'selection'}
+                    className={`w-full h-full relative rounded-2xl transition-transform duration-700 [transform-style:preserve-3d] outline-none ${
+                      isCursorHere ? 'ring-4 ring-[#D4AF37] scale-105 z-20' : ''
+                    } ${!isFaceUp ? '[transform:rotateY(180deg)]' : ''}`}
+                    style={{
+                      transitionDelay: phase === 'selection' ? `${idx * 30}ms` : '0ms',
+                    }}
+                  >
+                    {/* FACE AVANT (Carte Visible) */}
+                    <div className="absolute inset-0 [backface-visibility:hidden] rounded-2xl p-2.5 flex flex-col items-center justify-between bg-gradient-to-br from-white to-slate-200 text-black border-2 border-white shadow-xl">
                       <span className="text-xs font-black self-start font-mono leading-none">{card.display}</span>
                       <span className={`text-4xl ${card.color === 'red' ? 'text-red-600' : 'text-slate-900'}`}>
                         {card.symbol}
                       </span>
                       <span className="text-xs font-black self-end font-mono leading-none">{card.display}</span>
-                    </>
-                  ) : (
-                    <div className="w-full h-full flex flex-col items-center justify-center gap-1.5">
-                      <div
-                        className={`w-10 h-14 rounded-xl border flex items-center justify-center font-mono text-sm font-black ${
-                          isSelected
-                            ? 'bg-[#D4AF37] text-black border-white shadow-md'
-                            : 'border-white/20 bg-white/5 text-white/50'
-                        }`}
-                      >
-                        #{idx + 1}
-                      </div>
-                      {isSelected ? (
-                        <span className="text-[9px] font-black uppercase text-[#D4AF37] tracking-wider">CHOISI</span>
-                      ) : (
-                        <span className="text-[9px] font-semibold text-white/30">D-Pad</span>
+
+                      {/* Badge doré si la carte est choisie */}
+                      {isSelected && (
+                        <span className="absolute top-1.5 right-1.5 w-5 h-5 rounded-full bg-[#D4AF37] text-black font-black text-[10px] flex items-center justify-center shadow">
+                          {selectedIndices.indexOf(idx) + 1}
+                        </span>
                       )}
                     </div>
-                  )}
 
-                  {/* Numéro de slot choisi */}
-                  {isSelected && (
-                    <span className="absolute top-1.5 right-1.5 w-5 h-5 rounded-full bg-[#D4AF37] text-black font-black text-[10px] flex items-center justify-center shadow">
-                      {selectedIndices.indexOf(idx) + 1}
-                    </span>
-                  )}
-                </button>
+                    {/* FACE ARRIÈRE (Dos de carte The Devil's Plan luxueux) */}
+                    <div
+                      className={`absolute inset-0 [backface-visibility:hidden] [transform:rotateY(180deg)] rounded-2xl p-2 flex flex-col items-center justify-between border-2 transition-colors ${
+                        isSelected
+                          ? 'bg-[#1E190D] border-[#D4AF37] shadow-[0_0_20px_rgba(212,175,55,0.45)]'
+                          : 'bg-[#0E131C] border-white/15'
+                      }`}
+                    >
+                      <div className="w-full flex items-center justify-between text-[10px] font-mono text-white/40">
+                        <span>#{idx + 1}</span>
+                        {isSelected && <span className="text-[#D4AF37] font-bold">CHOISI</span>}
+                      </div>
+
+                      {/* Motif de sceau Devil's Plan */}
+                      <div
+                        className={`w-12 h-16 rounded-xl border flex flex-col items-center justify-center transition-all ${
+                          isSelected
+                            ? 'bg-[#D4AF37]/20 border-[#D4AF37] text-amber-300 scale-105'
+                            : 'border-white/10 bg-white/5 text-white/30'
+                        }`}
+                      >
+                        <span className="text-xl">🪙</span>
+                        <span className="text-[8px] font-black uppercase tracking-wider text-white/50 mt-1">DEVIL</span>
+                      </div>
+
+                      <div className="w-full text-center">
+                        <span className="text-[9px] font-mono text-white/40">#{idx + 1}</span>
+                      </div>
+                    </div>
+                  </button>
+                </div>
               );
             })}
           </div>
 
           {/* ZONE 3 : BARRE DE VALIDATION ET CHOIX DU JOUEUR */}
-          <div className="w-full max-w-3xl flex items-center justify-between py-4 px-6 rounded-2xl bg-[#0B0F17] border border-white/10 mt-4">
+          <div className="w-full max-w-3xl flex items-center justify-between py-4 px-6 rounded-2xl bg-[#0B0F17] border border-white/10 mt-4 shadow-xl">
             <div className="flex items-center gap-4">
               <span className="text-xs font-bold uppercase tracking-wider text-white/60">Vos 2 Cartes Choisies :</span>
               <div className="flex items-center gap-3">
                 {[0, 1].map((slotIdx) => {
                   const cardIdx = selectedIndices[slotIdx];
                   const hasChoice = cardIdx !== undefined;
-                  const card = hasChoice ? grid[cardIdx] : null;
 
                   return (
                     <div
                       key={slotIdx}
-                      className={`w-14 h-18 rounded-xl border flex flex-col items-center justify-center font-mono text-xs font-bold ${
+                      className={`w-14 h-18 rounded-xl border flex flex-col items-center justify-center font-mono text-xs font-bold transition-all ${
                         hasChoice
-                          ? 'bg-[#D4AF37]/25 border-[#D4AF37] text-[#D4AF37]'
+                          ? 'bg-[#D4AF37]/25 border-[#D4AF37] text-[#D4AF37] shadow-[0_0_12px_rgba(212,175,55,0.3)]'
                           : 'border-dashed border-white/20 text-white/30'
                       }`}
                     >
@@ -958,10 +1214,10 @@ export const TVMemoryPokerView: React.FC = () => {
                 data-tv-focus
                 tabIndex={0}
                 disabled={selectedIndices.length !== 2}
-                onClick={confirmSelection}
+                onClick={() => confirmSelection()}
                 className={`px-8 py-3.5 rounded-2xl font-black uppercase text-xs tracking-wider transition-all outline-none ${
                   selectedIndices.length === 2
-                    ? 'bg-gradient-to-r from-[#D4AF37] to-[#B38728] text-black shadow-lg shadow-[#D4AF37]/30 hover:brightness-110 focus:ring-4 focus:ring-[#D4AF37]'
+                    ? 'bg-gradient-to-r from-[#D4AF37] to-[#B38728] text-black shadow-lg shadow-[#D4AF37]/30 hover:brightness-110 focus:ring-4 focus:ring-[#D4AF37] scale-105'
                     : 'bg-white/5 border border-white/10 text-white/30 cursor-not-allowed'
                 }`}
               >
@@ -973,25 +1229,23 @@ export const TVMemoryPokerView: React.FC = () => {
       )}
 
       {/* ========================================================================= */}
-      {/* 3. ÉCRAN DE RÉSULTATS / BILAN DU TOUR */}
+      {/* 3. ÉCRAN DE RÉSULTATS / BILAN DU TOUR & DÉVOILEMENT COMPARATIF */}
       {/* ========================================================================= */}
       {phase === 'results' && evaluation && scoreBreakdown && (
-        <main className="max-w-[1200px] mx-auto px-8 py-10 flex flex-col items-center animate-fade-in">
-          <div className="text-center mb-8">
+        <main className="max-w-[1300px] mx-auto px-8 py-8 flex flex-col items-center animate-fade-in">
+          <div className="text-center mb-6">
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#D4AF37]/15 border border-[#D4AF37]/35 text-[#D4AF37] text-xs font-black uppercase tracking-widest mb-3">
               <Trophy className="w-4 h-4 fill-current" />
-              Résultat de l'Épreuve • Showdown
+              Manche {currentRound} / {totalRounds} • Résultats Officiels
             </div>
-            <h2 className="text-4xl md:text-6xl font-black font-display text-white mb-2">
-              {evaluation.frenchName}
-            </h2>
+            <h2 className="text-4xl md:text-6xl font-black font-display text-white mb-2">{evaluation.frenchName}</h2>
             <p className="text-sm md:text-base text-white/60 font-semibold">
               Combinaison de Rang {evaluation.tier}/10 ({evaluation.name})
             </p>
           </div>
 
           {/* Présentation des 5 cartes de la main finale */}
-          <div className="flex items-center gap-4 mb-10 p-6 rounded-3xl bg-[#0D121B] border border-[#D4AF37]/40 shadow-2xl">
+          <div className="flex items-center gap-4 mb-8 p-6 rounded-3xl bg-[#0D121B] border border-[#D4AF37]/40 shadow-2xl">
             {evaluation.cards.map((card, i) => (
               <div
                 key={i}
@@ -1006,24 +1260,86 @@ export const TVMemoryPokerView: React.FC = () => {
             ))}
           </div>
 
-          {/* Décomposition des Points Gagnés */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 w-full max-w-3xl mb-10 text-center">
+          {/* DÉVOILEMENT COMPARATIF : CE QUE VOUS AVEZ FAIT VS MEILLEURE MAIN THÉORIQUE */}
+          {theoreticalBest && (
+            <div className="w-full max-w-4xl p-6 rounded-3xl bg-[#0B0F17] border border-white/10 mb-8 shadow-2xl">
+              <div className="flex items-center justify-between pb-3 border-b border-white/10 mb-4">
+                <span className="text-xs font-black uppercase tracking-widest text-[#D4AF37] flex items-center gap-2">
+                  <TrendingUp className="w-4 h-4" /> Analyse Stratégique The Devil's Plan
+                </span>
+                {evaluation.scoreValue >= theoreticalBest.evaluation.scoreValue ? (
+                  <span className="px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-xs font-black uppercase tracking-wider flex items-center gap-1.5">
+                    <Crown className="w-3.5 h-3.5 text-amber-400" /> 100% Optimale • Vision Parfaite !
+                  </span>
+                ) : (
+                  <span className="text-xs text-amber-400 font-bold">
+                    Meilleure combinaison théorique disponible sur cette table :
+                  </span>
+                )}
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Choix réel du joueur */}
+                <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/10">
+                  <span className="text-[11px] font-bold text-white/50 uppercase tracking-widest block mb-1">
+                    Votre Choix Réel
+                  </span>
+                  <div className="text-lg font-black text-white mb-2">{evaluation.frenchName}</div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-white/60">Cartes :</span>
+                    {selectedIndices.map((idx) => (
+                      <span
+                        key={idx}
+                        className="px-2 py-0.5 rounded bg-white/10 text-white font-mono text-xs font-bold"
+                      >
+                        #{idx + 1}
+                      </span>
+                    ))}
+                    <span className="text-xs text-[#D4AF37] font-bold ml-auto">+{scoreBreakdown.totalPoints} pts</span>
+                  </div>
+                </div>
+
+                {/* Combinaison théorique optimale de la table */}
+                <div className="p-4 rounded-2xl bg-[#D4AF37]/10 border border-[#D4AF37]/30">
+                  <span className="text-[11px] font-bold text-amber-300 uppercase tracking-widest block mb-1">
+                    Combinaison Maximale Théorique
+                  </span>
+                  <div className="text-lg font-black text-amber-300 mb-2">
+                    {theoreticalBest.evaluation.frenchName}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-white/60">Cartes Clés :</span>
+                    {theoreticalBest.indices.map((idx) => (
+                      <span
+                        key={idx}
+                        className="px-2 py-0.5 rounded bg-[#D4AF37]/20 text-[#D4AF37] font-mono text-xs font-bold"
+                      >
+                        #{idx + 1}
+                      </span>
+                    ))}
+                    <span className="text-xs text-emerald-400 font-bold ml-auto">
+                      Rang {theoreticalBest.evaluation.tier}/10
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Décomposition des Points & Garnets Gagnés */}
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4 w-full max-w-4xl mb-8 text-center">
             <div className="p-4 rounded-2xl bg-white/5 border border-white/10">
               <span className="text-[11px] font-bold text-white/50 uppercase tracking-widest block mb-1">
-                Points Combinaison
+                Points Main
               </span>
-              <span className="font-mono text-2xl font-black text-white">
-                +{scoreBreakdown.handPoints}
-              </span>
+              <span className="font-mono text-2xl font-black text-white">+{scoreBreakdown.handPoints}</span>
             </div>
 
             <div className="p-4 rounded-2xl bg-white/5 border border-white/10">
               <span className="text-[11px] font-bold text-white/50 uppercase tracking-widest block mb-1">
-                Bonus de Vitesse
+                Bonus Vitesse
               </span>
-              <span className="font-mono text-2xl font-black text-emerald-400">
-                +{scoreBreakdown.speedBonus}
-              </span>
+              <span className="font-mono text-2xl font-black text-emerald-400">+{scoreBreakdown.speedBonus}</span>
               <span className="text-[10px] text-white/40 block mt-0.5">{decisionTimeUsed}s utilisées</span>
             </div>
 
@@ -1031,31 +1347,43 @@ export const TVMemoryPokerView: React.FC = () => {
               <span className="text-[11px] font-bold text-white/50 uppercase tracking-widest block mb-1">
                 Multiplicateur
               </span>
-              <span className="font-mono text-2xl font-black text-white">
-                x{scoreBreakdown.multiplier}
+              <span className="font-mono text-2xl font-black text-white">x{scoreBreakdown.multiplier}</span>
+            </div>
+
+            <div className="p-4 rounded-2xl bg-amber-500/15 border border-amber-500/35">
+              <span className="text-[11px] font-black text-amber-300 uppercase tracking-widest block mb-1">
+                Pièces du Démon
               </span>
+              <span className="font-mono text-2xl font-black text-amber-300">+{scoreBreakdown.garnetsEarned} 🪙</span>
             </div>
 
             <div className="p-4 rounded-2xl bg-[#D4AF37]/20 border border-[#D4AF37] shadow-[0_0_20px_rgba(212,175,55,0.3)]">
               <span className="text-[11px] font-black text-[#D4AF37] uppercase tracking-widest block mb-1">
-                Score Total
+                Score Manche
               </span>
-              <span className="font-mono text-3xl font-black text-[#D4AF37]">
-                {scoreBreakdown.totalPoints}
-              </span>
+              <span className="font-mono text-3xl font-black text-[#D4AF37]">{scoreBreakdown.totalPoints}</span>
             </div>
           </div>
 
-          {/* Boutons d'Action Post-Partie */}
+          {/* Boutons d'Action de Transition */}
           <div className="flex items-center gap-4">
             <button
               data-tv-focus
               tabIndex={0}
-              onClick={() => handleStartGame(difficulty)}
+              onClick={handleNextRound}
               className="inline-flex items-center gap-2.5 px-8 py-4 rounded-2xl bg-gradient-to-r from-[#D4AF37] to-[#B38728] text-black font-black uppercase text-sm tracking-wider shadow-lg shadow-[#D4AF37]/30 hover:brightness-110 outline-none focus:ring-4 focus:ring-[#D4AF37]"
             >
-              <RotateCcw className="w-5 h-5" />
-              Rejouer (Touche Verte)
+              {currentRound < totalRounds ? (
+                <>
+                  <span>Passer à la Manche {currentRound + 1} / {totalRounds}</span>
+                  <ChevronRight className="w-5 h-5" />
+                </>
+              ) : (
+                <>
+                  <Crown className="w-5 h-5" />
+                  <span>Cérémonie Finale du Podium</span>
+                </>
+              )}
             </button>
 
             <button
@@ -1071,7 +1399,123 @@ export const TVMemoryPokerView: React.FC = () => {
       )}
 
       {/* ========================================================================= */}
-      {/* 4. MODAL DU QR CODE ET CONNEXION MANETTE SMARTPHONE (DESIGN OFFICIEL MOOD TV) */}
+      {/* 4. CÉRÉMONIE FINALE SUR LE PODIUM THE DEVIL'S PLAN */}
+      {/* ========================================================================= */}
+      {phase === 'podium' && (
+        <main className="max-w-[1200px] mx-auto px-8 py-8 flex flex-col items-center animate-fade-in text-center">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#D4AF37]/20 border border-[#D4AF37]/50 text-[#D4AF37] text-xs font-black uppercase tracking-widest mb-4">
+            <Crown className="w-4 h-4 fill-current" />
+            GRAND TOURNOI THE DEVIL'S PLAN • PODIUM
+          </div>
+
+          <h2 className="text-4xl md:text-6xl font-black font-display text-white mb-2">
+            COURONNEMENT DES CHAMPIONS
+          </h2>
+          <p className="text-base text-white/70 max-w-xl mx-auto mb-10">
+            Félicitations à tous les stratèges de l'Arène. Voici le classement officiel après les 3 manches de
+            mémorisation !
+          </p>
+
+          {/* Podium Visuel 3D */}
+          <div className="flex items-end justify-center gap-6 w-full max-w-3xl mb-12">
+            {/* 2ème Place */}
+            <div className="flex-1 flex flex-col items-center">
+              <div className="text-3xl mb-2">🥈</div>
+              <div className="font-bold text-sm text-slate-300 mb-1">
+                {connectedPhones[1]?.name || '🤖 Orbit AI'}
+              </div>
+              <div className="w-full h-32 rounded-t-3xl bg-slate-700/50 border border-slate-500/30 flex flex-col items-center justify-center p-4">
+                <span className="text-xs font-bold text-slate-400 uppercase">2ème Place</span>
+                <span className="font-mono text-xl font-black text-white">
+                  {Math.round(totalTournamentScore * 0.72)} pts
+                </span>
+              </div>
+            </div>
+
+            {/* 1ère Place (Vainqueur Doré) */}
+            <div className="flex-1 flex flex-col items-center scale-110">
+              <div className="text-4xl mb-2 animate-bounce">👑</div>
+              <div className="font-black text-base text-[#D4AF37] mb-1">
+                {connectedPhones[0]?.name || 'Maître de l’Arène'}
+              </div>
+              <div className="w-full h-44 rounded-t-3xl bg-gradient-to-t from-[#B38728] to-[#D4AF37] text-black shadow-[0_0_35px_rgba(212,175,55,0.4)] flex flex-col items-center justify-center p-4">
+                <span className="text-xs font-black uppercase tracking-widest text-black/70">CHAMPION</span>
+                <span className="font-mono text-3xl font-black text-black">{totalTournamentScore} pts</span>
+                <span className="text-xs font-bold text-black/80 mt-1">🪙 {totalTournamentGarnets} Garnets</span>
+              </div>
+            </div>
+
+            {/* 3ème Place */}
+            <div className="flex-1 flex flex-col items-center">
+              <div className="text-3xl mb-2">🥉</div>
+              <div className="font-bold text-sm text-amber-600 mb-1">
+                {connectedPhones[2]?.name || '🤖 DeepMind Bot'}
+              </div>
+              <div className="w-full h-24 rounded-t-3xl bg-amber-900/30 border border-amber-800/30 flex flex-col items-center justify-center p-4">
+                <span className="text-xs font-bold text-amber-500 uppercase">3ème Place</span>
+                <span className="font-mono text-lg font-black text-white">
+                  {Math.round(totalTournamentScore * 0.45)} pts
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Tableau Récapitulatif des 3 Manches */}
+          <div className="w-full max-w-3xl rounded-3xl bg-[#0D121B] border border-white/10 p-6 mb-8 text-left">
+            <h3 className="text-sm font-black uppercase tracking-wider text-[#D4AF37] mb-4">
+              Bilan des 3 Manches du Tournoi
+            </h3>
+            <div className="space-y-3">
+              {tournamentRounds.map((r) => (
+                <div
+                  key={r.round}
+                  className="flex items-center justify-between p-3 rounded-2xl bg-white/[0.02] border border-white/5"
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="w-7 h-7 rounded-lg bg-[#D4AF37]/20 text-[#D4AF37] font-black text-xs flex items-center justify-center">
+                      M{r.round}
+                    </span>
+                    <div>
+                      <span className="font-bold text-sm text-white">{r.evaluation.frenchName}</span>
+                      <span className="text-xs text-white/50 block">Rang {r.evaluation.tier}/10</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <span className="font-mono text-sm text-amber-300 font-bold">+{r.garnets} 🪙</span>
+                    <span className="font-mono text-base font-black text-[#D4AF37]">
+                      +{r.breakdown.totalPoints} pts
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="flex items-center gap-4">
+            <button
+              data-tv-focus
+              tabIndex={0}
+              onClick={() => handleStartGame(difficulty, 1)}
+              className="inline-flex items-center gap-2.5 px-8 py-4 rounded-2xl bg-gradient-to-r from-[#D4AF37] to-[#B38728] text-black font-black uppercase text-sm tracking-wider shadow-lg shadow-[#D4AF37]/30 hover:brightness-110 outline-none focus:ring-4 focus:ring-[#D4AF37]"
+            >
+              <RotateCcw className="w-5 h-5" />
+              Nouveau Tournoi (3 Manches)
+            </button>
+
+            <button
+              data-tv-focus
+              tabIndex={0}
+              onClick={() => setPhase('idle')}
+              className="inline-flex items-center gap-2 px-6 py-4 rounded-2xl bg-white/10 hover:bg-white/15 border border-white/20 text-white font-bold text-sm tracking-wider outline-none"
+            >
+              Retour à l'Accueil
+            </button>
+          </div>
+        </main>
+      )}
+
+      {/* ========================================================================= */}
+      {/* 5. MODAL DU QR CODE ET CONNEXION MANETTE SMARTPHONE (DESIGN OFFICIEL MOOD TV) */}
       {/* ========================================================================= */}
       {isQrModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/90 backdrop-blur-xl animate-fade-in">
@@ -1098,7 +1542,6 @@ export const TVMemoryPokerView: React.FC = () => {
             </div>
 
             <div className="flex flex-col sm:flex-row items-center gap-6 mb-6">
-              {/* Scannable White QR Code Container (Liquid glass effects MUST NOT cover the QR SVG) */}
               <div className="p-3.5 rounded-2xl bg-white shadow-[0_15px_40px_rgba(0,0,0,0.8)] border-4 border-white flex-shrink-0">
                 <QRCodeSVG
                   value={mobileJoinUrl || 'https://mood.tv'}
@@ -1115,7 +1558,6 @@ export const TVMemoryPokerView: React.FC = () => {
                   Aucune application requise
                 </div>
 
-                {/* Quick 3-Step Guide (Identique à tous les jeux) */}
                 <div className="w-full grid grid-cols-3 gap-2 text-center">
                   <div className="p-2 rounded-xl bg-white/[0.03] border border-white/[0.06]">
                     <span className="block text-[9px] font-mono font-bold text-slate-400">1. SCANNEZ</span>
@@ -1131,11 +1573,12 @@ export const TVMemoryPokerView: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Direct URL Fallback */}
                 <div className="p-2 rounded-xl bg-white/[0.03] border border-white/[0.06] text-center text-xs text-slate-400">
                   <span>Ou rendez-vous sur : </span>
                   <span className="font-mono text-slate-200 font-bold underline">
-                    {typeof window !== 'undefined' ? (window.location.host + (room?.code ? `/?room=${room.code}` : '')) : 'mood.tv'}
+                    {typeof window !== 'undefined'
+                      ? window.location.host + (room?.code ? `/?room=${room.code}` : '')
+                      : 'mood.tv'}
                   </span>
                 </div>
               </div>
@@ -1198,7 +1641,7 @@ export const TVMemoryPokerView: React.FC = () => {
       )}
 
       {/* ========================================================================= */}
-      {/* 5. MODAL DES RÈGLES DU JEU ET HIÉRARCHIE POKER (TOUCHE JAUNE) */}
+      {/* 6. MODAL DES RÈGLES DU JEU ET HIÉRARCHIE POKER (TOUCHE JAUNE) */}
       {/* ========================================================================= */}
       {isRulesModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-8 bg-black/85 backdrop-blur-md animate-fade-in">
@@ -1222,20 +1665,21 @@ export const TVMemoryPokerView: React.FC = () => {
 
             <div className="space-y-6 text-sm text-white/80 leading-relaxed max-h-[60vh] overflow-y-auto pr-3">
               <div>
-                <h4 className="font-bold text-[#D4AF37] text-base mb-2">1. Principe de l'Épreuve :</h4>
+                <h4 className="font-bold text-[#D4AF37] text-base mb-2">1. Format Tournoi en 3 Manches :</h4>
                 <p>
-                  Un jeu standard de 52 cartes est mélangé. 16 cartes sont disposées sur une grille de 4x4 cases.
-                  Vous disposez d'un temps limité (12 à 30 secondes selon la difficulté) pour mémoriser l'emplacement
-                  des valeurs et des couleurs.
+                  Chaque match officiel The Devil's Plan se déroule en 3 manches consécutives. Vos points de combinaison,
+                  vos bonus de rapidité et vos <strong>Pièces du Démon (Garnets 🪙)</strong> s'accumulent pour établir le
+                  classement final sur le podium.
                 </p>
               </div>
 
               <div>
-                <h4 className="font-bold text-[#D4AF37] text-base mb-2">2. Les Cartes Communes & Votre Choix :</h4>
+                <h4 className="font-bold text-[#D4AF37] text-base mb-2">2. Déroulement d'une Manche :</h4>
                 <p>
-                  Lorsque les cartes se retournent face cachée, <strong>3 cartes communes</strong> sont dévoilées.
-                  Vous devez sélectionner <strong>exactement 2 cartes</strong> parmi les 16 cartes cachées pour
-                  former la combinaison de 5 cartes la plus puissante possible.
+                  16 cartes sont disposées sur une grille de 4x4 cases. Vous disposez d'un temps limité (12 à 30 secondes
+                  selon la difficulté) pour mémoriser l'emplacement des valeurs et des couleurs. Dès que le temps est
+                  écoulé, les cartes se retournent face cachée et <strong>3 cartes communes</strong> apparaissent au centre.
+                  Vous devez sélectionner <strong>exactement 2 cartes</strong> parmi les 16 cartes cachées.
                 </p>
               </div>
 
