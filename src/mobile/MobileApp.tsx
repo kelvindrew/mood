@@ -30,6 +30,7 @@ const MemeFactoryController = React.lazy(() => import('./views/controllers/MemeF
 const ConnectFourController = React.lazy(() => import('./views/controllers/ConnectFourController').then(m => ({ default: m.ConnectFourController })));
 const WildRushController = React.lazy(() => import('./views/controllers/WildRushController').then(m => ({ default: m.WildRushController })));
 const JeuDePaysController = React.lazy(() => import('./views/controllers/JeuDePaysController').then(m => ({ default: m.JeuDePaysController })));
+const ArenaController = React.lazy(() => import('./views/controllers/ArenaController').then(m => ({ default: m.ArenaController })));
 
 const ControllerLoader: React.FC = () => (
   <div className="flex flex-col items-center justify-center min-h-screen bg-[#070D0B] text-white p-6 select-none space-y-4 animate-fade-in">

@@ -14,6 +14,7 @@ const TVCategoriesView = React.lazy(() => import('./views/TVCategoriesView').the
 const TVGameDetailView = React.lazy(() => import('./views/TVGameDetailView').then((module) => ({ default: module.TVGameDetailView })));
 const TVProfilesView = React.lazy(() => import('./views/TVProfilesView').then((module) => ({ default: module.TVProfilesView })));
 const TVSettingsView = React.lazy(() => import('./views/TVSettingsView').then((module) => ({ default: module.TVSettingsView })));
+const TVArenaView = React.lazy(() => import('./views/TVArenaView').then((module) => ({ default: module.TVArenaView })));
 
 export const TVApp: React.FC = () => {
   const { tvView } = useGame();
@@ -37,6 +38,7 @@ export const TVApp: React.FC = () => {
       case 'profiles': return <TVProfilesView />;
       case 'settings': return <TVSettingsView />;
       case 'admin': return <TVAdminView />;
+      case 'arena': return <TVArenaView />;
       default: return <TVHomeView />;
     }
   };

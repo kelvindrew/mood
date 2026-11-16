@@ -28,6 +28,7 @@ const MemeFactoryBoardTV = React.lazy(() => import('../boards/MemeFactoryBoardTV
 const ConnectFourBoardTV = React.lazy(() => import('../boards/ConnectFourBoardTV').then(m => ({ default: m.ConnectFourBoardTV })));
 const WildRushBoardTV = React.lazy(() => import('../boards/WildRushBoardTV').then(m => ({ default: m.WildRushBoardTV })));
 const JeuDePaysBoardTV = React.lazy(() => import('../boards/JeuDePaysBoardTV').then(m => ({ default: m.JeuDePaysBoardTV })));
+const ArenaBoardTV = React.lazy(() => import('../boards/ArenaBoardTV').then(m => ({ default: m.ArenaBoardTV })));
 
 const TVBoardLoader: React.FC<{ gameId: string }> = ({ gameId }) => (
   <MoodLoadingScreen label={'Ouverture du jeu : ' + gameId.replace(/_/g, ' ')} fullScreen={false} />

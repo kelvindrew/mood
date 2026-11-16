@@ -8,7 +8,7 @@ import { audio } from '../services/audio';
 import { MoodThemeId, MOOD_THEMES } from '../theme/moodTheme';
 
 export type AppMode = 'tv' | 'mobile';
-export type TVView = 'home' | 'game_detail' | 'detail' | 'categories' | 'lobby' | 'gameplay' | 'playing' | 'results' | 'profile' | 'profiles' | 'settings' | 'admin';
+export type TVView = 'home' | 'game_detail' | 'detail' | 'categories' | 'lobby' | 'gameplay' | 'playing' | 'results' | 'profile' | 'profiles' | 'settings' | 'admin' | 'arena';
 export type MobileView = 'join' | 'lobby' | 'controller' | 'spectator';
 
 // E9 — état de connexion Socket.IO exposé à l'interface

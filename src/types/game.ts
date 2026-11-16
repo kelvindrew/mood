@@ -23,7 +23,8 @@ export type GameId =
   | 'meme_factory'
   | 'connect_four'
   | 'wild_rush'
-  | 'jeu_de_pays';
+  | 'jeu_de_pays'
+  | 'arena';
 
 export type PlayerColor = 'red' | 'blue' | 'green' | 'yellow' | 'purple' | 'cyan' | 'orange' | 'pink';
 

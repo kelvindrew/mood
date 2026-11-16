@@ -23,6 +23,7 @@ import { MemeFactoryEngine } from './games/memeFactoryEngine.js';
 import { ConnectFourEngine } from './games/connectFourEngine.js';
 import { WildRushEngine } from './games/wildRushEngine.js';
 import { JeuDePaysEngine } from './games/jeuDePaysEngine.js';
+import { ArenaCoordinatorEngine } from './games/arena/arenaCoordinatorEngine.js';
 
 const AVAILABLE_COLORS = ['red', 'blue', 'green', 'yellow', 'purple', 'cyan', 'orange', 'pink'];
 
@@ -61,6 +62,15 @@ export const GAME_PLAYER_CONSTRAINTS = {
   blackjack: { min: 1, max: 7 },
   wild_rush: { min: 2, max: 4 },
   jeu_de_pays: { min: 1, max: 12 },
+  arena: { min: 1, max: 10 },
+  arena_memory_poker: { min: 1, max: 6 },
+  arena_fragments: { min: 1, max: 8 },
+  arena_secret_number: { min: 1, max: 6 },
+  arena_virus: { min: 3, max: 10 },
+  arena_doubt_bet: { min: 2, max: 8 },
+  arena_equation_pyramid: { min: 1, max: 4 },
+  arena_knights_tour: { min: 1, max: 2 },
+  arena_nine_mens_morris: { min: 1, max: 2 },
 };
 
 export class RoomManager {

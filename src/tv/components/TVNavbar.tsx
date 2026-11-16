@@ -27,6 +27,19 @@ export const TVNavbar: React.FC = () => {
       </button>
 
       <div className="relative flex flex-shrink-0 items-center gap-2.5">
+        <button
+          data-tv-focus
+          tabIndex={0}
+          onClick={() => {
+            audio.playSelect();
+            setTvView('arena');
+          }}
+          className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-gradient-to-r from-[#D4AF37]/20 to-[#B8860B]/10 hover:from-[#D4AF37]/30 hover:to-[#B8860B]/20 border border-[#D4AF37]/40 text-[#D4AF37] font-black text-xs uppercase tracking-wider outline-none transition-all shadow-[0_0_15px_rgba(212,175,55,0.15)]"
+          title="Accéder à MOOD ARENA (The Devil's Arena)"
+        >
+          <span className="w-2 h-2 rounded-full bg-[#D4AF37] animate-pulse" />
+          <span>ARENA</span>
+        </button>
         {(connectionState === 'connecting' || connectionState === 'reconnecting') && (
           <div className="mood-tv-status hidden items-center gap-2 rounded-xl px-3 py-2 text-xs font-bold text-lime-200 sm:flex" role="status">
             <WindowsSpinner size="xs" className="text-lime-300" />

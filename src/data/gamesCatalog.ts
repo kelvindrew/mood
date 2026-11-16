@@ -2,6 +2,32 @@ import { GameCatalogItem } from '../types/game';
 
 export const GAMES_CATALOG: GameCatalogItem[] = [
   {
+    id: 'arena',
+    title: 'MOOD ARENA',
+    tagline: 'L’univers de stratégie, mémoire et intelligence inspiré de The Devil’s Plan',
+    description: 'Affrontez vos amis ou l’IA dans 33 épreuves d’élite combinant mémoire photographique, logique pure, bluff psychologique et tournois de haute volée.',
+    category: 'reflexion',
+    minPlayers: 1,
+    maxPlayers: 10,
+    durationMinutes: '15–30 min',
+    difficulty: 'Difficile',
+    badge: 'THE DEVIL’S ARENA',
+    coverImage: '/games/spy.jpg',
+    heroImage: '/games/spy.jpg',
+    features: [
+      '33 épreuves intellectuelles exclusives',
+      '8 premiers jeux entièrement jouables dès maintenant',
+      'Modes Solo contre IA, Duel 2 joueurs, Multijoueur TV + Manettes et Tournois',
+      'Système de ligue MOOD LEAGUE, Pièces du Démon et classements de prestige'
+    ],
+    rules: [
+      'Sélectionnez une épreuve dans les catégories Mémoire, Logique, Stratégie, Bluff ou Cartes.',
+      'Jouez directement sur la télévision avec votre télécommande ou connectez vos smartphones.',
+      'Déjouez les pièges, mémorisez les cartes secrètes, trouvez les codes et bluffez vos rivaux.',
+      'Accumulez des Pièces du Démon et progressez dans le classement mondial de la MOOD LEAGUE.'
+    ]
+  },
+  {
     id: 'spy',
     title: 'L’ESPION : UNDERCOVER',
     tagline: 'Le grand jeu de déduction sociale, de bluff et de mots secrets',
