@@ -57,9 +57,17 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [appMode, setAppMode] = useState<AppMode>('tv');
   const [tvView, setTvView] = useState<TVView>('home');
   const [mobileView, setMobileView] = useState<MobileView>('join');
-  const [games, setGames] = useState<GameCatalogItem[]>(() =>
-    adminCms.getGamesCatalog().filter((g) => !['wild_rush', 'blind_test', 'president'].includes(g.id))
-  );
+  const [games, setGames] = useState<GameCatalogItem[]>(() => {
+    const list = adminCms.getGamesCatalog().filter((g) => !['wild_rush', 'blind_test', 'president'].includes(g.id));
+    if (!list.some(g => g.id === 'memory_poker')) {
+      try {
+        localStorage.removeItem('mood_games_catalog');
+        localStorage.removeItem('mood_cms_version');
+      } catch {}
+      return GAMES_CATALOG.filter((g) => !['wild_rush', 'blind_test', 'president'].includes(g.id));
+    }
+    return list;
+  });
   const [selectedGame, setSelectedGame] = useState<GameCatalogItem>(() => games[0] || GAMES_CATALOG[0]);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
 

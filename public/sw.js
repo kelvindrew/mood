@@ -4,8 +4,8 @@
  * Garantit 0ms de latence pour tous les scripts, composants de jeu, affiches et styles.
  */
 
-const CACHE_VERSION = 'mood-cache-v3';
-const RUNTIME_CACHE = 'mood-runtime-v3';
+const CACHE_VERSION = 'mood-cache-v5';
+const RUNTIME_CACHE = 'mood-runtime-v5';
 
 // Fichiers statiques prioritaires à mettre immédiatement en cache local
 const PRECACHE_URLS = [
