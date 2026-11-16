@@ -36,6 +36,10 @@ export const TVHomeView: React.FC = () => {
       setTvView('arena');
       return;
     }
+    if (game.id === 'memory_poker') {
+      setTvView('memory_poker');
+      return;
+    }
     if (room?.code) {
       selectGame(game.id);
       setTvView('lobby');

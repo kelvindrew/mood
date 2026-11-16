@@ -165,10 +165,12 @@ export const ArenaBoardTV: React.FC = () => {
       else if (e.key === 'Enter') {
         audio.playSelect();
         setTvSelectedPoker(prev => {
-          const next = prev.includes(tvCursor) ? prev.filter(i => i !== tvCursor) : prev.length < 5 ? [...prev, tvCursor] : prev;
-          if (next.length === 5) {
-            sendGameAction('select_cards', { cardIndices: next });
-          }
+          const next = prev.includes(tvCursor)
+            ? prev.filter(i => i !== tvCursor)
+            : prev.length < 2
+            ? [...prev, tvCursor]
+            : [prev[0], tvCursor];
+          sendGameAction('select_cards', { cardIndices: next });
           return next;
         });
       }
@@ -236,7 +238,7 @@ export const ArenaBoardTV: React.FC = () => {
         if (subGameId === 'doubt_and_bet') {
           sendGameAction('submit_bid', { color: 'gold', quantity: (subState.currentBid?.quantity || 2) + 1 });
           return true;
-        } else if (subGameId === 'memory_poker' && tvSelectedPoker.length === 5) {
+        } else if (subGameId === 'memory_poker' && tvSelectedPoker.length === 2) {
           sendGameAction('select_cards', { cardIndices: tvSelectedPoker });
           return true;
         }
@@ -351,14 +353,48 @@ export const ArenaBoardTV: React.FC = () => {
             <div className="mb-4 text-center">
               <span className="text-xs font-black uppercase tracking-widest text-[#D4AF37] block mb-1">
                 {subState.phase === 'memorize' && 'Phase 1 : Mémorisation de la Grille !'}
-                {subState.phase === 'selection' && `Phase 2 : Choisissez 5 cartes (Sélection TV : ${tvSelectedPoker.length}/5) - D-Pad + OK`}
+                {subState.phase === 'selection' && `Phase 2 : Choisissez 2 cartes secrètes (Sélection TV : ${tvSelectedPoker.length}/2) - D-Pad + OK`}
                 {subState.phase === 'showdown' && 'Phase Finale : Dévoilement des Mains !'}
                 {subState.phase === 'ended' && 'Partie Terminée !'}
               </span>
               {subState.phase === 'memorize' && (
                 <div className="inline-flex items-center gap-2 px-4 py-1 rounded-full bg-red-600/20 border border-red-500/40 text-red-400 font-mono text-base font-black animate-pulse">
-                  <Clock className="w-4 h-4" /> {subState.revealTimeLeft}s restantes
+                  <Clock className="w-4 h-4" /> {subState.revealTimeLeft || subState.timeLeft}s restantes
                 </div>
+              )}
+              {subState.phase === 'selection' && subState.communityCards && subState.communityCards.length > 0 && (
+                <div className="mt-3 flex flex-col items-center">
+                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#D4AF37] mb-1.5 flex items-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5 text-[#D4AF37]" /> 3 Cartes Communes au Centre
+                  </span>
+                  <div className="flex items-center gap-3 p-2.5 px-4 rounded-2xl bg-black/60 border border-[#D4AF37]/50 shadow-[0_0_20px_rgba(212,175,55,0.2)]">
+                    {subState.communityCards.map((c: any, cIdx: number) => (
+                      <div
+                        key={cIdx}
+                        className="w-14 h-20 md:w-16 md:h-24 rounded-xl bg-gradient-to-br from-white to-slate-200 border-2 border-white shadow-xl flex flex-col items-center justify-between p-1.5 text-black"
+                      >
+                        <span className="text-xs font-black self-start font-mono leading-none">{c.display}</span>
+                        <span className={`text-2xl ${c.suit === 'heart' || c.suit === 'diamond' ? 'text-red-600' : 'text-slate-900'}`}>
+                          {c.suit === 'spade' && '♠'}
+                          {c.suit === 'heart' && '♥'}
+                          {c.suit === 'diamond' && '♦'}
+                          {c.suit === 'club' && '♣'}
+                        </span>
+                        <span className="text-xs font-black self-end font-mono leading-none">{c.display}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {subState.phase === 'selection' && tvSelectedPoker.length === 2 && (
+                <button
+                  data-tv-focus
+                  tabIndex={0}
+                  onClick={() => sendGameAction('confirm_selection', { cardIndices: tvSelectedPoker })}
+                  className="mt-3 inline-flex items-center gap-2 px-6 py-2 rounded-xl bg-[#D4AF37] text-black font-black uppercase text-xs tracking-wider shadow-lg hover:brightness-110 active:scale-95 transition-all outline-none"
+                >
+                  <CheckCircle2 className="w-4 h-4" /> Confirmer ma sélection (2 cartes)
+                </button>
               )}
             </div>
 
@@ -429,7 +465,7 @@ export const ArenaBoardTV: React.FC = () => {
                           {isWinner && <span className="text-xs text-[#D4AF37] font-black">👑 VAINQUEUR</span>}
                         </div>
                         <span className="font-mono text-xs font-black text-[#D4AF37]">
-                          {hand.handName}
+                          {hand.handName || hand.evaluation?.frenchName} ({hand.score || 0} pts)
                         </span>
                       </div>
                     </div>

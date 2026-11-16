@@ -85,6 +85,7 @@ const TV_BOARD_LOADERS: (() => Promise<unknown>)[] = [
   () => import('../tv/boards/JeuDePaysBoardTV'),
   () => import('../tv/boards/ArenaBoardTV'),
   () => import('../tv/views/TVArenaView'),
+  () => import('../tv/views/TVMemoryPokerView'),
 ];
 
 const MOBILE_CONTROLLER_LOADERS: (() => Promise<unknown>)[] = [
@@ -112,6 +113,7 @@ const MOBILE_CONTROLLER_LOADERS: (() => Promise<unknown>)[] = [
   () => import('../mobile/views/controllers/WildRushController'),
   () => import('../mobile/views/controllers/JeuDePaysController'),
   () => import('../mobile/views/controllers/ArenaController'),
+  () => import('../mobile/views/controllers/MemoryPokerController'),
 ];
 
 let hasInitialized = false;

@@ -61,6 +61,10 @@ export const TVCategoriesView: React.FC = () => {
       setTvView('arena');
       return;
     }
+    if (game.id === 'memory_poker') {
+      setTvView('memory_poker');
+      return;
+    }
     await createRoom(game.id, { maxPlayers: game.maxPlayers });
   };
 
@@ -68,6 +72,10 @@ export const TVCategoriesView: React.FC = () => {
     setSelectedGame(game);
     if (game.id === 'arena') {
       setTvView('arena');
+      return;
+    }
+    if (game.id === 'memory_poker') {
+      setTvView('memory_poker');
       return;
     }
     setTvView('detail');

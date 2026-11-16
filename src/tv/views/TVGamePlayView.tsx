@@ -54,7 +54,7 @@ export const TVGamePlayView: React.FC = () => {
   if (!room) return null;
 
   const renderActiveBoard = () => {
-    if (room.gameId === 'arena' || (room.gameState as any)?.isArena) {
+    if (room.gameId === 'memory_poker' || room.gameId === 'arena' || (room.gameState as any)?.isArena) {
       return <ArenaBoardTV />;
     }
     switch (room.gameId) {

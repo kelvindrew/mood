@@ -28,6 +28,33 @@ export const GAMES_CATALOG: GameCatalogItem[] = [
     ]
   },
   {
+    id: 'memory_poker',
+    title: 'MEMORY POKER',
+    tagline: 'Test your memory. Master the cards. Outsmart your opponents.',
+    description: 'Une grille secrète de 16 cartes à mémoriser sous pression. Combinez vos souvenirs avec 3 cartes communes dévoilées au centre pour former la main de poker légendaire (Quinte Flush Royale, Carré, Full). Jouable à la télécommande D-Pad ou manette smartphone.',
+    category: 'cards',
+    minPlayers: 1,
+    maxPlayers: 8,
+    durationMinutes: '5–15 min',
+    difficulty: 'Difficile',
+    badge: 'PREMIUM ARENA',
+    coverImage: '/games/poker.jpg',
+    heroImage: '/games/poker.jpg',
+    features: [
+      'Grille de 16 cartes secrètes et 3 cartes communautaires',
+      'Mémorisation sous chronomètre (Facile 30s, Normal 20s, Difficile 12s, Entraînement 45s)',
+      'Évaluateur de poker 10 combinaisons officielles avec kickers et suites à l’As',
+      'Compatibilité TV D-Pad intégrale (télécommande Hisense / Android TV) & Smartphone',
+      'Statistiques persistantes, score record, rangs et bonus de vitesse'
+    ],
+    rules: [
+      'Mémorisez la position des 16 cartes pendant le temps imparti.',
+      'Les cartes sont retournées face cachée et 3 cartes communes sont dévoilées au centre.',
+      'Sélectionnez exactement 2 cartes dans la grille secrète pour forger votre main de 5 cartes.',
+      'Validez votre sélection avant la fin du chrono pour remporter le maximum de points !'
+    ]
+  },
+  {
     id: 'spy',
     title: 'L’ESPION : UNDERCOVER',
     tagline: 'Le grand jeu de déduction sociale, de bluff et de mots secrets',

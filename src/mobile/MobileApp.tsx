@@ -31,6 +31,7 @@ const ConnectFourController = React.lazy(() => import('./views/controllers/Conne
 const WildRushController = React.lazy(() => import('./views/controllers/WildRushController').then(m => ({ default: m.WildRushController })));
 const JeuDePaysController = React.lazy(() => import('./views/controllers/JeuDePaysController').then(m => ({ default: m.JeuDePaysController })));
 const ArenaController = React.lazy(() => import('./views/controllers/ArenaController').then(m => ({ default: m.ArenaController })));
+const MemoryPokerController = React.lazy(() => import('./views/controllers/MemoryPokerController').then(m => ({ default: m.MemoryPokerController })));
 
 const ControllerLoader: React.FC = () => (
   <div className="flex flex-col items-center justify-center min-h-screen bg-[#070D0B] text-white p-6 select-none space-y-4 animate-fade-in">

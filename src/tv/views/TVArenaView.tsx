@@ -46,6 +46,10 @@ export const TVArenaView: React.FC = () => {
 
   const handleLaunchGame = async (game: ArenaGameItem, mode: ArenaPlayMode = 'party') => {
     audio.playSelect();
+    if (game.id === 'memory_poker') {
+      setTvView('memory_poker');
+      return;
+    }
     if (room?.code) {
       selectGame('arena');
       sendGameAction('switch_arena_game', { arenaGameId: game.id });

@@ -62,6 +62,7 @@ export const GAME_PLAYER_CONSTRAINTS = {
   blackjack: { min: 1, max: 7 },
   wild_rush: { min: 2, max: 4 },
   jeu_de_pays: { min: 1, max: 12 },
+  memory_poker: { min: 1, max: 8 },
   arena: { min: 1, max: 10 },
   arena_memory_poker: { min: 1, max: 6 },
   arena_fragments: { min: 1, max: 8 },
@@ -610,6 +611,7 @@ export class RoomManager {
         room.gameEngine = new JeuDePaysEngine(room.players, onStateChange, onGameOver, room.settings);
         break;
       }
+      case 'memory_poker':
       case 'arena':
       case 'arena_memory_poker':
       case 'arena_fragments':
@@ -979,6 +981,7 @@ export class RoomManager {
     let teamMap = null; // playerId -> 'villagers' | 'werewolves'
 
     switch (room.gameId) {
+      case 'memory_poker':
       case 'arena':
       case 'arena_memory_poker':
       case 'arena_fragments':
