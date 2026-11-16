@@ -308,6 +308,167 @@ class AudioManager {
   }
 
   // Player Join Chime
+  // --- MOOD ARENA DRAMATIC SOUND FX (The Devil's Plan) ---
+
+  // Deep resonant bronze gong for rounds, challenges and phases
+  public playArenaGong() {
+    if (this.isMuted) return;
+    this.init();
+    if (!this.ctx) return;
+
+    try {
+      const now = this.ctx.currentTime;
+      // Oscillateur basse fréquence + harmonique
+      const osc1 = this.ctx.createOscillator();
+      const osc2 = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+
+      osc1.type = 'sine';
+      osc1.frequency.setValueAtTime(110, now);
+      osc1.frequency.exponentialRampToValueAtTime(75, now + 2.2);
+
+      osc2.type = 'triangle';
+      osc2.frequency.setValueAtTime(220, now);
+      osc2.frequency.exponentialRampToValueAtTime(145, now + 1.8);
+
+      gain.gain.setValueAtTime(0.22, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 2.4);
+
+      osc1.connect(gain);
+      osc2.connect(gain);
+      gain.connect(this.ctx.destination);
+
+      osc1.start(now);
+      osc2.start(now);
+      osc1.stop(now + 2.5);
+      osc2.stop(now + 2.5);
+    } catch {}
+  }
+
+  // Tense double heartbeat for countdowns under 5 seconds
+  public playHeartbeat() {
+    if (this.isMuted) return;
+    this.init();
+    if (!this.ctx) return;
+
+    try {
+      const now = this.ctx.currentTime;
+      const beat = (time: number, freq: number, vol: number) => {
+        const osc = this.ctx!.createOscillator();
+        const gain = this.ctx!.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, time);
+        osc.frequency.exponentialRampToValueAtTime(35, time + 0.12);
+
+        gain.gain.setValueAtTime(vol, time);
+        gain.gain.exponentialRampToValueAtTime(0.001, time + 0.12);
+
+        osc.connect(gain);
+        gain.connect(this.ctx!.destination);
+        osc.start(time);
+        osc.stop(time + 0.13);
+      };
+
+      beat(now, 60, 0.25);
+      beat(now + 0.14, 50, 0.18);
+    } catch {}
+  }
+
+  // High-tension dramatic stinger when Doubt is called or danger arises
+  public playDoubtAlert() {
+    if (this.isMuted) return;
+    this.init();
+    if (!this.ctx) return;
+
+    try {
+      const now = this.ctx.currentTime;
+      const osc1 = this.ctx.createOscillator();
+      const osc2 = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+
+      osc1.type = 'sawtooth';
+      osc2.type = 'square';
+      // Tritone dissonant pour choc psychologique
+      osc1.frequency.setValueAtTime(440, now);
+      osc2.frequency.setValueAtTime(622.25, now);
+
+      gain.gain.setValueAtTime(0.18, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.8);
+
+      osc1.connect(gain);
+      osc2.connect(gain);
+      gain.connect(this.ctx.destination);
+
+      osc1.start(now);
+      osc2.start(now);
+      osc1.stop(now + 0.85);
+      osc2.stop(now + 0.85);
+    } catch {}
+  }
+
+  // Bright metallic chime when a Mill is formed in Nine Men's Morris
+  public playMillAlert() {
+    if (this.isMuted) return;
+    this.init();
+    if (!this.ctx) return;
+
+    try {
+      const now = this.ctx.currentTime;
+      const freqs = [880, 1174.66, 1760];
+      freqs.forEach((f, idx) => {
+        const t = now + idx * 0.08;
+        const osc = this.ctx!.createOscillator();
+        const gain = this.ctx!.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(f, t);
+
+        gain.gain.setValueAtTime(0.14, t);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.4);
+
+        osc.connect(gain);
+        gain.connect(this.ctx!.destination);
+        osc.start(t);
+        osc.stop(t + 0.45);
+      });
+    } catch {}
+  }
+
+  // Grand imperial triumph fanfare
+  public playRoyalFanfare() {
+    if (this.isMuted) return;
+    this.init();
+    if (!this.ctx) return;
+
+    try {
+      const now = this.ctx.currentTime;
+      const chords = [
+        [523.25, 659.25], // Do-Mi
+        [659.25, 783.99], // Mi-Sol
+        [783.99, 1046.50, 1318.51], // Sol-Do-Mi aigu
+      ];
+
+      chords.forEach((chord, step) => {
+        const stepTime = now + step * 0.18;
+        const duration = step === chords.length - 1 ? 0.9 : 0.16;
+
+        chord.forEach(f => {
+          const osc = this.ctx!.createOscillator();
+          const gain = this.ctx!.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(f, stepTime);
+
+          gain.gain.setValueAtTime(0.1, stepTime);
+          gain.gain.exponentialRampToValueAtTime(0.001, stepTime + duration);
+
+          osc.connect(gain);
+          gain.connect(this.ctx!.destination);
+          osc.start(stepTime);
+          osc.stop(stepTime + duration + 0.05);
+        });
+      });
+    } catch {}
+  }
+
   public playPlayerJoin() {
     if (this.isMuted) return;
     this.init();
