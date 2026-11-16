@@ -1,0 +1,8 @@
+# Configuration Cloudflare Pages & Workers pour MOOD
+name = "mood"
+compatibility_date = "2024-09-23"
+pages_build_output_dir = "dist"
+
+[vars]
+# URL publique du serveur backend WebSocket Render
+VITE_SOCKET_URL = "https://mood-3nvd.onrender.com"

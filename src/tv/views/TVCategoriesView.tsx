@@ -57,11 +57,19 @@ export const TVCategoriesView: React.FC = () => {
 
   const handlePlayGame = async (game: GameCatalogItem) => {
     setSelectedGame(game);
+    if (game.id === 'arena') {
+      setTvView('arena');
+      return;
+    }
     await createRoom(game.id, { maxPlayers: game.maxPlayers });
   };
 
   const handleSelectGame = (game: GameCatalogItem) => {
     setSelectedGame(game);
+    if (game.id === 'arena') {
+      setTvView('arena');
+      return;
+    }
     setTvView('detail');
   };
 

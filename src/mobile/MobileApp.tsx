@@ -136,6 +136,8 @@ export const MobileApp: React.FC<MobileAppProps> = ({ defaultRoomCode = '' }) =>
         return <WildRushController />;
       case 'jeu_de_pays':
         return <JeuDePaysController />;
+      case 'arena':
+        return <ArenaController />;
       default:
         return <LudoController />;
     }

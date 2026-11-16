@@ -101,6 +101,8 @@ export const TVGamePlayView: React.FC = () => {
         return <WildRushBoardTV />;
       case 'jeu_de_pays':
         return <JeuDePaysBoardTV />;
+      case 'arena':
+        return <ArenaBoardTV />;
       default:
         return <LudoBoardTV />;
     }

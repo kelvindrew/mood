@@ -32,6 +32,10 @@ export const TVHomeView: React.FC = () => {
   const handlePlay = async (game: GameCatalogItem) => {
     audio.playSelect();
     setSelectedGame(game);
+    if (game.id === 'arena') {
+      setTvView('arena');
+      return;
+    }
     if (room?.code) {
       selectGame(game.id);
       setTvView('lobby');
