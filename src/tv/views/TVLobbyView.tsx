@@ -101,7 +101,7 @@ export const TVLobbyView: React.FC = () => {
                 SALON DE JEU ACTIF
               </span>
               <span className="text-slate-400 text-xs font-semibold">
-                {selectedGame.title} • {room.settings.gameMode.toUpperCase()}
+                {selectedGame.title} • {(room.settings?.gameMode || 'standard').toUpperCase()}
               </span>
             </div>
             <h1 className="text-xl sm:text-2xl font-black font-display text-white tracking-tight mt-0.5">

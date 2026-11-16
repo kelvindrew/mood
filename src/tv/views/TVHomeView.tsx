@@ -36,15 +36,6 @@ export const TVHomeView: React.FC = () => {
       setTvView('arena');
       return;
     }
-    if (game.id === 'memory_poker') {
-      if (!room?.code) {
-        await createRoom('memory_poker', { maxPlayers: 8 });
-      } else {
-        selectGame('memory_poker');
-      }
-      setTvView('memory_poker');
-      return;
-    }
     if (room?.code) {
       selectGame(game.id);
       setTvView('lobby');

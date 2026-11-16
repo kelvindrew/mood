@@ -594,64 +594,91 @@ export const TVMemoryPokerView: React.FC = () => {
                 </div>
               </div>
 
-              {/* Colonne Droite : Manette Smartphone & QR Code Direct */}
-              <div className="xl:col-span-4 p-6 rounded-3xl bg-black/60 border border-[#D4AF37]/35 shadow-2xl backdrop-blur-md flex flex-col items-center text-center">
-                <div className="flex items-center gap-2 mb-3">
-                  <div className="w-8 h-8 rounded-xl bg-[#D4AF37] flex items-center justify-center text-black">
-                    <Smartphone className="w-4 h-4" />
-                  </div>
-                  <div className="text-left">
-                    <span className="text-xs font-black uppercase tracking-widest text-[#D4AF37] block leading-none">
-                      Manette Smartphone
-                    </span>
-                    <span className="text-[10px] text-white/50">Grille tactile 4x4 interactive</span>
-                  </div>
+              {/* Colonne Droite : Scène QR Code Authentique MOOD TV */}
+              <div className="xl:col-span-4 flex flex-col items-center justify-center p-6 sm:p-7 rounded-3xl liquid-glass shadow-2xl space-y-4">
+                <div className="text-center">
+                  <span className="text-slate-300 text-xs font-bold tracking-widest uppercase flex items-center justify-center space-x-1.5">
+                    <Smartphone className="w-4 h-4 text-slate-300" />
+                    <span>SCANNEZ AVEC VOTRE APPAREIL PHOTO</span>
+                  </span>
+                  <h2 className="text-lg sm:text-xl font-black font-display text-white mt-1">
+                    Aucune application requise
+                  </h2>
                 </div>
 
-                <div className="bg-white p-2.5 rounded-2xl shadow-2xl mb-3 border-2 border-[#D4AF37]/60">
+                {/* Scannable White QR Code Container (Liquid glass effects MUST NOT cover the QR SVG) */}
+                <div className="p-3.5 rounded-2xl bg-white shadow-[0_15px_40px_rgba(0,0,0,0.8)] border-4 border-white">
                   <QRCodeSVG
                     value={mobileJoinUrl || 'https://mood.tv'}
-                    size={145}
+                    size={175}
                     level="M"
-                    includeMargin={false}
+                    includeMargin={true}
+                    fgColor="#07090E"
+                    bgColor="#FFFFFF"
                   />
                 </div>
 
-                <div className="mb-2">
-                  <span className="text-[10px] uppercase font-bold text-white/50 block">Code du Salon :</span>
-                  <span className="font-mono font-black text-3xl tracking-widest text-[#D4AF37]">
-                    {room?.code || 'CHARGEMENT'}
+                {/* Code du Salon Badge (Style Mood TV officiel) */}
+                <div className="flex flex-col items-center">
+                  <span className="text-[10px] font-black text-slate-400 tracking-widest uppercase mb-1">
+                    CODE DU SALON
                   </span>
+                  <div className="px-6 py-1.5 rounded-2xl liquid-glass-elevated border border-amber-400/30 text-amber-400 font-mono font-black text-2xl tracking-widest shadow-[0_0_25px_rgba(245,158,11,0.2)]">
+                    {room?.code || 'CHARGEMENT'}
+                  </div>
                 </div>
 
-                <p className="text-[11px] text-white/70 leading-relaxed mb-3 max-w-xs">
-                  Scannez ce QR code avec votre téléphone pour rejoindre et jouer avec votre manette tactile !
-                </p>
+                {/* Quick 3-Step Guide (Identique à tous les jeux) */}
+                <div className="w-full grid grid-cols-3 gap-2 pt-1 text-center">
+                  <div className="p-2 rounded-xl bg-white/[0.03] border border-white/[0.06]">
+                    <span className="block text-[9px] font-mono font-bold text-slate-400">1. SCANNEZ</span>
+                    <span className="text-[10px] text-slate-200 font-medium">le QR Code</span>
+                  </div>
+                  <div className="p-2 rounded-xl bg-white/[0.03] border border-white/[0.06]">
+                    <span className="block text-[9px] font-mono font-bold text-slate-400">2. PSEUDO</span>
+                    <span className="text-[10px] text-slate-200 font-medium">choisissez</span>
+                  </div>
+                  <div className="p-2 rounded-xl bg-white/[0.03] border border-white/[0.06]">
+                    <span className="block text-[9px] font-mono font-bold text-slate-400">3. JOUEZ</span>
+                    <span className="text-[10px] text-slate-200 font-medium">sur la TV</span>
+                  </div>
+                </div>
 
-                <div className="w-full pt-3 border-t border-white/10">
-                  <div className="flex items-center justify-between text-[11px] font-bold text-white/60 mb-2">
-                    <span>Téléphones connectés :</span>
+                {/* Téléphones connectés & Fallback URL */}
+                <div className="w-full pt-2 border-t border-white/[0.08] text-center">
+                  <div className="flex items-center justify-between text-[11px] font-bold text-slate-400 mb-2">
+                    <span className="flex items-center gap-1.5">
+                      <Users className="w-3.5 h-3.5 text-slate-300" />
+                      Joueurs connectés :
+                    </span>
                     <span className="text-emerald-400 font-mono font-bold">{connectedPhones.length} en ligne</span>
                   </div>
 
                   {connectedPhones.length === 0 ? (
-                    <div className="py-2 px-3 rounded-xl bg-white/5 border border-white/10 text-[11px] text-white/40 italic">
-                      En attente de connexion...
+                    <div className="py-2 px-3 rounded-xl bg-white/[0.02] border border-dashed border-white/10 text-[10px] text-slate-400 italic">
+                      En attente de connexion... Scannez pour rejoindre
                     </div>
                   ) : (
-                    <div className="flex flex-wrap gap-1.5 justify-center max-h-24 overflow-y-auto">
+                    <div className="flex flex-wrap gap-1.5 justify-center max-h-20 overflow-y-auto">
                       {connectedPhones.map((p) => (
-                        <span
+                        <div
                           key={p.id}
-                          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-[11px] font-bold"
+                          className="flex items-center space-x-1.5 px-2.5 py-1 rounded-xl liquid-glass border border-white/[0.08] shadow-sm text-xs"
                         >
                           <span>{p.avatar || '🦊'}</span>
-                          <span>{p.name}</span>
-                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                        </span>
+                          <span className="font-bold text-white text-[11px]">{p.name}</span>
+                          <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+                        </div>
                       ))}
                     </div>
                   )}
+
+                  <div className="pt-2 text-[10px] text-slate-400">
+                    <span>Ou rendez-vous sur : </span>
+                    <span className="font-mono text-slate-200 font-bold underline">
+                      {typeof window !== 'undefined' ? (window.location.host + (room?.code ? `/?room=${room.code}` : '')) : 'mood.tv'}
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -1044,94 +1071,124 @@ export const TVMemoryPokerView: React.FC = () => {
       )}
 
       {/* ========================================================================= */}
-      {/* 4. MODAL DU QR CODE ET CONNEXION MANETTE SMARTPHONE (TOUCHE BLEUE) */}
+      {/* 4. MODAL DU QR CODE ET CONNEXION MANETTE SMARTPHONE (DESIGN OFFICIEL MOOD TV) */}
       {/* ========================================================================= */}
       {isQrModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-8 bg-black/90 backdrop-blur-xl animate-fade-in">
-          <div className="relative w-full max-w-xl rounded-3xl bg-[#0D121B] border border-[#D4AF37]/60 p-8 shadow-2xl text-white">
-            <div className="flex items-center justify-between pb-4 border-b border-white/10 mb-6">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-[#D4AF37]/20 border border-[#D4AF37] flex items-center justify-center">
-                  <Smartphone className="w-5 h-5 text-[#D4AF37]" />
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/90 backdrop-blur-xl animate-fade-in">
+          <div className="relative w-full max-w-2xl rounded-3xl liquid-glass border border-white/[0.12] p-8 shadow-2xl text-white">
+            <div className="flex items-center justify-between pb-4 border-b border-white/[0.08] mb-6">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 rounded-xl liquid-glass flex items-center justify-center text-slate-300">
+                  <Smartphone className="w-5 h-5 text-slate-200" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-black font-display text-white uppercase">
-                    Connectez vos Téléphones
+                  <h3 className="text-xl font-black font-display text-white uppercase tracking-tight">
+                    Connectez vos Smartphones
                   </h3>
-                  <p className="text-xs text-white/50">Manette tactile interactive Memory Poker</p>
+                  <p className="text-xs text-slate-400 font-medium">Scannez avec votre appareil photo pour rejoindre</p>
                 </div>
               </div>
-              <button
-                data-tv-focus
-                tabIndex={0}
-                onClick={() => setIsQrModalOpen(false)}
-                className="px-4 py-1.5 rounded-xl bg-white/10 text-white font-bold text-xs uppercase hover:bg-white/20"
-              >
-                Fermer (Retour)
-              </button>
+
+              <div className="flex flex-col items-end">
+                <span className="text-[9px] font-black text-slate-400 tracking-widest uppercase">CODE DU SALON</span>
+                <div className="px-5 py-1 rounded-xl liquid-glass-elevated border border-amber-400/30 text-amber-400 font-mono font-black text-2xl tracking-widest shadow-[0_0_20px_rgba(245,158,11,0.2)]">
+                  {room?.code || 'CHARGEMENT'}
+                </div>
+              </div>
             </div>
 
             <div className="flex flex-col sm:flex-row items-center gap-6 mb-6">
-              <div className="bg-white p-3 rounded-2xl shadow-xl flex-shrink-0 border-2 border-[#D4AF37]">
+              {/* Scannable White QR Code Container (Liquid glass effects MUST NOT cover the QR SVG) */}
+              <div className="p-3.5 rounded-2xl bg-white shadow-[0_15px_40px_rgba(0,0,0,0.8)] border-4 border-white flex-shrink-0">
                 <QRCodeSVG
                   value={mobileJoinUrl || 'https://mood.tv'}
-                  size={170}
+                  size={195}
                   level="M"
-                  includeMargin={false}
+                  includeMargin={true}
+                  fgColor="#07090E"
+                  bgColor="#FFFFFF"
                 />
               </div>
 
-              <div className="space-y-3 text-center sm:text-left flex-1">
-                <div>
-                  <span className="text-[10px] font-black uppercase tracking-widest text-[#D4AF37] block">
-                    Code du Salon :
-                  </span>
-                  <span className="font-mono font-black text-4xl text-white tracking-widest">
-                    {room?.code || 'CHARGEMENT'}
-                  </span>
+              <div className="space-y-3 text-center sm:text-left flex-1 w-full">
+                <div className="text-xs font-bold text-slate-300 uppercase tracking-wider">
+                  Aucune application requise
                 </div>
 
-                <p className="text-xs text-white/70 leading-relaxed">
-                  Scannez ce QR Code avec l'appareil photo de votre smartphone pour ouvrir la manette Memory Poker tactile.
-                </p>
+                {/* Quick 3-Step Guide (Identique à tous les jeux) */}
+                <div className="w-full grid grid-cols-3 gap-2 text-center">
+                  <div className="p-2 rounded-xl bg-white/[0.03] border border-white/[0.06]">
+                    <span className="block text-[9px] font-mono font-bold text-slate-400">1. SCANNEZ</span>
+                    <span className="text-[10px] text-slate-200 font-medium">le QR Code</span>
+                  </div>
+                  <div className="p-2 rounded-xl bg-white/[0.03] border border-white/[0.06]">
+                    <span className="block text-[9px] font-mono font-bold text-slate-400">2. PSEUDO</span>
+                    <span className="text-[10px] text-slate-200 font-medium">choisissez</span>
+                  </div>
+                  <div className="p-2 rounded-xl bg-white/[0.03] border border-white/[0.06]">
+                    <span className="block text-[9px] font-mono font-bold text-slate-400">3. JOUEZ</span>
+                    <span className="text-[10px] text-slate-200 font-medium">sur la TV</span>
+                  </div>
+                </div>
 
-                <div className="p-2.5 rounded-xl bg-white/5 border border-white/10 text-[11px] font-mono text-white/60 truncate">
-                  {mobileJoinUrl || 'Connexion en cours...'}
+                {/* Direct URL Fallback */}
+                <div className="p-2 rounded-xl bg-white/[0.03] border border-white/[0.06] text-center text-xs text-slate-400">
+                  <span>Ou rendez-vous sur : </span>
+                  <span className="font-mono text-slate-200 font-bold underline">
+                    {typeof window !== 'undefined' ? (window.location.host + (room?.code ? `/?room=${room.code}` : '')) : 'mood.tv'}
+                  </span>
                 </div>
               </div>
             </div>
 
             {/* Liste des Joueurs Connectés */}
             <div>
-              <span className="text-[10px] font-black uppercase tracking-widest text-white/50 block mb-2">
-                Manettes Connectées ({connectedPhones.length}) :
-              </span>
+              <div className="flex items-center justify-between text-xs font-bold text-slate-400 mb-2">
+                <span className="flex items-center gap-1.5">
+                  <Users className="w-4 h-4 text-slate-300" />
+                  Joueurs Connectés ({connectedPhones.length}) :
+                </span>
+                <span className="text-emerald-400 font-mono">{connectedPhones.length} en ligne</span>
+              </div>
+
               {connectedPhones.length === 0 ? (
-                <div className="p-3 rounded-xl bg-white/5 border border-white/10 text-xs text-white/40 text-center italic">
-                  En attente de connexion d'un smartphone... Vous pouvez aussi jouer avec la télécommande TV !
+                <div className="p-3 rounded-2xl border border-dashed border-white/10 bg-white/[0.02] text-xs text-slate-400 text-center italic">
+                  En attente de connexion... Scannez le QR Code pour rejoindre la partie avec votre manette !
                 </div>
               ) : (
-                <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto">
+                <div className="grid grid-cols-2 gap-2 max-h-32 overflow-y-auto pr-1">
                   {connectedPhones.map((p) => (
                     <div
                       key={p.id}
-                      className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-500/15 border border-emerald-500/35 text-emerald-300 text-xs font-bold"
+                      className="flex items-center space-x-2.5 p-2 rounded-xl liquid-glass border border-white/[0.08]"
                     >
-                      <span>{p.avatar || '🦊'}</span>
-                      <span>{p.name}</span>
-                      <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                      <span className="text-base">{p.avatar || '🦊'}</span>
+                      <span className="font-bold text-white text-xs truncate flex-1">{p.name}</span>
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />
                     </div>
                   ))}
                 </div>
               )}
             </div>
 
-            <div className="mt-6 flex justify-end">
+            <div className="mt-6 flex items-center justify-between pt-4 border-t border-white/[0.08]">
+              <button
+                data-tv-focus
+                tabIndex={0}
+                onClick={() => {
+                  audio.playSelect();
+                  setTvView('lobby');
+                }}
+                className="px-5 py-2.5 rounded-xl liquid-glass hover:bg-white/10 text-slate-200 font-bold text-xs uppercase tracking-wider transition-all outline-none focus:ring-2 focus:ring-white"
+              >
+                Ouvrir le Salon / Lobby Complet
+              </button>
+
               <button
                 data-tv-focus
                 tabIndex={0}
                 onClick={() => setIsQrModalOpen(false)}
-                className="px-6 py-2.5 rounded-xl bg-[#D4AF37] hover:brightness-110 text-black font-black text-xs uppercase tracking-wider shadow"
+                className="px-6 py-2.5 rounded-xl bg-white hover:bg-neutral-200 text-neutral-950 font-display font-black text-xs uppercase tracking-wider shadow outline-none focus:ring-2 focus:ring-white"
               >
                 Fermer (Retour)
               </button>
