@@ -25,7 +25,9 @@ export type GameId =
   | 'wild_rush'
   | 'jeu_de_pays'
   | 'arena'
-  | 'memory_poker';
+  | 'memory_poker'
+  | 'montage'
+  | 'scale_game';
 
 export type PlayerColor = 'red' | 'blue' | 'green' | 'yellow' | 'purple' | 'cyan' | 'orange' | 'pink';
 

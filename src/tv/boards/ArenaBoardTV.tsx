@@ -219,6 +219,29 @@ export const ArenaBoardTV: React.FC = () => {
         audio.playSelect();
         sendGameAction('submit_answer', { optionIndex: Number(e.key) - 1 });
       }
+    } else if (subGameId === 'montage' && subState.phase === 'showing') {
+      if (e.key === 'Enter' || e.key === ' ') {
+        audio.playSelect();
+        sendGameAction('buzz');
+      }
+    } else if (subGameId === 'scale_game' && subState.phase === 'weighing') {
+      if (['1', '2', '3', '4', '5'].includes(e.key)) {
+        const letters = ['A', 'B', 'C', 'D', 'E'];
+        const letter = letters[Number(e.key) - 1];
+        audio.playFocus();
+        if (subState.leftPan?.includes(letter)) {
+          sendGameAction('remove_block', { block: letter });
+        } else if (subState.rightPan?.includes(letter)) {
+          sendGameAction('remove_block', { block: letter });
+        } else if ((subState.leftPan?.length || 0) <= (subState.rightPan?.length || 0)) {
+          sendGameAction('add_left', { block: letter });
+        } else {
+          sendGameAction('add_right', { block: letter });
+        }
+      } else if (e.key === 'Enter') {
+        audio.playSelect();
+        sendGameAction('execute_weigh');
+      }
     }
   }, [subGameId, subState.phase, subState.boardSize, subState.mustRemovePiece, tvCursor, sendGameAction]);
 
@@ -848,6 +871,260 @@ export const ArenaBoardTV: React.FC = () => {
             </div>
           </div>
         )}
+
+        {/* ========================================================= */}
+        {/* 9. MONTAGE */}
+        {/* ========================================================= */}
+        {subGameId === 'montage' && (
+          <div className="w-full max-w-4xl flex flex-col items-center">
+            {subState.phase === 'countdown' && (
+              <div className="flex flex-col items-center justify-center p-12 text-center animate-fade-in">
+                <div className="w-28 h-28 rounded-full bg-[#A855F7]/20 border-2 border-[#A855F7] flex items-center justify-center text-5xl font-black font-display text-[#A855F7] animate-ping mb-6">
+                  {subState.countdown}
+                </div>
+                <h3 className="text-3xl font-black font-display text-white mb-2">Attention, les images vont défiler !</h3>
+                <p className="text-sm text-white/60">Buzzez dès qu'un objet ou portrait réapparaît une 2ème fois.</p>
+              </div>
+            )}
+
+            {(subState.phase === 'showing' || subState.phase === 'result') && subState.currentCard && (
+              <div className="w-full flex flex-col items-center animate-fade-in">
+                <div className="flex items-center justify-between w-full max-w-lg mb-4 px-2">
+                  <span className="text-xs font-black uppercase tracking-widest text-[#A855F7]">
+                    Séquence Défilante • #{subState.currentCard.number} / {subState.currentCard.total}
+                  </span>
+                  <span className="text-xs font-mono text-white/50">
+                    Buzzer : Touche OK ou Verte
+                  </span>
+                </div>
+
+                <div
+                  className="w-72 h-96 md:w-80 md:h-[400px] rounded-3xl p-6 flex flex-col items-center justify-between border-2 shadow-2xl transition-all duration-300 relative overflow-hidden"
+                  style={{
+                    backgroundColor: '#0E131C',
+                    borderColor: subState.currentCard.color || '#A855F7',
+                    boxShadow: `0 0 50px ${subState.currentCard.color}33`,
+                  }}
+                >
+                  <div className="w-full flex items-center justify-between">
+                    <span className="text-xs font-mono font-bold text-white/40">ID: {subState.currentCard.symbol}</span>
+                    <span className="px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-white/10 text-white/80">
+                      ÉPREUVE 3
+                    </span>
+                  </div>
+
+                  <div className="text-7xl md:text-8xl my-auto animate-bounce-slow">
+                    {subState.currentCard.icon}
+                  </div>
+
+                  <div className="w-full text-center">
+                    <h3 className="text-xl md:text-2xl font-black font-display text-white tracking-tight">
+                      {subState.currentCard.name}
+                    </h3>
+                  </div>
+                </div>
+
+                {subState.currentCardResult && (
+                  <div
+                    className={`mt-4 px-6 py-2.5 rounded-2xl border text-sm font-black flex items-center gap-3 animate-fade-in ${
+                      subState.currentCardResult.isCorrect
+                        ? 'bg-emerald-500/20 border-emerald-500 text-emerald-300 shadow-[0_0_20px_rgba(16,185,129,0.3)]'
+                        : 'bg-red-500/20 border-red-500 text-red-300 shadow-[0_0_20px_rgba(239,68,68,0.3)]'
+                    }`}
+                  >
+                    {subState.currentCardResult.isCorrect ? <CheckCircle2 className="w-5 h-5 text-emerald-400" /> : <AlertTriangle className="w-5 h-5 text-red-400" />}
+                    <span>{subState.currentCardResult.message}</span>
+                  </div>
+                )}
+
+                <div className="mt-6 flex flex-wrap gap-3 justify-center w-full">
+                  {room?.players.map((p) => (
+                    <div
+                      key={p.id}
+                      className="px-4 py-2 rounded-xl bg-white/5 border border-white/10 flex items-center gap-2.5"
+                    >
+                      <span className="text-lg">{p.avatar || '👤'}</span>
+                      <span className="font-bold text-xs text-white">{p.name}</span>
+                      <span className="font-mono text-xs font-black text-[#A855F7]">
+                        {subState.playerScores?.[p.id] || 0} pts
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {subState.phase === 'ended' && (
+              <div className="flex flex-col items-center justify-center p-8 text-center animate-fade-in">
+                <Trophy className="w-16 h-16 text-[#D4AF37] mb-3 animate-pulse" />
+                <h3 className="text-3xl font-black font-display text-white mb-2">Fin du Montage !</h3>
+                <p className="text-sm text-white/60 mb-6">Tous les artefacts ont été présentés.</p>
+                <div className="flex flex-col gap-2 w-full max-w-sm">
+                  {Object.entries(subState.playerScores || {})
+                    .sort(([, a]: any, [, b]: any) => b - a)
+                    .map(([pid, score]: any, idx) => {
+                      const pl = room?.players.find((p) => p.id === pid);
+                      return (
+                        <div
+                          key={pid}
+                          className={`p-3 px-4 rounded-xl border flex items-center justify-between ${
+                            idx === 0
+                              ? 'bg-[#D4AF37]/20 border-[#D4AF37] text-white font-black'
+                              : 'bg-white/5 border-white/10 text-white/70'
+                          }`}
+                        >
+                          <div className="flex items-center gap-2">
+                            <span>#{idx + 1}</span>
+                            <span>{pl?.avatar || '👤'}</span>
+                            <span>{pl?.name || pid}</span>
+                          </div>
+                          <span className="font-mono text-[#D4AF37]">{score} pts</span>
+                        </div>
+                      );
+                    })}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ========================================================= */}
+        {/* 10. SCALE GAME */}
+        {/* ========================================================= */}
+        {subGameId === 'scale_game' && (
+          <div className="w-full max-w-4xl flex flex-col items-center">
+            <div className="mb-4 text-center">
+              <span className="text-xs font-black uppercase tracking-widest text-[#14B8A6] block mb-1">
+                {subState.phase === 'weighing' && `Phase de Pesée Comparatrice (Pesées restantes : ${subState.remainingWeighings} / ${subState.maxWeighings})`}
+                {subState.phase === 'submitting' && 'Déduction Finale : Ordonnez les blocs du plus léger au plus lourd !'}
+                {subState.phase === 'ended' && 'Résultats & Révélation des Masses !'}
+              </span>
+            </div>
+
+            <div className="w-full max-w-2xl bg-[#0E131C] border border-white/10 rounded-3xl p-6 relative flex flex-col items-center mb-6 shadow-2xl">
+              <div
+                className="w-4/5 h-3 bg-gradient-to-r from-slate-400 via-amber-200 to-slate-400 rounded-full transition-transform duration-700 ease-out relative flex items-center justify-between"
+                style={{
+                  transform:
+                    subState.lastTilt === 'left'
+                      ? 'rotate(-10deg)'
+                      : subState.lastTilt === 'right'
+                      ? 'rotate(10deg)'
+                      : 'rotate(0deg)',
+                }}
+              >
+                <div className="absolute left-0 top-3 flex flex-col items-center">
+                  <div className="w-0.5 h-16 bg-white/40" />
+                  <div className="w-36 min-h-14 rounded-2xl bg-white/10 border-2 border-white/30 flex items-center justify-center p-2 gap-1.5 shadow-lg">
+                    {subState.leftPan && subState.leftPan.length > 0 ? (
+                      subState.leftPan.map((b: string) => (
+                        <span
+                          key={b}
+                          className="w-8 h-8 rounded-lg font-black font-mono text-sm flex items-center justify-center text-white shadow"
+                          style={{ backgroundColor: b === 'A' ? '#EF4444' : b === 'B' ? '#3B82F6' : b === 'C' ? '#10B981' : b === 'D' ? '#F59E0B' : '#8B5CF6' }}
+                        >
+                          {b}
+                        </span>
+                      ))
+                    ) : (
+                      <span className="text-[10px] text-white/30 uppercase font-bold">Plateau Gauche</span>
+                    )}
+                  </div>
+                </div>
+
+                <div className="mx-auto w-4 h-4 rounded-full bg-amber-400 border border-white shadow" />
+
+                <div className="absolute right-0 top-3 flex flex-col items-center">
+                  <div className="w-0.5 h-16 bg-white/40" />
+                  <div className="w-36 min-h-14 rounded-2xl bg-white/10 border-2 border-white/30 flex items-center justify-center p-2 gap-1.5 shadow-lg">
+                    {subState.rightPan && subState.rightPan.length > 0 ? (
+                      subState.rightPan.map((b: string) => (
+                        <span
+                          key={b}
+                          className="w-8 h-8 rounded-lg font-black font-mono text-sm flex items-center justify-center text-white shadow"
+                          style={{ backgroundColor: b === 'A' ? '#EF4444' : b === 'B' ? '#3B82F6' : b === 'C' ? '#10B981' : b === 'D' ? '#F59E0B' : '#8B5CF6' }}
+                        >
+                          {b}
+                        </span>
+                      ))
+                    ) : (
+                      <span className="text-[10px] text-white/30 uppercase font-bold">Plateau Droit</span>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div className="w-8 h-24 bg-gradient-to-b from-slate-600 to-slate-800 rounded-b mt-0 z-0" />
+              <div className="w-28 h-4 bg-slate-700 rounded-full border border-white/20 -mt-1" />
+
+              <div className="mt-4 text-center">
+                {subState.lastTilt === 'left' && (
+                  <span className="px-3.5 py-1 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-300 font-bold text-xs uppercase tracking-wider">
+                    ◀ Le plateau Gauche est plus lourd
+                  </span>
+                )}
+                {subState.lastTilt === 'right' && (
+                  <span className="px-3.5 py-1 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-300 font-bold text-xs uppercase tracking-wider">
+                    Le plateau Droit est plus lourd ▶
+                  </span>
+                )}
+                {subState.lastTilt === 'equal' && (
+                  <span className="px-3.5 py-1 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 font-bold text-xs uppercase tracking-wider">
+                    ⚖️ Équilibre Parfait (Masse identique)
+                  </span>
+                )}
+                {subState.lastTilt === 'neutral' && (
+                  <span className="text-xs text-white/40">
+                    Déposez des blocs puis lancez la pesée
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {subState.history && subState.history.length > 0 && (
+              <div className="w-full max-w-xl flex flex-col gap-2">
+                <span className="text-[10px] font-black uppercase tracking-wider text-white/40">
+                  Journal des Pesées ({subState.history.length})
+                </span>
+                <div className="flex flex-wrap gap-2">
+                  {subState.history.map((h: any) => (
+                    <div
+                      key={h.id}
+                      className="px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 font-mono text-xs flex items-center gap-2"
+                    >
+                      <span className="text-white font-bold">{h.left.join('+') || 'Ø'}</span>
+                      <span className="text-[#14B8A6] font-black">
+                        {h.tilt === 'left' ? '>' : h.tilt === 'right' ? '<' : '='}
+                      </span>
+                      <span className="text-white font-bold">{h.right.join('+') || 'Ø'}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {subState.phase === 'ended' && subState.secretWeights && (
+              <div className="mt-6 p-6 rounded-2xl bg-white/5 border border-[#14B8A6]/40 flex flex-col items-center animate-fade-in w-full max-w-xl">
+                <span className="text-xs font-black uppercase tracking-widest text-[#14B8A6] mb-3">
+                  Masses Réelles Révélées :
+                </span>
+                <div className="flex items-center gap-3">
+                  {['A', 'B', 'C', 'D', 'E'].map((b) => (
+                    <div key={b} className="flex flex-col items-center gap-1">
+                      <span
+                        className="w-10 h-10 rounded-xl font-mono font-black text-sm flex items-center justify-center text-white shadow"
+                        style={{ backgroundColor: b === 'A' ? '#EF4444' : b === 'B' ? '#3B82F6' : b === 'C' ? '#10B981' : b === 'D' ? '#F59E0B' : '#8B5CF6' }}
+                      >
+                        {b}
+                      </span>
+                      <span className="text-xs font-mono text-white/80">{subState.secretWeights[b]} kg</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
       </main>
 
       {/* FOOTER & RACCOURCIS TÉLÉCOMMANDE TV */}
@@ -934,6 +1211,24 @@ export const ArenaBoardTV: React.FC = () => {
                   <p>• Annoncez une quantité d'une couleur présente sur la table entière.<br />
                   • La hiérarchie des couleurs : Noir &lt; Rouge &lt; Platine &lt; Or Impérial.<br />
                   • Criez <strong>« DOUTE ! »</strong> si vous estimez que l'annonce précédente est surévaluée.</p>
+                </div>
+              )}
+
+              {subGameId === 'montage' && (
+                <div>
+                  <h4 className="font-bold text-[#A855F7] mb-2">Règles de Montage :</h4>
+                  <p>• 24 artefacts sont présentés un par un à cadence rapide.<br />
+                  • Si un artefact apparaît pour la 2ème fois : <strong>BUZZEZ</strong> (+100 pts + bonus vitesse).<br />
+                  • Attention : Toute fausse alerte sur un nouvel artefact est pénalisée de <strong>-50 pts</strong> !</p>
+                </div>
+              )}
+
+              {subGameId === 'scale_game' && (
+                <div>
+                  <h4 className="font-bold text-[#14B8A6] mb-2">Règles de Scale Game (Balance) :</h4>
+                  <p>• Les blocs A, B, C, D, E ont chacun un poids secret de 1 à 5 kg.<br />
+                  • Vous avez 5 pesées comparatives pour déterminer les relations de masse.<br />
+                  • Ordonnez ensuite les 5 blocs du plus léger au plus lourd pour remporter 1000 points !</p>
                 </div>
               )}
             </div>

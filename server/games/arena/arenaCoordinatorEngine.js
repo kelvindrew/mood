@@ -9,6 +9,8 @@ import { DoubtAndBetEngine } from './doubtAndBetEngine.js';
 import { EquationPyramidEngine } from './equationPyramidEngine.js';
 import { KnightsTourEngine } from './knightsTourEngine.js';
 import { NineMensMorrisEngine } from './nineMensMorrisEngine.js';
+import { MontageEngine } from './montageEngine.js';
+import { ScaleGameEngine } from './scaleGameEngine.js';
 
 export class ArenaCoordinatorEngine {
   constructor(players, onStateChange, onGameOver, settings = {}) {
@@ -73,6 +75,14 @@ export class ArenaCoordinatorEngine {
       case 'nine_mens_morris':
       case 'arena_nine_mens_morris':
         this.subEngine = new NineMensMorrisEngine(this.players, onSubStateChange, onSubGameOver, this.settings);
+        break;
+      case 'montage':
+      case 'arena_montage':
+        this.subEngine = new MontageEngine(this.players, onSubStateChange, onSubGameOver, this.settings);
+        break;
+      case 'scale_game':
+      case 'arena_scale_game':
+        this.subEngine = new ScaleGameEngine(this.players, onSubStateChange, onSubGameOver, this.settings);
         break;
       default:
         this.subEngine = new MemoryPokerEngine(this.players, onSubStateChange, onSubGameOver, this.settings);

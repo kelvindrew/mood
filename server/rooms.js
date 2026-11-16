@@ -63,6 +63,8 @@ export const GAME_PLAYER_CONSTRAINTS = {
   wild_rush: { min: 2, max: 4 },
   jeu_de_pays: { min: 1, max: 12 },
   memory_poker: { min: 1, max: 8 },
+  montage: { min: 1, max: 8 },
+  scale_game: { min: 1, max: 4 },
   arena: { min: 1, max: 10 },
   arena_memory_poker: { min: 1, max: 6 },
   arena_fragments: { min: 1, max: 8 },
@@ -620,7 +622,11 @@ export class RoomManager {
       case 'arena_doubt_bet':
       case 'arena_equation_pyramid':
       case 'arena_knights_tour':
-      case 'arena_nine_mens_morris': {
+      case 'arena_nine_mens_morris':
+      case 'montage':
+      case 'arena_montage':
+      case 'scale_game':
+      case 'arena_scale_game': {
         room.gameEngine = new ArenaCoordinatorEngine(room.players, onStateChange, onGameOver, room.settings);
         break;
       }
@@ -990,7 +996,11 @@ export class RoomManager {
       case 'arena_doubt_bet':
       case 'arena_equation_pyramid':
       case 'arena_knights_tour':
-      case 'arena_nine_mens_morris': {
+      case 'arena_nine_mens_morris':
+      case 'montage':
+      case 'arena_montage':
+      case 'scale_game':
+      case 'arena_scale_game': {
         if (gs && Array.isArray(gs.finalScores)) {
           ordered = gs.finalScores.map((s) => ({ id: s.playerId || s.id, score: s.score || 0 }));
         } else if (gs && gs.winnerId) {

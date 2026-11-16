@@ -32,23 +32,57 @@ export const ArenaController: React.FC = () => {
   const [pyramidBase, setPyramidBase] = useState<(number | null)[]>([null, null, null]);
   const [pyramidOps, setPyramidOps] = useState<('+' | '-' | '*')[]>(['+', '+', '*']);
   const [selectedMorrisFrom, setSelectedMorrisFrom] = useState<number | null>(null);
+  const [scaleOrder, setScaleOrder] = useState<string[]>([]);
 
   const isMyTurn = subState.turnPlayerId === localPlayer?.id;
+
+  // 9. MONTAGE ACTION
+  const handleMontageBuzz = () => {
+    triggerHaptic(hapticPatterns.buzzer);
+    sendGameAction('buzz');
+  };
+
+  // 10. SCALE GAME ACTIONS
+  const handleScaleAdd = (block: string, pan: 'left' | 'right') => {
+    triggerHaptic(hapticPatterns.tap);
+    sendGameAction(pan === 'left' ? 'add_left' : 'add_right', { block });
+  };
+  const handleScaleRemove = (block: string) => {
+    triggerHaptic(hapticPatterns.tap);
+    sendGameAction('remove_block', { block });
+  };
+  const handleScaleWeigh = () => {
+    triggerHaptic(hapticPatterns.cardPlay);
+    sendGameAction('execute_weigh');
+  };
+  const handleScaleOrderTap = (block: string) => {
+    triggerHaptic(hapticPatterns.tap);
+    setScaleOrder(prev => {
+      if (prev.includes(block)) return prev.filter(b => b !== block);
+      if (prev.length < 5) return [...prev, block];
+      return prev;
+    });
+  };
+  const handleScaleSubmitOrder = () => {
+    if (scaleOrder.length !== 5) return;
+    triggerHaptic(hapticPatterns.success);
+    sendGameAction('submit_ordering', { orderedBlocks: scaleOrder });
+  };
 
   // 1. MEMORY POKER ACTION
   const handleToggleCard = (idx: number) => {
     triggerHaptic(hapticPatterns.tap);
     if (selectedCards.includes(idx)) {
       setSelectedCards(prev => prev.filter(i => i !== idx));
-    } else if (selectedCards.length < 5) {
+    } else if (selectedCards.length < 2) {
       setSelectedCards(prev => [...prev, idx]);
     }
   };
 
   const handleSubmitPokerCards = () => {
-    if (selectedCards.length !== 5) return;
+    if (selectedCards.length !== 2) return;
     triggerHaptic(hapticPatterns.success);
-    sendGameAction('select_cards', { cardIndices: selectedCards });
+    sendGameAction('confirm_selection', { cardIndices: selectedCards });
   };
 
   // 2. FRAGMENTS OF MEMORY ACTION
@@ -174,7 +208,7 @@ export const ArenaController: React.FC = () => {
           <div>
             <div className="text-center mb-4">
               <span className="text-xs font-bold text-white/60">
-                Sélectionnez 5 cartes de mémoire ({selectedCards.length}/5) :
+                Sélectionnez 2 cartes de mémoire ({selectedCards.length}/2) :
               </span>
             </div>
 
@@ -200,14 +234,14 @@ export const ArenaController: React.FC = () => {
 
           <button
             onClick={handleSubmitPokerCards}
-            disabled={selectedCards.length !== 5}
+            disabled={selectedCards.length !== 2}
             className={`w-full py-4 rounded-2xl font-black uppercase text-sm tracking-wider shadow-xl transition-all mt-6 ${
-              selectedCards.length === 5
+              selectedCards.length === 2
                 ? 'bg-gradient-to-r from-[#D4AF37] to-[#B38728] text-black shadow-[#D4AF37]/25 active:scale-95'
                 : 'bg-white/10 text-white/30 cursor-not-allowed'
             }`}
           >
-            Valider ma main ({selectedCards.length}/5)
+            Valider ma sélection ({selectedCards.length}/2)
           </button>
         </div>
       )}
@@ -574,6 +608,194 @@ export const ArenaController: React.FC = () => {
           <div className="text-[11px] text-white/40 text-center mt-4">
             Blanc : {subState.piecesOnBoard?.white || 0} sur plateau • Noir : {subState.piecesOnBoard?.black || 0} sur plateau
           </div>
+        </div>
+      )}
+
+      {/* ========================================================= */}
+      {/* 9. MANETTE : MONTAGE */}
+      {/* ========================================================= */}
+      {subGameId === 'montage' && (
+        <div className="flex-1 flex flex-col items-center justify-between py-6">
+          <div className="text-center">
+            <span className="text-xs font-black uppercase tracking-wider text-[#A855F7] block mb-1">
+              Épreuve de Mémoire Défilante
+            </span>
+            <p className="text-xs text-white/60">
+              Tapez sur le buzzer dès qu'un objet est répété !
+            </p>
+          </div>
+
+          <button
+            onClick={handleMontageBuzz}
+            className="w-56 h-56 rounded-full bg-gradient-to-br from-[#A855F7] via-[#9333EA] to-[#6B21A8] text-white font-black text-2xl uppercase tracking-wider shadow-[0_0_50px_rgba(168,85,247,0.5)] active:scale-90 transition-transform flex flex-col items-center justify-center border-4 border-white/30"
+          >
+            <span>DÉJÀ VU !</span>
+            <span className="text-xs font-bold text-white/70 tracking-widest mt-1">BUZZER</span>
+          </button>
+
+          <div className="text-center text-xs text-white/40">
+            Attention : Fausse alerte = -50 pts
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================= */}
+      {/* 10. MANETTE : SCALE GAME */}
+      {/* ========================================================= */}
+      {subGameId === 'scale_game' && (
+        <div className="flex-1 flex flex-col justify-between">
+          {subState.phase === 'weighing' ? (
+            <div className="flex-1 flex flex-col justify-between">
+              <div>
+                <div className="text-center mb-4">
+                  <span className="text-xs font-black uppercase tracking-wider text-[#14B8A6] block mb-1">
+                    Balance Comparatrice ({subState.remainingWeighings} pesées restantes)
+                  </span>
+                  <p className="text-xs text-white/50">
+                    Déposez les blocs sur la balance puis pesez :
+                  </p>
+                </div>
+
+                {/* Blocs A..E */}
+                <div className="grid grid-cols-5 gap-2 mb-4">
+                  {['A', 'B', 'C', 'D', 'E'].map(block => {
+                    const inLeft = subState.leftPan?.includes(block);
+                    const inRight = subState.rightPan?.includes(block);
+                    const isPlaced = inLeft || inRight;
+                    const color = block === 'A' ? '#EF4444' : block === 'B' ? '#3B82F6' : block === 'C' ? '#10B981' : block === 'D' ? '#F59E0B' : '#8B5CF6';
+
+                    return (
+                      <div key={block} className="flex flex-col items-center gap-1.5">
+                        <div
+                          className="w-12 h-12 rounded-xl flex items-center justify-center font-black font-mono text-base text-white shadow"
+                          style={{ backgroundColor: color, opacity: isPlaced ? 0.4 : 1 }}
+                        >
+                          {block}
+                        </div>
+                        {isPlaced ? (
+                          <button
+                            onClick={() => handleScaleRemove(block)}
+                            className="px-2 py-0.5 rounded text-[10px] bg-red-600/30 border border-red-500/50 text-red-300"
+                          >
+                            Retirer
+                          </button>
+                        ) : (
+                          <div className="flex gap-1">
+                            <button
+                              onClick={() => handleScaleAdd(block, 'left')}
+                              className="px-1.5 py-0.5 rounded text-[10px] bg-white/10 hover:bg-white/20 text-white font-bold"
+                            >
+                              ◀ G
+                            </button>
+                            <button
+                              onClick={() => handleScaleAdd(block, 'right')}
+                              className="px-1.5 py-0.5 rounded text-[10px] bg-white/10 hover:bg-white/20 text-white font-bold"
+                            >
+                              D ▶
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <div className="flex gap-2">
+                  <button
+                    onClick={handleScaleWeigh}
+                    disabled={subState.leftPan?.length === 0 && subState.rightPan?.length === 0}
+                    className="flex-1 py-3.5 rounded-xl bg-gradient-to-r from-[#14B8A6] to-[#0D9488] text-white font-black uppercase text-xs tracking-wider shadow-lg active:scale-95 transition-all disabled:opacity-40"
+                  >
+                    ⚖️ Peser la Balance
+                  </button>
+                  <button
+                    onClick={() => sendGameAction('clear_pans')}
+                    className="px-4 py-3.5 rounded-xl bg-white/10 text-white/70 font-bold text-xs uppercase"
+                  >
+                    Vider
+                  </button>
+                </div>
+              </div>
+
+              <button
+                onClick={() => sendGameAction('go_to_submitting')}
+                className="w-full py-3.5 rounded-xl bg-white/10 hover:bg-white/15 border border-white/20 text-white font-bold text-xs uppercase tracking-wider mt-4"
+              >
+                Passer à l'Ordre Final ▶
+              </button>
+            </div>
+          ) : (
+            <div className="flex-1 flex flex-col justify-between">
+              <div>
+                <div className="text-center mb-4">
+                  <span className="text-xs font-black uppercase tracking-wider text-[#14B8A6] block mb-1">
+                    Ordonnez les blocs (du plus léger au plus lourd)
+                  </span>
+                  <p className="text-xs text-white/50">
+                    Tapez sur les blocs dans l'ordre croissant (1 = le plus léger, 5 = le plus lourd) :
+                  </p>
+                </div>
+
+                {/* Emplacements d'ordre */}
+                <div className="flex justify-between gap-1.5 mb-6">
+                  {[0, 1, 2, 3, 4].map(idx => {
+                    const block = scaleOrder[idx];
+                    return (
+                      <div
+                        key={idx}
+                        className="flex-1 h-14 rounded-xl border-2 border-dashed border-white/20 flex flex-col items-center justify-center bg-white/5"
+                      >
+                        <span className="text-[9px] text-white/40 font-mono">#{idx + 1}</span>
+                        {block ? (
+                          <span
+                            className="w-8 h-8 rounded-lg font-black font-mono text-xs flex items-center justify-center text-white"
+                            style={{ backgroundColor: block === 'A' ? '#EF4444' : block === 'B' ? '#3B82F6' : block === 'C' ? '#10B981' : block === 'D' ? '#F59E0B' : '#8B5CF6' }}
+                          >
+                            {block}
+                          </span>
+                        ) : (
+                          <span className="text-xs text-white/20">?</span>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Boutons de sélection de blocs */}
+                <div className="grid grid-cols-5 gap-2 mb-4">
+                  {['A', 'B', 'C', 'D', 'E'].map(block => {
+                    const isPlaced = scaleOrder.includes(block);
+                    const color = block === 'A' ? '#EF4444' : block === 'B' ? '#3B82F6' : block === 'C' ? '#10B981' : block === 'D' ? '#F59E0B' : '#8B5CF6';
+                    return (
+                      <button
+                        key={block}
+                        onClick={() => handleScaleOrderTap(block)}
+                        className="h-12 rounded-xl flex items-center justify-center font-black font-mono text-sm text-white shadow active:scale-95 transition-all"
+                        style={{ backgroundColor: color, opacity: isPlaced ? 0.3 : 1 }}
+                      >
+                        {block}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <button
+                  onClick={() => setScaleOrder([])}
+                  className="w-full py-2 text-xs text-white/50 hover:text-white"
+                >
+                  Réinitialiser l'ordre
+                </button>
+              </div>
+
+              <button
+                onClick={handleScaleSubmitOrder}
+                disabled={scaleOrder.length !== 5}
+                className="w-full py-4 rounded-2xl bg-gradient-to-r from-[#14B8A6] to-[#0D9488] text-white font-black uppercase text-sm tracking-wider shadow-lg active:scale-95 transition-all disabled:opacity-30 disabled:cursor-not-allowed mt-4"
+              >
+                Valider mon estimation ({scaleOrder.length}/5)
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>

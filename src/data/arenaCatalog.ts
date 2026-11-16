@@ -71,7 +71,7 @@ export const ARENA_GAMES_CATALOG: ArenaGameItem[] = [
     durationMinutes: '10 min',
     difficulty: 'Facile',
     badge: 'MÉMOIRE',
-    isPlayable: false,
+    isPlayable: true,
     accentColor: '#A855F7',
     supportedModes: ['solo', 'party', 'tournament'],
     features: [
@@ -231,7 +231,7 @@ export const ARENA_GAMES_CATALOG: ArenaGameItem[] = [
     durationMinutes: '15 min',
     difficulty: 'Moyen',
     badge: 'LOGIQUE PURE',
-    isPlayable: false,
+    isPlayable: true,
     accentColor: '#14B8A6',
     supportedModes: ['solo', 'duel'],
     features: [
