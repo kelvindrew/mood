@@ -54,6 +54,9 @@ export const TVGamePlayView: React.FC = () => {
   if (!room) return null;
 
   const renderActiveBoard = () => {
+    if (room.gameId === 'arena' || (room.gameState as any)?.isArena) {
+      return <ArenaBoardTV />;
+    }
     switch (room.gameId) {
       case 'ludo':
         return <LudoBoardTV />;
@@ -101,8 +104,6 @@ export const TVGamePlayView: React.FC = () => {
         return <WildRushBoardTV />;
       case 'jeu_de_pays':
         return <JeuDePaysBoardTV />;
-      case 'arena':
-        return <ArenaBoardTV />;
       default:
         return <LudoBoardTV />;
     }

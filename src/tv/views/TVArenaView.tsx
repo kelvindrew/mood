@@ -25,7 +25,7 @@ import {
 } from 'lucide-react';
 
 export const TVArenaView: React.FC = () => {
-  const { setTvView, createRoom, selectGame, room } = useGame();
+  const { setTvView, createRoom, selectGame, room, startGame, sendGameAction } = useGame();
   const [activeTab, setActiveTab] = useState<'games' | 'league' | 'tournament' | 'profile'>('games');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [selectedGame, setSelectedGame] = useState<ArenaGameItem>(ARENA_GAMES_CATALOG[0]);
@@ -48,15 +48,19 @@ export const TVArenaView: React.FC = () => {
     audio.playSelect();
     if (room?.code) {
       selectGame('arena');
-      // Envoi de l'action de changement de sous-jeu
+      sendGameAction('switch_arena_game', { arenaGameId: game.id });
+      startGame();
       setTvView('gameplay');
     } else {
-      await createRoom('arena', {
+      const res = await createRoom('arena', {
         arenaGameId: game.id,
         gameMode: mode,
         maxPlayers: game.maxPlayers,
       });
-      setTvView('gameplay');
+      if (res.success) {
+        startGame();
+        setTvView('gameplay');
+      }
     }
   };
 

@@ -610,6 +610,18 @@ export class RoomManager {
         room.gameEngine = new JeuDePaysEngine(room.players, onStateChange, onGameOver, room.settings);
         break;
       }
+      case 'arena':
+      case 'arena_memory_poker':
+      case 'arena_fragments':
+      case 'arena_secret_number':
+      case 'arena_virus':
+      case 'arena_doubt_bet':
+      case 'arena_equation_pyramid':
+      case 'arena_knights_tour':
+      case 'arena_nine_mens_morris': {
+        room.gameEngine = new ArenaCoordinatorEngine(room.players, onStateChange, onGameOver, room.settings);
+        break;
+      }
       default: {
         room.gameEngine = new LudoEngine(room.players, onStateChange, onGameOver);
         break;
@@ -967,6 +979,24 @@ export class RoomManager {
     let teamMap = null; // playerId -> 'villagers' | 'werewolves'
 
     switch (room.gameId) {
+      case 'arena':
+      case 'arena_memory_poker':
+      case 'arena_fragments':
+      case 'arena_secret_number':
+      case 'arena_virus':
+      case 'arena_doubt_bet':
+      case 'arena_equation_pyramid':
+      case 'arena_knights_tour':
+      case 'arena_nine_mens_morris': {
+        if (gs && Array.isArray(gs.finalScores)) {
+          ordered = gs.finalScores.map((s) => ({ id: s.playerId || s.id, score: s.score || 0 }));
+        } else if (gs && gs.winnerId) {
+          ordered = idsInRoom.map((id) => ({ id, score: id === gs.winnerId ? 100 : 0 })).sort((a, b) => b.score - a.score);
+        } else {
+          ordered = idsInRoom.map((id) => ({ id, score: 0 }));
+        }
+        break;
+      }
       case 'scrabble':
       case 'connect_four':
       case 'naval_battle':

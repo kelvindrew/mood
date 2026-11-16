@@ -81,6 +81,10 @@ export class ArenaCoordinatorEngine {
   }
 
   handleAction(player, action, payload = {}) {
+    const playerObj = typeof player === 'object' && player !== null
+      ? player
+      : { id: String(player) };
+
     if (action === 'switch_arena_game') {
       if (payload.arenaGameId) {
         this.subGameId = payload.arenaGameId;
@@ -93,7 +97,7 @@ export class ArenaCoordinatorEngine {
     }
 
     if (this.subEngine && typeof this.subEngine.handleAction === 'function') {
-      this.subEngine.handleAction(player, action, payload);
+      this.subEngine.handleAction(playerObj, action, payload);
     }
   }
 

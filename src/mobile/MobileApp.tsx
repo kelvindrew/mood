@@ -89,6 +89,9 @@ export const MobileApp: React.FC<MobileAppProps> = ({ defaultRoomCode = '' }) =>
   }
 
   const renderActiveController = () => {
+    if (room.gameId === 'arena' || (room.gameState as any)?.isArena) {
+      return <ArenaController />;
+    }
     switch (room.gameId) {
       case 'ludo':
         return <LudoController />;
@@ -136,8 +139,6 @@ export const MobileApp: React.FC<MobileAppProps> = ({ defaultRoomCode = '' }) =>
         return <WildRushController />;
       case 'jeu_de_pays':
         return <JeuDePaysController />;
-      case 'arena':
-        return <ArenaController />;
       default:
         return <LudoController />;
     }

@@ -141,6 +141,15 @@ export async function registerLocalServiceWorker(): Promise<ServiceWorkerRegistr
       }
     });
 
+    let refreshing = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (!refreshing) {
+        refreshing = true;
+        window.location.reload();
+      }
+    });
+    registration.update().catch(() => {});
+
     return registration;
   } catch (error) {
     console.warn('[MOOD Cache] Échec enregistrement Service Worker:', error);

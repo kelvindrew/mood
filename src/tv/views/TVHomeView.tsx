@@ -104,7 +104,7 @@ export const TVHomeView: React.FC = () => {
             </div>
           </div>
 
-          <article className="tv-feature-card group relative isolate flex min-h-[34vh] flex-col justify-end overflow-hidden rounded-[2rem] border border-white/10 bg-[#1A1B17] md:min-h-[39vh]">
+          <article onClick={() => handlePlay(active)} className="tv-feature-card group relative isolate flex min-h-[34vh] flex-col justify-end overflow-hidden rounded-[2rem] border border-white/10 bg-[#1A1B17] md:min-h-[39vh] cursor-pointer">
             <img
               key={active.id}
               src={active.heroImage || active.coverImage}

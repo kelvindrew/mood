@@ -40,7 +40,7 @@ export interface FourPicsPuzzleItem {
   images: [string, string, string, string];
 }
 
-const CURRENT_CMS_VERSION = 'mood_2026_10_17_clean_v5';
+const CURRENT_CMS_VERSION = 'mood_2026_11_16_arena_v2';
 
 const STORAGE_KEYS = {
   CMS_VERSION: 'mood_cms_version',
