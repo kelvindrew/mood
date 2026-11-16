@@ -90,6 +90,9 @@ export const MobileApp: React.FC<MobileAppProps> = ({ defaultRoomCode = '' }) =>
   }
 
   const renderActiveController = () => {
+    if (room.gameId === 'memory_poker') {
+      return <MemoryPokerController />;
+    }
     if (room.gameId === 'arena' || (room.gameState as any)?.isArena) {
       return <ArenaController />;
     }

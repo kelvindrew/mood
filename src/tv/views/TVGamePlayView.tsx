@@ -29,6 +29,7 @@ const ConnectFourBoardTV = React.lazy(() => import('../boards/ConnectFourBoardTV
 const WildRushBoardTV = React.lazy(() => import('../boards/WildRushBoardTV').then(m => ({ default: m.WildRushBoardTV })));
 const JeuDePaysBoardTV = React.lazy(() => import('../boards/JeuDePaysBoardTV').then(m => ({ default: m.JeuDePaysBoardTV })));
 const ArenaBoardTV = React.lazy(() => import('../boards/ArenaBoardTV').then(m => ({ default: m.ArenaBoardTV })));
+const TVMemoryPokerView = React.lazy(() => import('./TVMemoryPokerView').then(m => ({ default: m.TVMemoryPokerView })));
 
 const TVBoardLoader: React.FC<{ gameId: string }> = ({ gameId }) => (
   <MoodLoadingScreen label={'Ouverture du jeu : ' + gameId.replace(/_/g, ' ')} fullScreen={false} />
@@ -54,7 +55,10 @@ export const TVGamePlayView: React.FC = () => {
   if (!room) return null;
 
   const renderActiveBoard = () => {
-    if (room.gameId === 'memory_poker' || room.gameId === 'arena' || (room.gameState as any)?.isArena) {
+    if (room.gameId === 'memory_poker') {
+      return <TVMemoryPokerView />;
+    }
+    if (room.gameId === 'arena' || (room.gameState as any)?.isArena) {
       return <ArenaBoardTV />;
     }
     switch (room.gameId) {

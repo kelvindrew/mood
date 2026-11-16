@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useGame } from '../../context/GameContext';
 import { tvNav, TVNavAction } from '../../services/tvNavigation';
 import { audio } from '../../services/audio';
+import { QRCodeSVG } from 'qrcode.react';
 import { PlayingCard, dealMemoryPokerCards, SUIT_SYMBOLS } from '../../games/memoryPoker/deck';
 import { evaluatePokerHand, PokerEvaluation, PokerHandTier } from '../../games/memoryPoker/pokerEvaluator';
 import {
@@ -26,16 +27,51 @@ import {
   Flame,
   Volume2,
   VolumeX,
+  Smartphone,
+  Users,
+  QrCode,
+  X,
+  Radio,
 } from 'lucide-react';
 
 type GamePhase = 'idle' | 'memorize' | 'selection' | 'showdown' | 'results';
 
 export const TVMemoryPokerView: React.FC = () => {
-  const { setTvView, sendGameAction, room } = useGame();
+  const { setTvView, sendGameAction, room, createRoom, selectGame, startGame, serverLanIp } = useGame();
 
   // Difficulté sélectionnée
   const [difficulty, setDifficulty] = useState<MemoryPokerDifficulty>('normal');
   const [phase, setPhase] = useState<GamePhase>('idle');
+  const [isQrModalOpen, setIsQrModalOpen] = useState<boolean>(false);
+
+  // Assurer la présence d'un salon multijoueur pour que les téléphones puissent se connecter
+  useEffect(() => {
+    if (!room) {
+      createRoom('memory_poker', { maxPlayers: 8, difficulty });
+    } else if (room.gameId !== 'memory_poker') {
+      selectGame('memory_poker');
+    }
+  }, [room, createRoom, selectGame, difficulty]);
+
+  const isLocalHost = typeof window !== 'undefined' && (
+    window.location.hostname === 'localhost' ||
+    window.location.hostname === '127.0.0.1'
+  );
+
+  let mobileJoinUrl = '';
+  if (typeof window !== 'undefined' && room?.code) {
+    if (isLocalHost) {
+      const lanIp = (room.serverLanIp && room.serverLanIp !== 'localhost') ? room.serverLanIp : serverLanIp;
+      const port = window.location.port ? `:${window.location.port}` : '';
+      mobileJoinUrl = `${window.location.protocol}//${lanIp !== 'localhost' ? lanIp : window.location.hostname}${port}/?room=${room.code}`;
+    } else {
+      mobileJoinUrl = `${window.location.origin}/?room=${room.code}`;
+    }
+  }
+
+  const connectedPhones = room?.players || [];
+  const serverGameState = (room?.gameState || {}) as Record<string, any>;
+  const serverSubState = (serverGameState.subState || serverGameState || {}) as Record<string, any>;
 
   // Données de cartes
   const [grid, setGrid] = useState<PlayingCard[]>([]);
@@ -209,6 +245,14 @@ export const TVMemoryPokerView: React.FC = () => {
     }, 2800);
   }, [clearTimer, selectedIndices, grid, communityCards, difficulty]);
 
+  // Lancement synchronisé local + serveur
+  const handleStartGame = useCallback((diff: MemoryPokerDifficulty = difficulty) => {
+    if (room?.code) {
+      startGame();
+    }
+    startNewGame(diff);
+  }, [room, startGame, startNewGame, difficulty]);
+
   // Pluie de particules dorées Canvas
   const triggerVictoryParticles = () => {
     const canvas = canvasRef.current;
@@ -287,11 +331,26 @@ export const TVMemoryPokerView: React.FC = () => {
   // Navigation D-Pad Télécommande TV
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      if (isQrModalOpen) {
+        if (e.key === 'Escape' || e.key === 'Backspace' || e.key === 'Yellow' || e.key === 'Blue' || e.keyCode === 405 || e.keyCode === 406) {
+          setIsQrModalOpen(false);
+          e.preventDefault();
+        }
+        return;
+      }
+
       if (isRulesModalOpen) {
         if (e.key === 'Escape' || e.key === 'Backspace' || e.key === 'Yellow' || e.keyCode === 405) {
           setIsRulesModalOpen(false);
           e.preventDefault();
         }
+        return;
+      }
+
+      // Touche Bleue ou 'b' : afficher QR Code Manettes Smartphones
+      if (e.key === 'Blue' || e.keyCode === 406 || e.key === 'b' || e.key === 'B') {
+        setIsQrModalOpen((prev) => !prev);
+        e.preventDefault();
         return;
       }
 
@@ -394,6 +453,23 @@ export const TVMemoryPokerView: React.FC = () => {
             tabIndex={0}
             onClick={() => {
               audio.playSelect();
+              setIsQrModalOpen(true);
+            }}
+            className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-amber-500/15 border border-amber-500/35 text-amber-300 hover:bg-amber-500/25 text-xs font-black uppercase tracking-wider outline-none transition-all shadow-[0_0_12px_rgba(245,158,11,0.2)]"
+            title="Afficher le QR code pour connecter les téléphones"
+          >
+            <Smartphone className="w-4 h-4 text-amber-400" />
+            <span>📱 Manette : <strong className="font-mono text-white">{room?.code || '...'}</strong></span>
+            <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-bold">
+              {connectedPhones.length} en ligne
+            </span>
+          </button>
+
+          <button
+            data-tv-focus
+            tabIndex={0}
+            onClick={() => {
+              audio.playSelect();
               setIsRulesModalOpen(true);
             }}
             className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#D4AF37]/15 border border-[#D4AF37]/35 text-[#D4AF37] hover:bg-[#D4AF37]/25 text-xs font-black uppercase tracking-wider outline-none transition-all shadow-[0_0_12px_rgba(212,175,55,0.15)]"
@@ -420,87 +496,163 @@ export const TVMemoryPokerView: React.FC = () => {
       {phase === 'idle' && (
         <main className="max-w-[1600px] mx-auto px-8 py-8 animate-fade-in">
           {/* Section Hero Cinématique */}
-          <section className="relative overflow-hidden rounded-3xl border border-white/15 bg-gradient-to-r from-[#0B0F17] via-[#121824] to-[#0A0D15] p-8 md:p-14 shadow-2xl mb-10">
+          <section className="relative overflow-hidden rounded-3xl border border-white/15 bg-gradient-to-r from-[#0B0F17] via-[#121824] to-[#0A0D15] p-8 md:p-12 shadow-2xl mb-10">
             <div className="absolute right-[-5%] top-[-20%] bottom-[-20%] w-1/2 bg-radial from-[#D4AF37]/15 to-transparent pointer-events-none" />
 
-            <div className="relative z-10 max-w-3xl">
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#D4AF37]/15 border border-[#D4AF37]/35 text-[#D4AF37] text-xs font-black uppercase tracking-widest mb-4">
-                <Flame className="w-4 h-4 fill-current" />
-                Épreuve d'Élite • The Devil's Plan
-              </div>
+            <div className="relative z-10 grid grid-cols-1 xl:grid-cols-12 gap-8 items-center">
+              <div className="xl:col-span-8">
+                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#D4AF37]/15 border border-[#D4AF37]/35 text-[#D4AF37] text-xs font-black uppercase tracking-widest mb-4">
+                  <Flame className="w-4 h-4 fill-current" />
+                  Épreuve d'Élite • The Devil's Plan
+                </div>
 
-              <h1 className="text-4xl md:text-7xl font-black font-display tracking-tight text-white mb-4 leading-none">
-                MEMORY POKER
-              </h1>
+                <h1 className="text-4xl md:text-7xl font-black font-display tracking-tight text-white mb-4 leading-none">
+                  MEMORY POKER
+                </h1>
 
-              <p className="text-xl md:text-2xl font-semibold text-white/80 mb-3 leading-snug">
-                Test your memory. Master the cards. Outsmart your opponents.
-              </p>
+                <p className="text-xl md:text-2xl font-semibold text-white/80 mb-3 leading-snug">
+                  Test your memory. Master the cards. Outsmart your opponents.
+                </p>
 
-              <p className="text-sm md:text-base text-white/60 mb-8 max-w-2xl leading-relaxed">
-                Mémorisez 16 cartes réparties sur une grille secrète de 4x4 cases. Dès qu'elles se retournent face
-                cachée, observez les 3 cartes communes au centre de la table et sélectionnez exactement 2 cartes
-                cachées pour forger la meilleure combinaison de poker possible !
-              </p>
+                <p className="text-sm md:text-base text-white/60 mb-8 max-w-2xl leading-relaxed">
+                  Mémorisez 16 cartes réparties sur une grille secrète de 4x4 cases. Dès qu'elles se retournent face
+                  cachée, observez les 3 cartes communes au centre de la table et sélectionnez exactement 2 cartes
+                  cachées pour forger la meilleure combinaison de poker possible !
+                </p>
 
-              {/* Sélecteur de Difficulté */}
-              <div className="mb-8">
-                <label className="block text-xs font-black uppercase tracking-widest text-[#D4AF37] mb-3">
-                  Niveau de Difficulté & Chronomètre :
-                </label>
-                <div className="flex flex-wrap gap-3">
-                  {(['easy', 'normal', 'hard', 'practice'] as MemoryPokerDifficulty[]).map((diff) => {
-                    const cfg = DIFFICULTY_CONFIGS[diff];
-                    const isSelected = difficulty === diff;
-                    return (
-                      <button
-                        key={diff}
-                        data-tv-focus
-                        tabIndex={0}
-                        onClick={() => {
-                          audio.playSelect();
-                          setDifficulty(diff);
-                        }}
-                        className={`px-5 py-3 rounded-2xl text-xs font-black uppercase tracking-wider border transition-all ${
-                          isSelected
-                            ? 'bg-gradient-to-r from-[#D4AF37] to-[#B8860B] text-black border-white shadow-[0_0_20px_rgba(212,175,55,0.4)] scale-105'
-                            : 'bg-white/5 border-white/10 text-white/70 hover:bg-white/10'
-                        }`}
-                      >
-                        <div>{cfg.label}</div>
-                        <span className={`text-[10px] font-mono block mt-0.5 ${isSelected ? 'text-black/80' : 'text-white/40'}`}>
-                          {cfg.memoSeconds}s mémo • {cfg.decisionSeconds}s choix (x{cfg.multiplier})
-                        </span>
-                      </button>
-                    );
-                  })}
+                {/* Sélecteur de Difficulté */}
+                <div className="mb-8">
+                  <label className="block text-xs font-black uppercase tracking-widest text-[#D4AF37] mb-3">
+                    Niveau de Difficulté & Chronomètre :
+                  </label>
+                  <div className="flex flex-wrap gap-3">
+                    {(['easy', 'normal', 'hard', 'practice'] as MemoryPokerDifficulty[]).map((diff) => {
+                      const cfg = DIFFICULTY_CONFIGS[diff];
+                      const isSelected = difficulty === diff;
+                      return (
+                        <button
+                          key={diff}
+                          data-tv-focus
+                          tabIndex={0}
+                          onClick={() => {
+                            audio.playSelect();
+                            setDifficulty(diff);
+                          }}
+                          className={`px-5 py-3 rounded-2xl text-xs font-black uppercase tracking-wider border transition-all ${
+                            isSelected
+                              ? 'bg-gradient-to-r from-[#D4AF37] to-[#B8860B] text-black border-white shadow-[0_0_20px_rgba(212,175,55,0.4)] scale-105'
+                              : 'bg-white/5 border-white/10 text-white/70 hover:bg-white/10'
+                          }`}
+                        >
+                          <div>{cfg.label}</div>
+                          <span className={`text-[10px] font-mono block mt-0.5 ${isSelected ? 'text-black/80' : 'text-white/40'}`}>
+                            {cfg.memoSeconds}s mémo • {cfg.decisionSeconds}s choix (x{cfg.multiplier})
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Boutons d'Action Principaux */}
+                <div className="flex flex-wrap items-center gap-4">
+                  <button
+                    data-tv-focus
+                    tabIndex={0}
+                    onClick={() => handleStartGame(difficulty)}
+                    className="inline-flex items-center gap-3 px-10 py-4 rounded-2xl bg-gradient-to-r from-[#D4AF37] to-[#B38728] text-black font-black uppercase text-sm tracking-wider shadow-lg shadow-[#D4AF37]/30 hover:brightness-110 active:scale-95 transition-all outline-none focus:ring-4 focus:ring-[#D4AF37]/60"
+                  >
+                    <Play className="w-5 h-5 fill-current" />
+                    Lancer la Partie (OK)
+                  </button>
+
+                  <button
+                    data-tv-focus
+                    tabIndex={0}
+                    onClick={() => {
+                      audio.playSelect();
+                      setIsRulesModalOpen(true);
+                    }}
+                    className="inline-flex items-center gap-2.5 px-6 py-4 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/15 text-white font-bold text-sm tracking-wider transition-all outline-none focus:ring-2 focus:ring-white"
+                  >
+                    <BookOpen className="w-4 h-4 text-white/70" />
+                    Comment Jouer
+                  </button>
+
+                  <button
+                    data-tv-focus
+                    tabIndex={0}
+                    onClick={() => {
+                      audio.playSelect();
+                      setIsQrModalOpen(true);
+                    }}
+                    className="inline-flex items-center gap-2.5 px-6 py-4 rounded-2xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/35 text-amber-300 font-bold text-sm tracking-wider transition-all outline-none focus:ring-2 focus:ring-amber-400"
+                  >
+                    <Smartphone className="w-4 h-4 text-amber-400" />
+                    Scanner Manette Smartphone
+                  </button>
                 </div>
               </div>
 
-              {/* Boutons d'Action Principaux */}
-              <div className="flex flex-wrap items-center gap-4">
-                <button
-                  data-tv-focus
-                  tabIndex={0}
-                  onClick={() => startNewGame(difficulty)}
-                  className="inline-flex items-center gap-3 px-10 py-4 rounded-2xl bg-gradient-to-r from-[#D4AF37] to-[#B38728] text-black font-black uppercase text-sm tracking-wider shadow-lg shadow-[#D4AF37]/30 hover:brightness-110 active:scale-95 transition-all outline-none focus:ring-4 focus:ring-[#D4AF37]/60"
-                >
-                  <Play className="w-5 h-5 fill-current" />
-                  Lancer la Partie (OK)
-                </button>
+              {/* Colonne Droite : Manette Smartphone & QR Code Direct */}
+              <div className="xl:col-span-4 p-6 rounded-3xl bg-black/60 border border-[#D4AF37]/35 shadow-2xl backdrop-blur-md flex flex-col items-center text-center">
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-8 h-8 rounded-xl bg-[#D4AF37] flex items-center justify-center text-black">
+                    <Smartphone className="w-4 h-4" />
+                  </div>
+                  <div className="text-left">
+                    <span className="text-xs font-black uppercase tracking-widest text-[#D4AF37] block leading-none">
+                      Manette Smartphone
+                    </span>
+                    <span className="text-[10px] text-white/50">Grille tactile 4x4 interactive</span>
+                  </div>
+                </div>
 
-                <button
-                  data-tv-focus
-                  tabIndex={0}
-                  onClick={() => {
-                    audio.playSelect();
-                    setIsRulesModalOpen(true);
-                  }}
-                  className="inline-flex items-center gap-2.5 px-6 py-4 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/15 text-white font-bold text-sm tracking-wider transition-all outline-none focus:ring-2 focus:ring-white"
-                >
-                  <BookOpen className="w-4 h-4 text-white/70" />
-                  Comment Jouer
-                </button>
+                <div className="bg-white p-2.5 rounded-2xl shadow-2xl mb-3 border-2 border-[#D4AF37]/60">
+                  <QRCodeSVG
+                    value={mobileJoinUrl || 'https://mood.tv'}
+                    size={145}
+                    level="M"
+                    includeMargin={false}
+                  />
+                </div>
+
+                <div className="mb-2">
+                  <span className="text-[10px] uppercase font-bold text-white/50 block">Code du Salon :</span>
+                  <span className="font-mono font-black text-3xl tracking-widest text-[#D4AF37]">
+                    {room?.code || 'CHARGEMENT'}
+                  </span>
+                </div>
+
+                <p className="text-[11px] text-white/70 leading-relaxed mb-3 max-w-xs">
+                  Scannez ce QR code avec votre téléphone pour rejoindre et jouer avec votre manette tactile !
+                </p>
+
+                <div className="w-full pt-3 border-t border-white/10">
+                  <div className="flex items-center justify-between text-[11px] font-bold text-white/60 mb-2">
+                    <span>Téléphones connectés :</span>
+                    <span className="text-emerald-400 font-mono font-bold">{connectedPhones.length} en ligne</span>
+                  </div>
+
+                  {connectedPhones.length === 0 ? (
+                    <div className="py-2 px-3 rounded-xl bg-white/5 border border-white/10 text-[11px] text-white/40 italic">
+                      En attente de connexion...
+                    </div>
+                  ) : (
+                    <div className="flex flex-wrap gap-1.5 justify-center max-h-24 overflow-y-auto">
+                      {connectedPhones.map((p) => (
+                        <span
+                          key={p.id}
+                          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-[11px] font-bold"
+                        >
+                          <span>{p.avatar || '🦊'}</span>
+                          <span>{p.name}</span>
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </section>
@@ -606,6 +758,42 @@ export const TVMemoryPokerView: React.FC = () => {
               )}
             </div>
           </div>
+
+          {/* Bandeau des Joueurs et Manettes Smartphones en Jeu */}
+          {connectedPhones.length > 0 && (
+            <div className="w-full max-w-4xl flex flex-wrap items-center justify-center gap-3 py-2 px-4 rounded-2xl bg-black/50 border border-white/10 mb-4 shadow-lg">
+              <span className="text-[10px] font-black uppercase tracking-widest text-[#D4AF37] flex items-center gap-1.5">
+                <Smartphone className="w-3.5 h-3.5" /> Manettes ({connectedPhones.length}) :
+              </span>
+              {connectedPhones.map((p) => {
+                const isConfirmed = Boolean(serverSubState.confirmedPlayers && serverSubState.confirmedPlayers[p.id]);
+                const pSelected = (serverSubState.selectedCards && serverSubState.selectedCards[p.id]) || [];
+
+                return (
+                  <div
+                    key={p.id}
+                    className={`flex items-center gap-2 px-3 py-1 rounded-xl border text-xs font-bold transition-all ${
+                      isConfirmed
+                        ? 'bg-emerald-500/20 border-emerald-500/50 text-emerald-300 shadow-[0_0_12px_rgba(16,185,129,0.25)]'
+                        : pSelected.length > 0
+                        ? 'bg-[#D4AF37]/20 border-[#D4AF37]/40 text-[#D4AF37]'
+                        : 'bg-white/5 border-white/10 text-white/70'
+                    }`}
+                  >
+                    <span>{p.avatar || '🦊'}</span>
+                    <span>{p.name}</span>
+                    <span className="text-[10px] font-mono">
+                      {phase === 'memorize' && (p.isReady ? '✓ Prêt' : 'Mémorise...')}
+                      {phase === 'selection' && (isConfirmed ? '✓ Validé (2/2)' : `${pSelected.length}/2 choisies`)}
+                      {phase === 'showdown' && (
+                        serverSubState.playerHands?.[p.id]?.evaluation?.frenchName ? `✓ ${serverSubState.playerHands[p.id].evaluation.frenchName}` : 'Terminé'
+                      )}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
 
           {/* ZONE 1 : LES 3 CARTES COMMUNES (RÉVÉLÉES EN PHASE SÉLECTION) */}
           <div className="w-full max-w-4xl py-3 px-6 rounded-3xl bg-[#0D121B] border border-white/15 mb-4 shadow-xl flex items-center justify-between">
@@ -836,7 +1024,7 @@ export const TVMemoryPokerView: React.FC = () => {
             <button
               data-tv-focus
               tabIndex={0}
-              onClick={() => startNewGame(difficulty)}
+              onClick={() => handleStartGame(difficulty)}
               className="inline-flex items-center gap-2.5 px-8 py-4 rounded-2xl bg-gradient-to-r from-[#D4AF37] to-[#B38728] text-black font-black uppercase text-sm tracking-wider shadow-lg shadow-[#D4AF37]/30 hover:brightness-110 outline-none focus:ring-4 focus:ring-[#D4AF37]"
             >
               <RotateCcw className="w-5 h-5" />
@@ -849,14 +1037,111 @@ export const TVMemoryPokerView: React.FC = () => {
               onClick={() => setPhase('idle')}
               className="inline-flex items-center gap-2 px-6 py-4 rounded-2xl bg-white/10 hover:bg-white/15 border border-white/20 text-white font-bold text-sm tracking-wider outline-none"
             >
-              Retour à l'Arène
+              Retour à l'Accueil
             </button>
           </div>
         </main>
       )}
 
       {/* ========================================================================= */}
-      {/* 4. MODAL DES RÈGLES DU JEU ET HIÉRARCHIE POKER (TOUCHE JAUNE) */}
+      {/* 4. MODAL DU QR CODE ET CONNEXION MANETTE SMARTPHONE (TOUCHE BLEUE) */}
+      {/* ========================================================================= */}
+      {isQrModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-8 bg-black/90 backdrop-blur-xl animate-fade-in">
+          <div className="relative w-full max-w-xl rounded-3xl bg-[#0D121B] border border-[#D4AF37]/60 p-8 shadow-2xl text-white">
+            <div className="flex items-center justify-between pb-4 border-b border-white/10 mb-6">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-[#D4AF37]/20 border border-[#D4AF37] flex items-center justify-center">
+                  <Smartphone className="w-5 h-5 text-[#D4AF37]" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-black font-display text-white uppercase">
+                    Connectez vos Téléphones
+                  </h3>
+                  <p className="text-xs text-white/50">Manette tactile interactive Memory Poker</p>
+                </div>
+              </div>
+              <button
+                data-tv-focus
+                tabIndex={0}
+                onClick={() => setIsQrModalOpen(false)}
+                className="px-4 py-1.5 rounded-xl bg-white/10 text-white font-bold text-xs uppercase hover:bg-white/20"
+              >
+                Fermer (Retour)
+              </button>
+            </div>
+
+            <div className="flex flex-col sm:flex-row items-center gap-6 mb-6">
+              <div className="bg-white p-3 rounded-2xl shadow-xl flex-shrink-0 border-2 border-[#D4AF37]">
+                <QRCodeSVG
+                  value={mobileJoinUrl || 'https://mood.tv'}
+                  size={170}
+                  level="M"
+                  includeMargin={false}
+                />
+              </div>
+
+              <div className="space-y-3 text-center sm:text-left flex-1">
+                <div>
+                  <span className="text-[10px] font-black uppercase tracking-widest text-[#D4AF37] block">
+                    Code du Salon :
+                  </span>
+                  <span className="font-mono font-black text-4xl text-white tracking-widest">
+                    {room?.code || 'CHARGEMENT'}
+                  </span>
+                </div>
+
+                <p className="text-xs text-white/70 leading-relaxed">
+                  Scannez ce QR Code avec l'appareil photo de votre smartphone pour ouvrir la manette Memory Poker tactile.
+                </p>
+
+                <div className="p-2.5 rounded-xl bg-white/5 border border-white/10 text-[11px] font-mono text-white/60 truncate">
+                  {mobileJoinUrl || 'Connexion en cours...'}
+                </div>
+              </div>
+            </div>
+
+            {/* Liste des Joueurs Connectés */}
+            <div>
+              <span className="text-[10px] font-black uppercase tracking-widest text-white/50 block mb-2">
+                Manettes Connectées ({connectedPhones.length}) :
+              </span>
+              {connectedPhones.length === 0 ? (
+                <div className="p-3 rounded-xl bg-white/5 border border-white/10 text-xs text-white/40 text-center italic">
+                  En attente de connexion d'un smartphone... Vous pouvez aussi jouer avec la télécommande TV !
+                </div>
+              ) : (
+                <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto">
+                  {connectedPhones.map((p) => (
+                    <div
+                      key={p.id}
+                      className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-500/15 border border-emerald-500/35 text-emerald-300 text-xs font-bold"
+                    >
+                      <span>{p.avatar || '🦊'}</span>
+                      <span>{p.name}</span>
+                      <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="mt-6 flex justify-end">
+              <button
+                data-tv-focus
+                tabIndex={0}
+                onClick={() => setIsQrModalOpen(false)}
+                className="px-6 py-2.5 rounded-xl bg-[#D4AF37] hover:brightness-110 text-black font-black text-xs uppercase tracking-wider shadow"
+              >
+                Fermer (Retour)
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* 5. MODAL DES RÈGLES DU JEU ET HIÉRARCHIE POKER (TOUCHE JAUNE) */}
       {/* ========================================================================= */}
       {isRulesModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-8 bg-black/85 backdrop-blur-md animate-fade-in">

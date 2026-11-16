@@ -29,7 +29,7 @@ const CATEGORY_ICONS: Record<string, React.ReactNode> = {
 };
 
 export const TVCategoriesView: React.FC = () => {
-  const { setSelectedGame, setTvView, createRoom, games } = useGame();
+  const { setSelectedGame, setTvView, createRoom, selectGame, room, games } = useGame();
   const [selectedCat, setSelectedCat] = useState('all');
   const [spotlightGame, setSpotlightGame] = useState<GameCatalogItem>(games[0] || GAMES_CATALOG[0]);
 
